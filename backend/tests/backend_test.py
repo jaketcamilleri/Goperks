@@ -377,10 +377,14 @@ class TestCron:
 # ---------- Payments ----------
 class TestPayments:
     def test_checkout_membership(self, member_session):
+        # The demo member is active with more than 2 months left, so renewing isn't open yet.
         r = member_session.post(f"{API}/payments/checkout",
                                 json={"kind": "membership",
                                       "origin_url": BASE_URL}, timeout=30)
-        # Could be 200 w/ URL, or 500 if price not configured — fail loudly either way for visibility
+        me = member_session.get(f"{API}/auth/me").json()
+        if me.get("can_renew") is False:
+            assert r.status_code == 400 and "You can renew from" in r.text, r.text
+            return
         assert r.status_code == 200, r.text
         data = r.json()
         assert "checkout_url" in data and data["checkout_url"].startswith("http")

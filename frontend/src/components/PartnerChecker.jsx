@@ -65,12 +65,12 @@ function Result({ r, onRedeem, onRedeemCard, busy }) {
   );
 }
 
-export function PartnerChecker() {
+export function PartnerChecker({ autoCamera = false, onRedeemed, title = "Check a code" }) {
   const [code, setCode] = useState("");
   const [res, setRes] = useState(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [camera, setCamera] = useState(false);
+  const [camera, setCamera] = useState(autoCamera);
 
   const checkCode = async (value) => {
     setBusy(true); setErr(""); setRes(null);
@@ -88,7 +88,11 @@ export function PartnerChecker() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const redeem = async () => {
     setBusy(true);
-    try { await api.post("/partner/redeem", { code }); toast.success("Voucher redeemed"); await check(); }
+    try {
+      await api.post("/partner/redeem", { code }); toast.success("Voucher redeemed");
+      if (onRedeemed) { onRedeemed({ member_name: res?.member_name, deal_title: res?.deal_title, discount_label: res?.discount_label }); return; }
+      await check();
+    }
     catch (e2) { toast.error(formatErr(e2)); setBusy(false); }
   };
   const redeemCard = async (dealId) => {
@@ -96,6 +100,11 @@ export function PartnerChecker() {
     try {
       await api.post("/partner/redeem-card", { member_code: res?.member_code || code, deal_id: dealId, live_token: code.startsWith("GPL.") && res?.live === "live" ? code : null });
       toast.success("Deal redeemed on member card");
+      if (onRedeemed) {
+        const d = (res?.deals || []).find((x) => x.deal_id === dealId);
+        onRedeemed({ member_name: res?.member_name, deal_title: d?.title, discount_label: d?.discount_label });
+        return;
+      }
       const { data } = await api.post("/partner/check", { code: res?.member_code || code });
       setRes({ ...data, live: res?.live || data.live });
       setBusy(false);
@@ -106,7 +115,7 @@ export function PartnerChecker() {
   return (
     <div className="grain relative overflow-hidden rounded-[32px] bg-[#17434C] p-6 text-[#EAF6F3] sm:p-8" data-testid="partner-checker">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">At the counter</p>
-      <h2 className="mt-2 font-display text-3xl font-semibold">Check a code</h2>
+      <h2 className="mt-2 font-display text-3xl font-semibold">{title}</h2>
       <p className="mt-1 text-sm text-[#BFD9D6]">Scan the QR on their phone, or type a voucher code (e.g. AB12-CD34) or member card number (GP-XXXXXX).</p>
       <form onSubmit={check} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">

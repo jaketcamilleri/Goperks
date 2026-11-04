@@ -31,7 +31,11 @@ export function Footer() {
         </p>
         <div className="mt-8 flex flex-col justify-between gap-2 border-t border-white/10 pt-6 text-sm text-[#A9C9C6] sm:flex-row">
           <p>© 2026 Go Perks</p>
-          <p>Prices in AUD. Membership renews yearly.</p>
+          <p className="flex flex-wrap gap-x-5 gap-y-1">
+            <MainLink to="/terms" className="hover:text-white" data-testid="footer-terms">Terms and conditions</MainLink>
+            <MainLink to="/privacy" className="hover:text-white" data-testid="footer-privacy">Privacy policy</MainLink>
+            <span>Prices in AUD incl. GST.</span>
+          </p>
         </div>
       </div>
     </footer>

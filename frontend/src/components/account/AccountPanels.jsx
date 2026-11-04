@@ -26,7 +26,11 @@ export function MembershipPanel() {
         <div><dt className="text-xs uppercase tracking-wider text-[#3D5E65]">Member number</dt><dd className="mt-1 font-mono font-semibold" data-testid="account-member-code">{user?.member_code || "—"}</dd></div>
       </dl>
       {months > 0 && <p className="mt-4 text-sm text-[#2F5A3A]" data-testid="account-bonus">{months} free month{months === 1 ? "" : "s"} saved from referrals, added when you renew.</p>}
-      <Link to="/join" className={saveBtn} data-testid="account-renew-btn">{active ? "Renew for another year" : "Activate membership"}</Link>
+      {active && user?.can_renew === false ? (
+        <p className="mt-5 rounded-xl bg-[#F3F8F7] px-4 py-3 text-sm text-[#3D5E65]" data-testid="account-renew-locked">
+          You can renew from <b>{day(user.renew_opens_at)}</b>, 2 months before your membership ends.
+        </p>
+      ) : <Link to="/join" className={saveBtn} data-testid="account-renew-btn">{active ? "Renew for another year" : "Activate membership"}</Link>}
       <h3 className="mt-8 font-semibold">Payment history</h3>
       {pays?.length ? (
         <ul className="mt-2 divide-y divide-[#E3F0ED] text-sm" data-testid="account-payments">

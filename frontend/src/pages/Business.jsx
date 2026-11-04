@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { api, catLabel, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { DealForm } from "@/components/DealForm";
-import { PartnerChecker } from "@/components/PartnerChecker";
+import { ScanLine } from "lucide-react";
 import { PartnerStats } from "@/components/PartnerStats";
 import { PartnerReviews } from "@/components/PartnerReviews";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
@@ -102,7 +102,16 @@ export default function Business() {
         </div>
       ) : needsProfile ? <ProfilePrompt user={user} /> : !isPartner ? <Pitch /> : (
         <>
-        <div className="mt-12"><PartnerChecker /></div>
+        <Link to={bp("/redeem")} data-testid="open-redeem-page-btn"
+          className="grain relative mt-12 flex flex-col gap-4 overflow-hidden rounded-[32px] bg-[#17434C] p-6 text-[#EAF6F3] transition-transform active:scale-[0.99] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <span className="flex items-center gap-4">
+            <ScanLine className="h-10 w-10 shrink-0 text-[#EE8A63]" />
+            <span><span className="block font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">At the counter</span>
+              <span className="mt-1 block font-display text-3xl font-semibold">Redeem a deal</span>
+              <span className="text-sm text-[#BFD9D6]">Scan a member's card or voucher and see today's redemptions.</span></span>
+          </span>
+          <span className="shrink-0 rounded-full bg-[#B9512E] px-6 py-3 text-center font-semibold">Open scanner</span>
+        </Link>
         {user.role === "business" && <ProfileCard user={user} />}
         <Link to={bp("/sticker")} data-testid="sticker-link"
           className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-5 transition-colors hover:border-[#17434C]">

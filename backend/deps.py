@@ -1,5 +1,6 @@
 """Auth dependencies: who is calling and what they're allowed to do."""
 import os
+from datetime import datetime, timedelta
 from typing import Optional
 
 import jwt
@@ -19,8 +20,21 @@ def user_out(doc):
     exp = data.get("membership_expires_at")
     if data["membership_status"] == "active" and exp and exp < now_iso():
         data["membership_status"] = "expired"
+    # Members can renew from 2 months before their membership ends.
+    data["renew_opens_at"] = renew_opens_at(data)
+    data["can_renew"] = data["renew_opens_at"] is None or data["renew_opens_at"] <= now_iso()
     data["has_password"] = bool(doc.get("password_hash"))
     return data
+
+
+RENEW_WINDOW_DAYS = 61
+
+
+def renew_opens_at(data) -> Optional[str]:
+    exp = data.get("membership_expires_at")
+    if data.get("membership_status") != "active" or not exp:
+        return None
+    return (datetime.fromisoformat(exp) - timedelta(days=RENEW_WINDOW_DAYS)).isoformat()
 
 
 async def current_user(request: Request) -> dict:

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Response, Depends, UploadFile, File
 
 import storage
-from core import db, logger, oid, now_iso, rand_code, with_coords, hours_text, check_live_token, find_suburb, CATEGORIES, DAYS
+from core import db, logger, oid, now_iso, rand_code, with_coords, hours_text, check_live_token, find_suburb, CATEGORIES, DAYS, MELB
 from deps import user_out, require_partner, require_approved_business
 from models import Deal, Voucher, DealIn, CodeIn, CardRedeemIn, ProfileIn, PhotoPathIn
 from services import used_this_term, review_out
@@ -88,6 +88,21 @@ async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_partner))
     await db.vouchers.update_many({"user_id": member["id"], "deal_id": body.deal_id, "status": "active"},
                                   {"$set": {"status": "expired"}})
     return {"ok": True}
+
+
+@router.get("/partner/redemptions/today")
+async def partner_redemptions_today(user=Depends(require_partner)):
+    """Deals redeemed at this business today (Melbourne time), newest first."""
+    start = datetime.now(MELB).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc).isoformat()
+    q = {"status": "redeemed", "redeemed_at": {"$gte": start}}
+    if user["role"] not in ("admin", "staff"):
+        ids = [str(d["_id"]) for d in await db.deals.find({"submitted_by": user["id"]}, {"_id": 1}).to_list(500)]
+        q["deal_id"] = {"$in": ids}
+    rows = await db.vouchers.find(q, {"user_id": 1, "deal_title": 1, "discount_label": 1, "redeemed_at": 1, "via": 1}).sort("redeemed_at", -1).to_list(200)
+    names = {str(u["_id"]): (u.get("name") or "Member").split(" ")[0]
+             for u in await db.users.find({"_id": {"$in": [oid(r["user_id"]) for r in rows]}}, {"name": 1}).to_list(200)}
+    return [{"id": str(r["_id"]), "member_name": names.get(r["user_id"], "Member"), "deal_title": r.get("deal_title", ""),
+             "discount_label": r.get("discount_label", ""), "redeemed_at": r["redeemed_at"], "via": r.get("via") or "voucher"} for r in rows]
 
 
 @router.post("/partner/redeem")

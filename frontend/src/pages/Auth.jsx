@@ -118,6 +118,7 @@ export default function Auth({ mode, business = false }) {
             className="w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">
             {busy ? "Please wait…" : isLogin ? "Log in" : "Create account"}
           </button>
+          {!isLogin && <p className="text-center text-xs text-[#3D5E65]" data-testid="auth-legal-note">By creating an account you agree to our <Link to="/terms" className="font-semibold underline" target="_blank">Terms</Link> and <Link to="/privacy" className="font-semibold underline" target="_blank">Privacy policy</Link>.</p>}
         </form>
         <p className="mt-6 text-sm text-[#3D5E65]">
           {isLogin ? <>New here? <Link to={`${path("/register")}${q}`} className="font-semibold text-[#9A4024]" data-testid="auth-switch-link">{business ? "Apply to become a partner" : "Create an account"}</Link></>

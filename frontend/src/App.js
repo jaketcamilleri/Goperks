@@ -15,6 +15,8 @@ import { PaymentSuccess, PaymentCancel } from "@/pages/Payment";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Account from "@/pages/Account";
+import BusinessRedeem from "@/pages/BusinessRedeem";
+import Legal from "@/pages/Legal";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Business from "@/pages/Business";
@@ -89,6 +91,7 @@ function bizRoutes() {
       <Route path={bp("/register")} element={<Auth mode="register" business />} />
       <Route path={bp("/forgot-password")} element={<ForgotPassword loginPath={bp("/login")} />} />
       <Route path={bp("/reset-password")} element={<ResetPassword loginPath={bp("/login")} />} />
+      <Route path={bp("/redeem")} element={bizOnly(<BusinessRedeem />)} />
       <Route path={bp("/profile")} element={bizOnly(<BusinessProfile />)} />
       <Route path={bp("/sticker")} element={bizOnly(<StickerPage />)} />
     </Route>
@@ -155,6 +158,8 @@ function AppRoutes() {
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/dashboard" element={<DashboardRoute />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            <Route path="/terms" element={<Legal doc="terms" />} />
+            <Route path="/privacy" element={<Legal doc="privacy" />} />
           </Route>
         </Routes>
   );

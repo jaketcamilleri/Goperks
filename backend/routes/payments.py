@@ -39,6 +39,9 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
         if sd < melb_today() or sd > latest:
             raise HTTPException(400, "Delivery date must be between today and 12 months from now")
     lookup = GIFT_LOOKUP_KEY if is_gift else MEMBERSHIP_LOOKUP_KEY
+    if not is_gift and not user.get("can_renew", True):
+        opens = datetime.fromisoformat(user["renew_opens_at"]).astimezone(MELB).strftime("%-d %B %Y")
+        raise HTTPException(400, f"Your membership is active. You can renew from {opens}, 2 months before it ends.")
     referred = False
     if not is_gift and not await db.payment_transactions.find_one({"user_id": user["id"], "kind": "membership", "payment_status": "paid"}):
         await attach_referrer(user["id"], user["email"], body.ref)

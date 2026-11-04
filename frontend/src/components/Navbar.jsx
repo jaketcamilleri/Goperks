@@ -53,7 +53,7 @@ export function Navbar() {
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (
             <>
-              {isBiz ? <Link to={bp("")} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>
+              {isBiz ? <><Link to={bp("/redeem")} data-testid="nav-redeem" className="text-[15px] font-medium hover:text-[#9A4024]">Redeem</Link><Link to={bp("")} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link></>
                 : isAdmin ? <AdminLink data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">Admin</AdminLink>
                 : <Link to={accountTo} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>}
               <button onClick={doLogout} data-testid="nav-logout" className="rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]">Log out</button>
@@ -79,6 +79,7 @@ export function Navbar() {
               {!paying && <BizLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-for-businesses">For businesses</BizLink>}
               {user ? (
                 <>
+                  {isBiz && <Link to={bp("/redeem")} onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-redeem">Redeem a deal</Link>}
                   {isAdmin ? <AdminLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">Admin</AdminLink>
                     : <Link to={isBiz ? bp("") : accountTo} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]" data-testid="nav-mobile-account">My account</Link>}
                   <button onClick={doLogout} className="mt-2 rounded-full border border-[#17434C] py-3 font-semibold">Log out</button>

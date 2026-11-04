@@ -73,6 +73,9 @@ async def admin_deals_bulk(body: BulkIn, user=Depends(team)):
     if body.status == "deleted":
         gone = await db.deals.find({"_id": {"$in": ids}}, {"title": 1, "business_name": 1}).to_list(200)
         res = await db.deals.delete_many({"_id": {"$in": ids}})
+        sids = [str(i) for i in ids]
+        for coll in (db.vouchers, db.reviews, db.favorites):
+            await coll.delete_many({"deal_id": {"$in": sids}})
         for d in gone:
             await log_activity(user, "deal.deleted", "deal", d["_id"], d["title"], f"{d.get('business_name', '')} · bulk action")
         return {"updated": res.deleted_count}
