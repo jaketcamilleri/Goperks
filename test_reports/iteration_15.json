@@ -1,0 +1,34 @@
+{
+  "summary": "End-to-end verification of the 'send from your own email' refactor for admin partner pitches and member invites (platform shared email service is now transactional-only). Backend pytest (14/14 passed) covers: /admin/prospects/pitch-preview returns subject+text, /admin/prospects/pitch returns drafts+skipped (no email / unsubscribed / already pitched reasons) and a plain-text body + Gmail-compose-compatible subject, /admin/prospects/{id}/pitched flips pitch_status='sent' + status='contacted' + logs activity, /admin/invites returns drafts+skipped (invalid / duplicate / has_account / already_invited / unsubscribed), /admin/invites/sent upserts the invite row only on explicit confirmation, unsubscribe blocks future drafts, custom pitch versions are honoured, invite + pitch previews render as plain-text letters (no unsubscribe footer).\n\nFrontend UI (admin, 1920x1080): Added 2 TEST_Pitch* prospects with example.com emails, selected both -> 'prospects-bulk-pitch' opens pitch-dialog. pitch-preview-text shows Hi [Business name] team... plain text, button reads 'Write 2 pitches'. Typing the note into pitch-note-input updates the pitch-preview-text (contains note substring after debounce). Clicking pitch-send-btn transitions the dialog to OwnEmailDrafts showing 2 rows each with draft-gmail-<id> (href = https://mail.google.com/mail/?view=cm&fs=1&to=...&su=...&body=...), draft-mailto-<id> (mailto: with subject+body) and draft-copy-<id>. Counter '0 of 2 opened' -> '1 of 2 opened' -> '2 of 2 opened' after each Gmail click; Gmail link opens a new tab (accounts.google.com sign-in confirms the compose URL was passed through). After closing the dialog and reloading, both rows show prospect-pitch-<id> = 'Pitch sent' and prospect-status-<id> = 'contacted'.\n\nInvites: pasted 'TEST Person, test_inv_ui@example.com' -> invite-send-btn 'Write 1 invite', own-email-drafts appears. Clicking the Gmail link marked the invite sent; after reload the invites table includes the row (Sent badge). Retrying the same email produced invite-skipped 'test_inv_ui@example.com was already invited' and no new table row. Zero 'Retry' buttons anywhere on the invites page.\n\nEmails page (/admin/emails): both 'Member invite' and 'Partner pitch' template groups present; selecting Member invite shows the plain-letter preview with no 'unsubscribe' string (grep=0 in page body). Other templates still render with heading/button/footer.\n\nGift Codes emailed-to-someone (transactional) was previously verified in iteration_14 and uses the shared Emergent email service — unchanged and unaffected by this change.\n\n390px width: prospects page and the pitch-dialog both render with scrollWidth == clientWidth == 390 (no horizontal overflow). Draft rows wrap to new lines on narrow viewports.\n\nAll TEST data cleaned up: 2 prospects deleted via DELETE /admin/prospects/{id}; 1 invite row deleted via Mongo (no admin UI delete endpoint).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_invites.py",
+    "/app/backend/tests/test_prospects.py",
+    "/app/backend/tests/test_email_templates.py",
+    "/app/test_reports/pytest/resend_pitch_invites.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/prospects.py pitch_drafts: skip reasons are checked in the correct precedence (no email -> opt-out -> already pitched). Good.",
+    "routes/invites.py: EMAIL_RX is simple and case-insensitive; duplicates within the same submission are flagged via `seen` set after lowercasing. Clean.",
+    "routes/invites.py mark_invite_sent uses $set upsert on email: safe idempotent store for the 'opened Gmail twice' case.",
+    "OwnEmailDrafts.jsx: `done` Set is only in-memory - refreshing the page would re-enable the links. That is acceptable because the backend record (invite / pitch_status) is the source of truth for the tables, but the component could optionally initialise `done` from a prop to persist UI state across dialog closes. Not blocking.",
+    "PitchDialog.jsx: pitch-preview fetches on every note/tpl change with 400ms debounce - good. Preview endpoint is lightweight (no DB writes).",
+    "email_templates.preview: for 'pitch' kind renders the HTML preview as plain-text paragraphs inside a padded white div (no unsubscribe footer) - matches brief.",
+    "InviteComposer.jsx `parsePeople` regex `[^\\s,;<>]+@[^\\s,;<>]+` is permissive (no TLD check) but server side EMAIL_RX enforces `.[a-z]{2,}` - defence in depth is fine.",
+    "Gmail compose URL uses view=cm&fs=1&to=&su=&body= which is the correct shape; mailto: URL encodes subject/body - works in native mail apps. All encodeURIComponent-ed."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (14/14 pytest: invites + prospects + email_templates)", "frontend": "100% - every brief item verified"},
+  "test_credentials": "admin@tinysvouchers.com.au / TinyAdmin!2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created 2 TEST_Pitch* prospects with test_pitch_[ab]_<tag>@example.com emails and 1 test_inv_ui@example.com invite row. All cleaned up at end of run (prospects via DELETE /admin/prospects/{id}; invite via Mongo since no admin delete endpoint).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Own-email drafts flow testids: pitch-dialog, pitch-recipients, pitch-template-select, pitch-note-input, pitch-preview, pitch-preview-text, pitch-skipped, pitch-send-btn, pitch-done-btn; OwnEmailDrafts: own-email-drafts, draft-<id>, draft-gmail-<id>, draft-mailto-<id>, draft-copy-<id>; invites: invite-composer, invite-list-input, invite-template-select, invite-note-input, invite-count, invite-send-btn, invite-skipped, invite-status-<id>. Gmail link opens a new tab (Google sign-in) in headless Playwright - use page.context.expect_page() to catch it and close. Mailto link may not open anything in headless but still fires the onClick that marks the row as sent, so the counter still increments. Prospects table checkbox[0] is the header; index 1+ are rows. No admin UI delete for invites - clean up test_* invite rows via Mongo.",
+  "rca of the issue": "No defects. The refactor is consistent across backend (two endpoints returning plain-text drafts + mark-sent endpoints that log activity) and frontend (shared OwnEmailDrafts component used by both PitchDialog and InviteComposer). Gmail/mailto URLs are correctly encoded; preview text updates reactively; status transitions (new -> contacted on pitch, sent flag on invite) propagate to the respective tables after reload."
+}
