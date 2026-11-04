@@ -9,12 +9,12 @@ from starlette.middleware.cors import CORSMiddleware
 from core import db, client, logger, hash_password, rand_code  # first: loads backend/.env
 import storage
 from models import User, Deal
-from routes import auth, deals, member, partner, admin, payments, cron, wallet
+from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 
 app = FastAPI()
 api = APIRouter(prefix="/api")
-for module in (auth, deals, member, partner, admin, payments, cron, wallet):
+for module in (auth, deals, member, partner, admin, payments, cron, wallet, invites):
     api.include_router(module.router)
 app.include_router(api)
 
@@ -43,6 +43,8 @@ async def create_indexes():
     await db.vouchers.create_index("deal_id")
     await db.activity_log.create_index("created_at")
     await db.partner_reports.create_index([("partner_id", 1), ("month", 1)], unique=True)
+    await db.invites.create_index("email")
+    await db.email_optouts.create_index("email", unique=True)
 
 
 async def seed():

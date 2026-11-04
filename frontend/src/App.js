@@ -34,6 +34,8 @@ import { BizNavbar } from "@/components/BizNavbar";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import ReviewsPage from "@/admin/ReviewsPage";
 import ActivityPage from "@/admin/ActivityPage";
+import InvitesPage from "@/admin/InvitesPage";
+import Unsubscribe from "@/pages/Unsubscribe";
 import { IS_BIZ_HOST, EXTERNAL_BIZ, BIZ_URL, MAIN_URL, bp, IS_ADMIN_HOST, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
 
 function Layout() {
@@ -108,6 +110,7 @@ function adminRoutes() {
         <Route path={ap("/check")} element={<CheckPage />} />
         <Route path={ap("/reviews")} element={<ReviewsPage />} />
         <Route path={ap("/activity")} element={<OwnerOnly><ActivityPage /></OwnerOnly>} />
+        <Route path={ap("/invites")} element={<OwnerOnly><InvitesPage /></OwnerOnly>} />
       </Route>
     </>
   );
@@ -149,6 +152,7 @@ function AppRoutes() {
             <Route path="/register" element={<Auth mode="register" />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           </Route>
         </Routes>

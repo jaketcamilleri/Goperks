@@ -12,7 +12,7 @@ def _app_url(path: str) -> str:
     return f"{os.environ['FRONTEND_URL'].rstrip('/')}{path}"
 
 
-def _layout(heading: str, body_html: str, cta_label: str, cta_path: str) -> str:
+def _layout(heading: str, body_html: str, cta_label: str, cta_path: str, footer_html: str = "") -> str:
     return (
         '<table role="presentation" width="100%" style="background:#EAF6F3"><tr><td style="padding:32px;color:#17434C">'
         '<p style="font-family:Arial,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9A4024;margin:0 0 12px">'
@@ -21,6 +21,7 @@ def _layout(heading: str, body_html: str, cta_label: str, cta_path: str) -> str:
         f'{body_html}'
         f'<p style="margin:28px 0"><a href="{escape(_app_url(cta_path))}" style="background:#B9512E;color:#EAF6F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">{escape(cta_label)}</a></p>'
         f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
+        f'{footer_html}'
         '</td></tr></table>'
     )
 
@@ -169,6 +170,23 @@ def partner_report_email(name: str, business: str, month: str, r: dict):
             + _p("Your partner portal shows these numbers live, plus every review members leave."))
     return (f"Your {month} {EMAIL_FROM_NAME} report: {n} deal{'s' if n != 1 else ''} used",
             _layout("Your monthly report", body, "Open my partner portal", "biz:"))
+
+
+def invite_email(name: str, note: str, unsubscribe_url: str):
+    first = escape(name.split(" ")[0] if name else "there")
+    steps = ('<ol style="font-family:Arial,sans-serif;font-size:15px;line-height:1.7;margin:0 0 12px;padding-left:20px">'
+             '<li>Join for A$49 a year.</li><li>Browse the deals and find the ones near you.</li>'
+             '<li>Show your live member card at the counter and save.</li></ol>')
+    note_html = (f'<p style="font-family:Georgia,serif;font-size:17px;font-style:italic;line-height:1.5;border-left:3px solid #EE8A63;padding-left:14px;margin:18px 0">'
+                 f'“{escape(note)}”</p>') if note else ""
+    body = (_p(f"Hi {first}, we'd love to have you as a {escape(EMAIL_FROM_NAME)} member. One membership gives you a full year of exclusive deals and discounts "
+               "at local cafes, restaurants, kids' activities, family days out and everyday essentials.")
+            + note_html + _p("<b>How it works:</b>") + steps
+            + _p("Every deal can be used once per membership year, and you can see how much you've saved in your account."))
+    footer = (f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Don\'t want invites from us? '
+              f'<a href="{escape(unsubscribe_url)}" style="color:#5E7F84">Unsubscribe</a> and we won\'t email you again.</p>')
+    return f"A year of local deals for A$49. Join {EMAIL_FROM_NAME}", \
+        _layout("Your year of local perks starts here", body, "Become a member", "/join", footer)
 
 
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
