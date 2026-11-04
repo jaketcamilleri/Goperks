@@ -4,10 +4,12 @@ import { Send } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { btn } from "@/admin/DataTable";
+import { TemplateSelect } from "@/admin/TemplateSelect";
 
 /** Preview and send the ready-made partner pitch to the selected prospects. */
 export function PitchDialog({ prospects, onClose, onSent }) {
   const [note, setNote] = useState("");
+  const [tpl, setTpl] = useState("pitch");
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
@@ -15,15 +17,15 @@ export function PitchDialog({ prospects, onClose, onSent }) {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      api.get("/admin/prospects/pitch-preview", { params: { note } }).then((r) => setPreview(r.data)).catch(() => setPreview(null));
+      api.get("/admin/prospects/pitch-preview", { params: { note, template: tpl } }).then((r) => setPreview(r.data)).catch(() => setPreview(null));
     }, 400);
     return () => clearTimeout(t);
-  }, [note]);
+  }, [note, tpl]);
 
   const send = async () => {
     setBusy(true);
     try {
-      const { data } = await api.post("/admin/prospects/pitch", { ids: prospects.map((p) => p.id), note });
+      const { data } = await api.post("/admin/prospects/pitch", { ids: prospects.map((p) => p.id), note, template: tpl });
       setResult(data);
       if (data?.queued) toast.success(`Sending ${data.queued} pitch${data.queued === 1 ? "" : "es"}`);
       else toast.info("No pitches to send");
@@ -39,6 +41,7 @@ export function PitchDialog({ prospects, onClose, onSent }) {
           To {withEmail.length} {withEmail.length === 1 ? "business" : "businesses"}: {prospects.slice(0, 4).map((p) => p.business_name).join(", ")}{prospects.length > 4 ? ` and ${prospects.length - 4} more` : ""}.
           Replies come to your inbox. Each business's name goes where it says [Business name], and anyone who unsubscribed or was already pitched is skipped.
         </p>
+        <TemplateSelect base="pitch" value={tpl} onChange={setTpl} testid="pitch-template-select" />
         <label htmlFor="pitch-note" className="text-sm font-semibold">Your note <span className="font-normal text-[#3D5E65]">(optional)</span></label>
         <textarea id="pitch-note" value={note} onChange={(e) => setNote(e.target.value.slice(0, 300))} rows={2} data-testid="pitch-note-input"
           placeholder="I'm a regular at your place and members would love it!" className="w-full rounded-lg border border-[#D7E7E4] bg-white p-3 text-sm outline-none focus:border-[#17434C]" />

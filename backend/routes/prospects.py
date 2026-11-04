@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from core import db, logger, oid, now_iso, find_suburb, geocode_street, CATEGORIES
 from deps import require_role
 from email_service import send_email
-from email_templates import partner_pitch_email
+from email_templates import partner_pitch_email, template as email_template
 from models import BaseDocument
 from routes.invites import unsubscribe_url
 from services import log_activity
@@ -77,6 +77,13 @@ class ProspectPatch(BaseModel):
 class PitchIn(BaseModel):
     ids: List[str] = Field(min_length=1, max_length=200)
     note: str = Field("", max_length=300)
+    template: str = Field("pitch", max_length=40)
+
+
+def pitch_key(key: str) -> str:
+    if email_template(key)["base"] != "pitch":
+        raise HTTPException(400, "Pick a partner pitch template")
+    return key
 
 
 def check(data: dict):
@@ -145,18 +152,18 @@ async def add_prospect(body: ProspectIn, _=Depends(owner)):
 
 
 @router.get("/pitch-preview")
-async def pitch_preview(note: str = "", user=Depends(owner)):
-    subject, html = partner_pitch_email("[Business name]", user.get("name", ""), note.strip()[:300], unsubscribe_url("preview@example.com"))
+async def pitch_preview(note: str = "", template: str = "pitch", user=Depends(owner)):
+    subject, html = partner_pitch_email("[Business name]", user.get("name", ""), note.strip()[:300], unsubscribe_url("preview@example.com"), pitch_key(template))
     return {"subject": subject, "html": html}
 
 
-async def deliver_pitches(ids: list, sender: str, note: str):
+async def deliver_pitches(ids: list, sender: str, note: str, key: str = "pitch"):
     for pid in ids:
         p = await db.prospects.find_one({"_id": pid, "pitch_status": "queued"})
         if not p:
             continue
         try:
-            subject, html = partner_pitch_email(p["business_name"], sender, note, unsubscribe_url(p["email"]))
+            subject, html = partner_pitch_email(p["business_name"], sender, note, unsubscribe_url(p["email"]), key)
             await send_email(to=p["email"], subject=subject, html=html, reply_to=os.environ["SUPER_ADMIN_EMAIL"])
             now = now_iso()
             sets = {"pitch_status": "sent", "pitched_at": now, "pitch_error": None, "updated_at": now}
@@ -171,6 +178,7 @@ async def deliver_pitches(ids: list, sender: str, note: str):
 
 @router.post("/pitch")
 async def send_pitch(body: PitchIn, user=Depends(owner)):
+    key = pitch_key(body.template)
     queued, skipped = [], []
     for doc in await db.prospects.find({"_id": {"$in": [oid(i) for i in body.ids]}}).to_list(200):
         email = (doc.get("email") or "").strip().lower()
@@ -185,7 +193,7 @@ async def send_pitch(body: PitchIn, user=Depends(owner)):
     if queued:
         await log_activity(user, "pitch.sent", "prospect", None, f"{len(queued)} partner pitch{'es' if len(queued) != 1 else ''}",
                            " · ".join(x for x in (f"{len(skipped)} skipped" if skipped else "", f"Note: {body.note.strip()}" if body.note.strip() else "") if x))
-        asyncio.create_task(deliver_pitches(queued, user.get("name", ""), body.note.strip()))
+        asyncio.create_task(deliver_pitches(queued, user.get("name", ""), body.note.strip(), key))
     return {"queued": len(queued), "skipped": skipped}
 
 

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
 import { btn } from "@/admin/DataTable";
+import { TemplateSelect } from "@/admin/TemplateSelect";
 
 export const parsePeople = (text) => text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
   const m = l.match(/[^\s,;<>]+@[^\s,;<>]+/);
@@ -12,6 +13,7 @@ export const parsePeople = (text) => text.split("\n").map((l) => l.trim()).filte
 export function InviteComposer({ onSent }) {
   const [list, setList] = useState("");
   const [note, setNote] = useState("");
+  const [tpl, setTpl] = useState("invite");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const people = parsePeople(list);
@@ -19,7 +21,7 @@ export function InviteComposer({ onSent }) {
   const send = async () => {
     setBusy(true);
     try {
-      const { data } = await api.post("/admin/invites", { people, note });
+      const { data } = await api.post("/admin/invites", { people, note, template: tpl });
       setResult(data);
       if (data?.queued) { toast.success(`Sending ${data.queued} invite${data.queued === 1 ? "" : "s"}`); setList(""); }
       else toast.info("No new invites to send");
@@ -34,6 +36,7 @@ export function InviteComposer({ onSent }) {
       <textarea id="invite-list" value={list} onChange={(e) => setList(e.target.value)} rows={5} data-testid="invite-list-input"
         placeholder={"Tony, tony@example.com\nsam@example.com"}
         className="mt-2 w-full rounded-lg border border-[#D7E7E4] bg-[#F7FBFA] p-3 font-mono text-sm outline-none focus:border-[#17434C]" />
+      <div className="mt-4"><TemplateSelect base="invite" value={tpl} onChange={setTpl} testid="invite-template-select" /></div>
       <label htmlFor="invite-note" className="mt-4 block text-sm font-semibold">Your note <span className="font-normal text-[#3D5E65]">(optional)</span></label>
       <textarea id="invite-note" value={note} onChange={(e) => setNote(e.target.value.slice(0, 300))} rows={2} data-testid="invite-note-input"
         placeholder="Great to see you at the cafe last week!"

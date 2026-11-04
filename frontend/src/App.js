@@ -36,6 +36,7 @@ import ReviewsPage from "@/admin/ReviewsPage";
 import ActivityPage from "@/admin/ActivityPage";
 import InvitesPage from "@/admin/InvitesPage";
 import ProspectsPage from "@/admin/ProspectsPage";
+import EmailsPage from "@/admin/EmailsPage";
 import Unsubscribe from "@/pages/Unsubscribe";
 import { IS_BIZ_HOST, EXTERNAL_BIZ, BIZ_URL, MAIN_URL, bp, IS_ADMIN_HOST, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
 
@@ -113,6 +114,7 @@ function adminRoutes() {
         <Route path={ap("/activity")} element={<OwnerOnly><ActivityPage /></OwnerOnly>} />
         <Route path={ap("/invites")} element={<OwnerOnly><InvitesPage /></OwnerOnly>} />
         <Route path={ap("/prospects")} element={<OwnerOnly><ProspectsPage /></OwnerOnly>} />
+        <Route path={ap("/emails")} element={<OwnerOnly><EmailsPage /></OwnerOnly>} />
       </Route>
     </>
   );

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from core import db, logger, now_iso, make_token, JWT_ALGORITHM
 from deps import require_role
 from email_service import send_email
-from email_templates import invite_email
+from email_templates import invite_email, template
 from models import BaseDocument
 from services import log_activity
 
@@ -27,6 +27,7 @@ class Invite(BaseDocument):
     email: str
     name: str = ""
     note: str = ""
+    template: str = "invite"
     status: str = "queued"
     error: Optional[str] = None
     sent_by: Optional[str] = None
@@ -42,6 +43,7 @@ class Person(BaseModel):
 class InvitesIn(BaseModel):
     people: List[Person] = Field(min_length=1, max_length=200)
     note: str = Field("", max_length=300)
+    template: str = Field("invite", max_length=40)
 
 
 class UnsubscribeIn(BaseModel):
@@ -63,7 +65,7 @@ async def deliver(invite_ids: list):
             await db.invites.update_one({"_id": iid}, {"$set": {"status": "failed", "error": "Unsubscribed"}})
             continue
         try:
-            subject, html = invite_email(inv.get("name", ""), inv.get("note", ""), unsubscribe_url(inv["email"]))
+            subject, html = invite_email(inv.get("name", ""), inv.get("note", ""), unsubscribe_url(inv["email"]), inv.get("template") or "invite")
             await send_email(to=inv["email"], subject=subject, html=html)
             await db.invites.update_one({"_id": iid}, {"$set": {"status": "sent", "sent_at": now_iso(), "error": None}})
         except Exception as e:
@@ -74,6 +76,8 @@ async def deliver(invite_ids: list):
 
 @router.post("/admin/invites")
 async def send_invites(body: InvitesIn, user=Depends(owner)):
+    if template(body.template)["base"] != "invite":
+        raise HTTPException(400, "Pick a member invite template")
     seen, queued, skipped = set(), [], []
     for p in body.people:
         email, name = p.email.strip().lower(), p.name.strip()
@@ -92,7 +96,7 @@ async def send_invites(body: InvitesIn, user=Depends(owner)):
         if reason:
             skipped.append({"email": email or p.email, "reason": SKIP_REASONS[reason]})
             continue
-        doc = Invite(email=email, name=name, note=body.note.strip(), sent_by=user["id"]).to_mongo()
+        doc = Invite(email=email, name=name, note=body.note.strip(), template=body.template, sent_by=user["id"]).to_mongo()
         prev = await db.invites.find_one_and_update({"email": email, "status": "failed"}, {"$set": {**doc, "error": None}})
         queued.append(prev["_id"] if prev else (await db.invites.insert_one(doc)).inserted_id)
     if queued:
