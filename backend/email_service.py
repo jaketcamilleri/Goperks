@@ -95,8 +95,8 @@ def _assert_safe_email(subject: str, html: str) -> None:
 
 async def _send_via_resend(to: str, subject: str, html: str, reply_to: Optional[str]):
     payload = {"from": f"{EMAIL_FROM_NAME} <{EMAIL_FROM_ADDRESS}>", "to": [to], "subject": subject, "html": html}
-    if reply_to or EMAIL_REPLY_TO:
-        payload["reply_to"] = reply_to or EMAIL_REPLY_TO
+    if reply_to:
+        payload["reply_to"] = reply_to
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(RESEND_URL, headers={"Authorization": f"Bearer {RESEND_API_KEY}"}, json=payload)
@@ -112,13 +112,21 @@ async def _send_via_resend(to: str, subject: str, html: str, reply_to: Optional[
         raise HTTPException(500, "Failed to send email")
 
 
+async def reply_inbox() -> Optional[str]:
+    """Where replies go: the inbox the owner chose in admin, else EMAIL_REPLY_TO."""
+    from core import db
+    doc = await db.settings.find_one({"_id": "email"}, {"reply_to": 1})
+    return (doc or {}).get("reply_to") or EMAIL_REPLY_TO
+
+
 async def send_email(*, to: str, subject: str, html: str, reply_to: Optional[str] = None):
     _assert_safe_email(subject, html)
+    reply_to = reply_to or await reply_inbox()
     if RESEND_API_KEY and EMAIL_FROM_ADDRESS:
         return await _send_via_resend(to, subject, html, reply_to)
     payload = {"to": [to], "subject": subject, "html": html, "from_name": EMAIL_FROM_NAME}
-    if reply_to or EMAIL_REPLY_TO:
-        payload["contact_email"] = reply_to or EMAIL_REPLY_TO
+    if reply_to:
+        payload["contact_email"] = reply_to
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(f"{EMAIL_BASE_URL}/api/v1/email/send",

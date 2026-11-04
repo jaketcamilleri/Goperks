@@ -187,6 +187,22 @@ class GiftRedeemIn(BaseModel):
     code: str = Field(min_length=6, max_length=30)
 
 
+class AccountIn(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    email: EmailStr
+    phone: Optional[str] = Field(default=None, max_length=30)
+    current_password: Optional[str] = Field(default=None, max_length=200)
+
+
+class PasswordChangeIn(BaseModel):
+    current_password: Optional[str] = Field(default=None, max_length=200)
+    new_password: str = Field(min_length=8, max_length=200)
+
+
+class EmailSettingsIn(BaseModel):
+    reply_to: EmailStr
+
+
 class AdminGiftIn(BaseModel):
     months: int = Field(ge=1, le=12)
     quantity: int = Field(default=1, ge=1, le=200)

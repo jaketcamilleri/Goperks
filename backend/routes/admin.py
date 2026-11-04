@@ -10,7 +10,8 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from core import db, logger, oid, now_iso, hash_password, with_coords, month_start, month_range, MELB, CATEGORIES, JWT_ALGORITHM, rand_code, melb_today
 from deps import user_out, require_role
-from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn, AdminGiftIn
+from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn, AdminGiftIn, EmailSettingsIn
+from email_service import reply_inbox
 from services import (log_activity, with_note, set_business_status, send_deal_decision, send_password_link, send_welcome,
                       send_partner_welcome, comp_membership, review_out, refresh_rating,
                       ensure_referral_code, REFERRAL_CAP, send_gift_email, gift_length)
@@ -244,6 +245,20 @@ async def admin_referrals(_=Depends(owner)):
                     "referred_by": names.get(d.get("referred_by")) if d.get("referred_by") else None,
                     "signed_up": signed.get(uid, 0), "paid": paid.get(uid, 0), "months_earned": months.get(uid, 0)})
     return {"cap": REFERRAL_CAP, "members": out}
+
+
+# ---------- Email settings ----------
+@router.get("/email-settings")
+async def get_email_settings(_=Depends(owner)):
+    return {"reply_to": await reply_inbox() or ""}
+
+
+@router.put("/email-settings")
+async def set_email_settings(body: EmailSettingsIn, user=Depends(owner)):
+    reply_to = str(body.reply_to).lower()
+    await db.settings.update_one({"_id": "email"}, {"$set": {"reply_to": reply_to, "updated_at": now_iso()}}, upsert=True)
+    await log_activity(user, "settings.reply_to", "settings", None, "Reply inbox", reply_to)
+    return {"reply_to": reply_to}
 
 
 # ---------- Gift codes ----------

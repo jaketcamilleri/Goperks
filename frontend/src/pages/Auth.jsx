@@ -43,7 +43,7 @@ export default function Auth({ mode, business = false }) {
       if (business && data.role === "member") { await logout(); setWrongArea("member"); return; }
       setUser(data);
       const team = data.role === "admin" || data.role === "staff";
-      const home = team ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
+      const home = team ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/" : "/join";
       nav(next || (business && data.role === "admin" ? bp("") : home));
     } catch (e2) {
       setErr(formatErr(e2));

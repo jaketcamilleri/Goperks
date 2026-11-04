@@ -28,7 +28,7 @@ export function AuthCallback() {
     api.post("/auth/google", { session_id: sessionId, ref: getRef() })
       .then(({ data }) => {
         setUser(data);
-        const home = ["admin", "staff"].includes(data.role) ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
+        const home = ["admin", "staff"].includes(data.role) ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/" : "/join";
         nav(next || home, { replace: true });
       })
       .catch((e) => {

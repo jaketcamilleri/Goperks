@@ -1,12 +1,18 @@
 import { NavLink } from "react-router-dom";
-import { Home, Compass, LocateFixed, CreditCard, UserPlus, LogIn } from "lucide-react";
+import { Home, Compass, LocateFixed, CreditCard, UserPlus, LogIn, UserCog } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 /** Phone-only bottom navigation for members and visitors. */
 export function MobileTabBar() {
   const { user } = useAuth();
   if (user && user.role !== "member") return null;
-  const tabs = [
+  const paying = user?.membership_status === "active";
+  const tabs = paying ? [
+    { to: "/", label: "My card", icon: CreditCard, end: true },
+    { to: "/deals", label: "Deals", icon: Compass, end: true },
+    { to: "/deals?near=1", label: "Near me", icon: LocateFixed },
+    { to: "/account", label: "Account", icon: UserCog },
+  ] : [
     { to: "/", label: "Home", icon: Home, end: true },
     { to: "/deals", label: "Deals", icon: Compass, end: true },
     { to: "/deals?near=1", label: "Near me", icon: LocateFixed },

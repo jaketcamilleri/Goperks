@@ -8,8 +8,8 @@ import { SavingsTracker } from "@/components/SavingsTracker";
 import { SavedDeals } from "@/components/SavedDeals";
 import { WalletButtons } from "@/components/WalletButtons";
 import { RateVisits } from "@/components/RateVisits";
-import { ReferralCard } from "@/components/ReferralCard";
 import { BonusMonthsNote } from "@/components/BonusMonthsNote";
+import { UserCog } from "lucide-react";
 
 function VoucherRow({ v, onRedeem }) {
   const live = v.status === "active";
@@ -49,8 +49,15 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-8 sm:px-8 lg:pt-12" data-testid="member-dashboard">
-      <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">My account</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">{active ? "My Go Perks" : "My account"}</p>
+          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
+        </div>
+        <Link to="/account" className="inline-flex items-center gap-2 rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]" data-testid="dashboard-manage-account-btn">
+          <UserCog className="h-4 w-4" /> Manage account
+        </Link>
+      </div>
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12">
         <div className="min-w-0 lg:col-span-5">
           <MemberCard live name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
@@ -69,7 +76,6 @@ export default function Dashboard() {
           <BonusMonthsNote user={user} />
           <div className="mt-8"><SavingsTracker refreshKey={tick} /></div>
           <RateVisits refreshKey={tick} />
-          {user?.role === "member" && <ReferralCard />}
         </div>
         <div className="min-w-0 lg:col-span-6 lg:col-start-7">
           <div className="flex items-end justify-between">

@@ -12,6 +12,11 @@ const LINKS = [
   { to: "/join", label: "Membership" },
   { to: "/gift", label: "Gift" },
 ];
+const MEMBER_LINKS = [
+  { to: "/", label: "Home", end: true },
+  { to: "/deals", label: "Deals" },
+  { to: "/gift", label: "Gift" },
+];
 const linkCls = "group relative text-[15px] font-medium text-[#17434C]";
 const underline = <span className="absolute -bottom-1 left-0 h-[2px] w-full origin-left scale-x-0 bg-[#B9512E] transition-transform duration-300 group-hover:scale-x-100" />;
 
@@ -22,6 +27,9 @@ export function Navbar() {
   const isBiz = user?.role === "business";
   const isAdmin = user?.role === "admin" || user?.role === "staff";
   const home = "/dashboard";
+  const paying = user?.role === "member" && user?.membership_status === "active";
+  const links = paying ? MEMBER_LINKS : LINKS;
+  const accountTo = paying ? "/account" : home;
 
   const doLogout = async () => {
     await logout();
@@ -34,20 +42,20 @@ export function Navbar() {
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
         <Link to="/" data-testid="nav-logo"><Logo /></Link>
         <nav className="hidden items-center gap-8 lg:flex">
-          {LINKS.map((l) => (
-            <NavLink key={l.to} to={l.to} data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`} className={linkCls}>
+          {links.map((l) => (
+            <NavLink key={l.to} to={l.to} end={l.end} data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`} className={linkCls}>
               {l.label}
               {underline}
             </NavLink>
           ))}
-          <BizLink data-testid="nav-for-businesses" className={linkCls}>For businesses{underline}</BizLink>
+          {!paying && <BizLink data-testid="nav-for-businesses" className={linkCls}>For businesses{underline}</BizLink>}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (
             <>
               {isBiz ? <Link to={bp("")} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>
                 : isAdmin ? <AdminLink data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">Admin</AdminLink>
-                : <Link to={home} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>}
+                : <Link to={accountTo} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>}
               <button onClick={doLogout} data-testid="nav-logout" className="rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]">Log out</button>
             </>
           ) : (
@@ -65,14 +73,14 @@ export function Navbar() {
         {open && (
           <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-[#C2DEDA] lg:hidden" data-testid="nav-mobile-menu">
             <div className="flex flex-col gap-1 px-5 py-5">
-              {LINKS.map((l) => (
+              {links.map((l) => (
                 <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="py-2 font-display text-2xl">{l.label}</Link>
               ))}
-              <BizLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-for-businesses">For businesses</BizLink>
+              {!paying && <BizLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-for-businesses">For businesses</BizLink>}
               {user ? (
                 <>
                   {isAdmin ? <AdminLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">Admin</AdminLink>
-                    : <Link to={isBiz ? bp("") : home} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">My account</Link>}
+                    : <Link to={isBiz ? bp("") : accountTo} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]" data-testid="nav-mobile-account">My account</Link>}
                   <button onClick={doLogout} className="mt-2 rounded-full border border-[#17434C] py-3 font-semibold">Log out</button>
                 </>
               ) : (

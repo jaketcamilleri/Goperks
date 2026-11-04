@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
 import { PageHead } from "@/admin/AdminShell";
 import { TemplateEditor } from "@/admin/TemplateEditor";
+import { ReplyInbox } from "@/admin/ReplyInbox";
 
 const GROUPS = [
   ["Member invites", (t) => t.base === "invite", "invite"],
@@ -31,6 +32,7 @@ export default function EmailsPage() {
   return (
     <div data-testid="admin-emails-page">
       <PageHead title="Emails" sub="Edit the wording and layout of every email Go Perks sends. Make extra versions of the invite and pitch to pick from when you send." />
+      <ReplyInbox />
       <div className="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
         <nav className="space-y-4 rounded-2xl border border-[#D7E7E4] bg-white p-3" data-testid="template-list">
           {list === null ? <p className="p-2 font-mono text-xs text-[#3D5E65]">Loading…</p> : GROUPS.map(([label, test, base]) => (

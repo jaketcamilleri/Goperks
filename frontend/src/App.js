@@ -14,6 +14,9 @@ import Join from "@/pages/Join";
 import { PaymentSuccess, PaymentCancel } from "@/pages/Payment";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
+import Account from "@/pages/Account";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import Business from "@/pages/Business";
 import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
 import { AuthCallback } from "@/components/GoogleAuth";
@@ -63,6 +66,20 @@ function BizLayout() {
 }
 
 const bizOnly = (el) => <ProtectedRoute roles={["business", "admin"]} loginPath={bp("/login")}>{el}</ProtectedRoute>;
+const isPayingMember = (u) => u?.role === "member" && u?.membership_status === "active";
+
+/** Paying members get their own home (card, saved deals, vouchers); everyone else sees the public page. */
+function Home() {
+  const { user } = useAuth();
+  if (user === null) return <div className="min-h-[70vh]" data-testid="home-loading" />;
+  return isPayingMember(user) ? <Dashboard /> : <Landing />;
+}
+
+function DashboardRoute() {
+  const { user } = useAuth();
+  if (isPayingMember(user)) return <Navigate to="/" replace />;
+  return <ProtectedRoute><Dashboard /></ProtectedRoute>;
+}
 
 function bizRoutes() {
   return (
@@ -123,7 +140,7 @@ function AppRoutes() {
           {bizRoutes()}
           {adminRoutes()}
           <Route element={<Layout />}>
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={<Home />} />
             <Route path="/deals" element={<Deals />} />
             <Route path="/deals/:id" element={<DealDetail />} />
             <Route path="/join" element={<Join />} />
@@ -136,7 +153,8 @@ function AppRoutes() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<DashboardRoute />} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
           </Route>
         </Routes>
   );

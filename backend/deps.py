@@ -19,6 +19,7 @@ def user_out(doc):
     exp = data.get("membership_expires_at")
     if data["membership_status"] == "active" and exp and exp < now_iso():
         data["membership_status"] = "expired"
+    data["has_password"] = bool(doc.get("password_hash"))
     return data
 
 

@@ -21,6 +21,7 @@ const ACTIONS = {
   "invites.sent": ["Sent member invites", GOOD], "invites.retried": ["Retried member invites", NEUTRAL],
   "pitch.sent": ["Sent partner pitches", GOOD],
   "gift.created": ["Created gift codes", GOOD], "gift.cancelled": ["Cancelled gift code", BAD],
+  "settings.reply_to": ["Changed reply inbox", NEUTRAL],
 };
 const labelOf = (a) => ACTIONS[a]?.[0] || a;
 const AREA = { deal: "Deal", business: "Business", member: "Member", staff: "Staff", review: "Review", invite: "Invites", prospect: "Prospects", system: "Automatic" };

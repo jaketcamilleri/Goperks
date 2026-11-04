@@ -4,15 +4,47 @@ from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Depends
 
-from core import db, oid, now_iso, rand_code, make_live_token
+from core import db, oid, now_iso, rand_code, make_live_token, hash_password, verify_password
 from deps import user_out, current_user
-from models import Deal, Voucher, RedeemIn, GiftRedeemIn
+from models import Deal, Voucher, RedeemIn, GiftRedeemIn, AccountIn, PasswordChangeIn
 from services import used_this_term, activate_membership, referral_months_this_year, ensure_referral_code, REFERRAL_CAP, gift_days
 import os
 
 router = APIRouter()
 
 ONCE_PER_TERM = "You've already used this deal this membership year. It unlocks again when you renew."
+
+
+# ---------- Manage account ----------
+@router.patch("/me")
+async def update_account(body: AccountIn, user=Depends(current_user)):
+    doc = await db.users.find_one({"_id": oid(user["id"])})
+    email = body.email.lower()
+    sets = {"name": body.name.strip(), "phone": (body.phone or "").strip() or None}
+    if email != doc["email"]:
+        if doc.get("password_hash") and not (body.current_password and verify_password(body.current_password, doc["password_hash"])):
+            raise HTTPException(400, "Enter your current password to change your email")
+        if await db.users.find_one({"email": email}, {"_id": 1}):
+            raise HTTPException(400, "Another account already uses that email")
+        sets["email"] = email
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": sets})
+    return user_out(await db.users.find_one({"_id": doc["_id"]}))
+
+
+@router.post("/me/password")
+async def change_password(body: PasswordChangeIn, user=Depends(current_user)):
+    doc = await db.users.find_one({"_id": oid(user["id"])}, {"password_hash": 1})
+    if doc.get("password_hash") and not (body.current_password and verify_password(body.current_password, doc["password_hash"])):
+        raise HTTPException(400, "Your current password isn't right")
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {"password_hash": hash_password(body.new_password)}})
+    return {"ok": True}
+
+
+@router.get("/me/payments")
+async def my_payments(user=Depends(current_user)):
+    rows = await db.payment_transactions.find({"user_id": user["id"], "payment_status": "paid"},
+                                             {"_id": 0, "kind": 1, "amount": 1, "currency": 1, "created_at": 1, "gift_name": 1}).sort("created_at", -1).to_list(100)
+    return rows
 
 
 @router.get("/me/live-card")
