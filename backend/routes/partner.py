@@ -20,8 +20,13 @@ MAX_PHOTOS = 6
 
 # ---------- Counter check ----------
 async def find_partner_voucher(code: str, user: dict):
+    """A business can only see and redeem vouchers for deals that belong to it right now."""
     v = await db.vouchers.find_one({"code": code.strip().upper()})
-    if not v or (user["role"] not in ("admin", "staff") and v.get("partner_id") != user["id"]):
+    if v and user["role"] not in ("admin", "staff"):
+        deal = await db.deals.find_one({"_id": oid(v["deal_id"])}, {"submitted_by": 1})
+        if not deal or deal.get("submitted_by") != user["id"]:
+            v = None
+    if not v:
         raise HTTPException(404, "No voucher with that code for your business")
     return v
 
