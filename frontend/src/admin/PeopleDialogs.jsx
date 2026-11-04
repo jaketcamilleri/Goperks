@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { api, formatErr } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { btn } from "@/admin/DataTable";
+import { assetUrl } from "@/lib/site";
 
 const field = "mt-1 h-10 w-full rounded-lg border border-[#D7E7E4] bg-white px-3 text-sm outline-none focus:border-[#17434C]";
 
@@ -44,6 +45,49 @@ export function AddPersonDialog({ role, open, onClose, onCreated }) {
           {isBiz && <p className="rounded-lg bg-white p-3 text-xs text-[#3D5E65]">Businesses you add are approved straight away and get their partner kit. They'll still fill in their profile before adding deals.</p>}
           <button disabled={busy} className={`${btn.primary} w-full justify-center`} data-testid="add-person-submit">{busy ? "Adding…" : isBiz ? "Add business" : "Add customer"}</button>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function BusinessDialog({ biz, onClose, onSaved }) {
+  const [busy, setBusy] = useState("");
+  if (!biz) return null;
+  const run = async (key, fn, msg) => {
+    setBusy(key);
+    try { await fn(); toast.success(msg); onSaved(); } catch (err) { toast.error(formatErr(err)); } finally { setBusy(""); }
+  };
+  const decide = (status) => {
+    let note = null;
+    if (status === "rejected") { const a = window.prompt("Optional: a short reason (included in their email).", ""); if (a === null) return; note = a.trim() || null; }
+    run(status, () => api.post(`/admin/businesses/${biz.id}/status`, { status, note }), status === "approved" ? "Approved — partner kit emailed" : "Rejected — they've been emailed");
+  };
+  const rows = [["Contact", `${biz.name} · ${biz.email}`], ["Address", [biz.address, biz.suburb].filter(Boolean).join(", ")], ["Phone", biz.phone],
+    ["Website", biz.website], ["Instagram", biz.instagram && `@${biz.instagram}`], ["Hours", biz.opening_hours], ["About", biz.about]];
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="business-dialog">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3 font-display text-2xl">
+            {biz.logo_url && <img src={assetUrl(biz.logo_url)} alt="" className="h-10 w-10 rounded-lg object-contain" />}{biz.business_name || biz.name}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="-mt-2 text-sm text-[#3D5E65]">Status: <b data-testid="business-dialog-status">{biz.business_status || "pending"}</b> · {biz.deal_count ?? 0} deals · {biz.profile_complete ? "profile complete" : "profile not completed"}</p>
+        <dl className="divide-y divide-[#E3F0ED] rounded-xl border border-[#D7E7E4] bg-white text-sm">
+          {rows.map(([k, v]) => (
+            <div key={k} className="grid grid-cols-[90px_1fr] gap-3 px-3 py-2"><dt className="text-[#3D5E65]">{k}</dt><dd className="whitespace-pre-line break-words">{v || "—"}</dd></div>
+          ))}
+        </dl>
+        {Array.isArray(biz.photos) && biz.photos.length > 0 && (
+          <div className="grid grid-cols-3 gap-2" data-testid="business-dialog-photos">
+            {biz.photos.map((p) => <img key={p.path} src={assetUrl(p.url)} alt="" className="aspect-square w-full rounded-lg object-cover" />)}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {biz.business_status !== "approved" && <button disabled={!!busy} onClick={() => decide("approved")} className={btn.dark} data-testid="business-dialog-approve">Approve</button>}
+          {biz.business_status !== "rejected" && <button disabled={!!busy} onClick={() => decide("rejected")} className={btn.danger} data-testid="business-dialog-reject">Reject</button>}
+          <button disabled={!!busy} onClick={() => run("pw", () => api.post(`/admin/users/${biz.id}/password-link`), "Password link sent")} className={btn.ghost} data-testid="business-dialog-password-link">Send password link</button>
+        </div>
       </DialogContent>
     </Dialog>
   );

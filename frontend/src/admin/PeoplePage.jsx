@@ -5,7 +5,7 @@ import { useOutletContext } from "react-router-dom";
 import { api, formatErr } from "@/lib/api";
 import { DataTable, Pill, fmtDate, btn } from "@/admin/DataTable";
 import { PageHead } from "@/admin/AdminShell";
-import { AddPersonDialog, MemberDialog } from "@/admin/PeopleDialogs";
+import { AddPersonDialog, MemberDialog, BusinessDialog } from "@/admin/PeopleDialogs";
 
 const memberStatus = (u) => u.membership_status;
 const MEMBER_FILTERS = [
@@ -72,19 +72,20 @@ export default function PeoplePage({ role }) {
 
   return (
     <div data-testid={`admin-${role}-page`}>
-      <PageHead title={isBiz ? "Businesses" : "Members"} sub={isBiz ? "Approve applicants, add partners and check their profiles." : "Click a member to edit, make their membership valid or resend their card."}>
+      <PageHead title={isBiz ? "Businesses" : "Members"} sub={isBiz ? "Approve applicants, add partners and click a row to see their full profile." : "Click a member to edit, make their membership valid or resend their card."}>
         <button onClick={() => setAdding(true)} className={btn.primary} data-testid={`add-${role}-btn`}><UserPlus className="h-4 w-4" /> {isBiz ? "Add business" : "Add customer"}</button>
       </PageHead>
       <DataTable id={isBiz ? "businesses" : "members"} columns={isBiz ? BIZ_COLS : MEMBER_COLS} rows={rows} filters={isBiz ? BIZ_FILTERS : MEMBER_FILTERS}
         searchKeys={isBiz ? ["business_name", "name", "email", "suburb"] : ["name", "email", "member_code"]}
         selectable={isBiz} selected={sel} onSelect={setSel} exportName={isBiz ? "go-perks-businesses" : "go-perks-members"}
-        onRowClick={isBiz ? undefined : (u) => setEditing(u)}
+        onRowClick={(u) => setEditing(u)}
         bulk={<>
           <button onClick={() => bulk("approved")} className={btn.dark} data-testid="businesses-bulk-approve">Approve</button>
           <button onClick={() => bulk("rejected")} className={btn.danger} data-testid="businesses-bulk-reject">Reject</button>
         </>} />
       <AddPersonDialog role={role} open={adding} onClose={() => setAdding(false)} onCreated={() => { load(); refreshCounts?.(); }} />
-      {editing && <MemberDialog key={editing.id + editing.membership_expires_at + editing.membership_status} member={editing} onClose={() => setEditing(null)} onSaved={load} />}
+      {editing && !isBiz && <MemberDialog key={editing.id + editing.membership_expires_at + editing.membership_status} member={editing} onClose={() => setEditing(null)} onSaved={load} />}
+      {editing && isBiz && <BusinessDialog biz={editing} onClose={() => setEditing(null)} onSaved={() => { load(); refreshCounts?.(); }} />}
     </div>
   );
 }

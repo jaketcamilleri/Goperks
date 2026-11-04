@@ -87,8 +87,9 @@ class TestProfileGate:
 
     def test_member_cannot_put_profile(self, member_s):
         r = member_s.put(f"{API}/business/profile", json={
-            "business_name": "x", "address": "1", "suburb": "x",
-            "phone": "1", "opening_hours": "9-5", "about": "1234567890"
+            "business_name": "x", "address": "1 Street", "suburb": "xx",
+            "phone": "123456", "hours": {"mon": {"open": "09:00", "close": "17:00"}},
+            "about": "1234567890"
         }, timeout=15)
         assert r.status_code == 403
 
