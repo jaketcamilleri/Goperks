@@ -8,6 +8,7 @@ import { ReplyInbox } from "@/admin/ReplyInbox";
 
 const GROUPS = [
   ["Member invites", (t) => t.base === "invite", "invite"],
+  ["Invite follow-ups", (t) => t.base === "invite_followup", "invite_followup"],
   ["Partner pitches", (t) => t.base === "pitch", "pitch"],
   ["Emails to members", (t) => t.kind === "auto" && t.audience === "member"],
   ["Emails to partners", (t) => t.kind === "auto" && t.audience === "business"],
@@ -22,7 +23,9 @@ export default function EmailsPage() {
   const saved = (t) => setList((l) => l.map((x) => (x.key === t.key ? t : x)));
   const removed = (k) => { setList((l) => l.filter((x) => x.key !== k)); setKey(k.split("-")[0]); };
   const addVersion = async (base) => {
-    const name = window.prompt(base === "invite" ? "Name this member invite version" : "Name this partner pitch version", base === "invite" ? "Invite — school mums" : "Pitch — cafes");
+    const label = { invite: ["Name this member invite version", "Invite — school mums"], invite_followup: ["Name this follow-up version", "Follow-up — friendly"] }[base]
+      || ["Name this partner pitch version", "Pitch — cafes"];
+    const name = window.prompt(label[0], label[1]);
     if (!name) return;
     try { const { data } = await api.post("/admin/email-templates", { base, name }); setList((l) => [...l, data]); setKey(data.key); toast.success("New version added"); }
     catch (e) { toast.error(formatErr(e)); }

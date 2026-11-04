@@ -55,3 +55,26 @@ class TestInvites:
         admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
         res = admin.post(f"{API}/admin/invites", json={"people": [{"email": email}]}).json()
         assert res["drafts"] == [] and res["skipped"][0]["reason"] == "asked not to be contacted"
+
+
+
+def test_invite_follow_up():
+    from pymongo import MongoClient
+    db = MongoClient(ENV["MONGO_URL"])[ENV["DB_NAME"]]
+    admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
+    email = f"test_fu_{uuid.uuid4().hex[:8]}@example.com"
+    try:
+        assert admin.post(f"{API}/admin/invites/sent", json={"email": email, "name": "Fran Test"}).status_code == 200
+        before = admin.get(f"{API}/admin/invites/followup").json()["count"]
+        assert before >= 1
+        assert admin.post(f"{API}/admin/invites/followup", json={"template": "invite"}).status_code == 400
+        r = admin.post(f"{API}/admin/invites/followup", json={"note": "TEST nudge"}).json()
+        d = next(x for x in r["drafts"] if x["to"] == email)
+        assert "Hi Fran," in d["body"] and "following up" in d["body"] and "TEST nudge" in d["body"] and "/join" in d["body"]
+        assert admin.post(f"{API}/admin/invites/followup-sent", json={"email": email}).status_code == 200
+        assert admin.get(f"{API}/admin/invites/followup").json()["count"] == before - 1
+        assert all(x["to"] != email for x in admin.post(f"{API}/admin/invites/followup", json={}).json()["drafts"])
+        row = next(x for x in admin.get(f"{API}/admin/invites").json() if x["email"] == email)
+        assert row["followed_up_at"]
+    finally:
+        db.invites.delete_one({"email": email})

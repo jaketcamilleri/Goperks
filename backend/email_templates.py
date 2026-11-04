@@ -28,6 +28,13 @@ DEFAULTS = {
                 "Every deal can be used once per membership year, and you can see how much you've saved in your account.", "Become a member", "/join",
                 ["Join for A$49 a year.", "Browse the deals and find the ones near you.", "Show your live member card at the counter and save."],
                 "numbers", {"first_name": "Tony"}),
+    "invite_followup": D("Member invite follow-up", "member", "pitch", ["first_name"], "Still keen on local deals? Your {brand} spot is waiting",
+                         "A quick nudge from {brand}",
+                         "Hi {first_name}, just following up on my last email in case it got buried. {brand} members are already saving at local "
+                         "cafes, restaurants, kids' activities and days out, and your spot is waiting.\n\n**Why people join:**",
+                         "It takes about a minute to sign up, and one or two deals usually covers the cost of the year.", "Join Go Perks", "/join",
+                         ["One A$49 membership covers a full year.", "Use each deal once a year at every partner.", "Your card lives on your phone, so there's nothing to carry."],
+                         "bullets", {"first_name": "Tony"}),
     "pitch": D("Partner pitch", "business", "pitch", ["business", "sender_first"], "Free to join: put {business} in front of local {brand} members",
                "Become a local partner",
                "Hi {business} team,\n\nI'm {sender_first} from {brand}, a A$49-a-year membership that gives local people exclusive deals and discounts "

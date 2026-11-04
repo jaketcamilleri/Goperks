@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { DataTable, fmtDate } from "@/admin/DataTable";
 import { PageHead } from "@/admin/AdminShell";
 import { InviteComposer } from "@/admin/InviteComposer";
+import { FollowUpComposer } from "@/admin/FollowUpComposer";
 
 const stateOf = (r) => (r.member ? "member" : r.joined ? "joined" : r.unsubscribed ? "unsubscribed" : r.status);
 const TONE = {
@@ -26,6 +27,7 @@ const COLUMNS = [
     <span className={`inline-block whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-bold ${TONE[r.state] || TONE.sent}`} data-testid={`invite-status-${r.id}`}>{LABEL[r.state] || r.state}</span>) },
   { key: "error", label: "Problem", className: "max-w-xs", render: (r) => <span className="text-xs text-[#9A4024]">{r.status === "failed" ? r.error : "—"}</span> },
   { key: "sent_at", label: "Sent", value: (r) => r.sent_at || r.created_at, render: (r) => fmtDate(r.sent_at || r.created_at) },
+  { key: "followed_up_at", label: "Follow-up", value: (r) => r.followed_up_at || "", render: (r) => (r.followed_up_at ? fmtDate(r.followed_up_at) : "—") },
 ];
 
 export default function InvitesPage() {
@@ -37,6 +39,7 @@ export default function InvitesPage() {
     <div data-testid="admin-invites-page">
       <PageHead title="Member invites" sub="Send customers our ready-made 'join Go Perks' invite from your own email. People who already have an account, were already invited or asked not to be contacted are skipped." />
       <InviteComposer onSent={load} />
+      <FollowUpComposer onSent={load} />
       <DataTable id="invites" columns={COLUMNS} rows={rows} filters={FILTERS} searchKeys={["email", "name", "state"]} exportName="go-perks-invites" empty="No invites sent yet." />
     </div>
   );
