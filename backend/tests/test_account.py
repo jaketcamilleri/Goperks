@@ -32,6 +32,13 @@ def test_manage_account():
         assert s.post(f"{API}/me/password", json={"current_password": "Passw0rd!", "new_password": "NewPassw0rd!"}).status_code == 200
         assert requests.post(f"{API}/auth/login", json={"email": new_email, "password": "NewPassw0rd!"}).status_code == 200
         assert s.get(f"{API}/me/payments").json() == []
+        assert s.get(f"{API}/me/home-area").json()["lat"] is None
+        assert s.patch(f"{API}/me", json={"name": "TEST Renamed", "email": new_email, "suburb": "Nowhereville", "postcode": "3999"}).status_code == 400
+        assert s.patch(f"{API}/me", json={"name": "TEST Renamed", "email": new_email, "suburb": "Essendon", "postcode": "3040"}).json()["suburb"] == "Essendon"
+        area = s.get(f"{API}/me/home-area").json()
+        assert area["suburb"] == "Essendon" and round(area["lat"]) == -38
+        assert s.patch(f"{API}/me", json={"name": "TEST Renamed", "email": new_email}).json()["suburb"] == "Essendon"
+        assert s.patch(f"{API}/me", json={"name": "TEST Renamed", "email": new_email, "suburb": ""}).json()["suburb"] is None
         assert requests.get(f"{API}/me/payments").status_code == 401
     finally:
         DB.users.delete_many({"email": {"$in": [email, new_email]}})

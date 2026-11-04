@@ -9,6 +9,7 @@ import { SavedDeals } from "@/components/SavedDeals";
 import { WalletButtons } from "@/components/WalletButtons";
 import { RateVisits } from "@/components/RateVisits";
 import { BonusMonthsNote } from "@/components/BonusMonthsNote";
+import { NearbyDeals } from "@/components/NearbyDeals";
 import { UserCog } from "lucide-react";
 
 function VoucherRow({ v, onRedeem }) {
@@ -92,6 +93,7 @@ export default function Dashboard() {
         </div>
       </div>
       <SavedDeals />
+      {active && <NearbyDeals />}
     </div>
   );
 }

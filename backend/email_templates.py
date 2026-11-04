@@ -51,6 +51,11 @@ DEFAULTS = {
                  "Renew for another year at A$49 to keep every deal in the club. Renewing early adds 12 months on top of your current end date.",
                  "Renew my membership", "/join", sample={"first_name": "Tony", "expires": "18 November 2026", "code": "GP-AB12CD",
                                                          "savings_line": "So far you've saved $63.00 across 5 deals — your membership has more than paid for itself."}),
+    "auto_renewal": D("Auto-renewal notice", "member", "auto", ["first_name", "expires", "savings_line"], "Your {brand} membership renews soon", "Renewing soon",
+                      "Hi {first_name}, your membership is set to renew automatically, so your deals keep going past **{expires}**.\n\n{savings_line}",
+                      "We'll charge A$49 to the card you paid with when your year renews. Don't want to renew? Turn off automatic renewal in My account before then.",
+                      "Manage my membership", "/account", sample={"first_name": "Tony", "expires": "18 November 2026", "code": "GP-AB12CD",
+                                                                  "savings_line": "So far you've saved $63.00 across 5 deals."}),
     "gift": D("Gift membership", "member", "auto", ["first_name", "giver", "code", "length"], "{giver} gifted you {length} of {brand}", "A gift for you!",
               "Hi {first_name}, {giver} has gifted you {length} of {brand} — exclusive deals at local cafes, kids activities, restaurants and days out.",
               "Tap the button to create your free account and start your membership. The code works once.", "Claim my membership",
@@ -256,7 +261,7 @@ def welcome_email(name: str, code: str, expires: str):
     return render("welcome", {"first_name": _first(name), "code": code, "expires": expires}, _card(name, code, expires))
 
 
-def renewal_email(name: str, code: str, expires: str, saved: float, used: int, bonus_days: int = 0):
+def renewal_email(name: str, code: str, expires: str, saved: float, used: int, bonus_days: int = 0, auto: bool = False):
     line = (f"So far you've saved ${saved:,.2f} across {used} deal{'s' if used != 1 else ''} — "
             + ("your membership has more than paid for itself." if saved >= 49 else "and there's plenty more to unlock.")) if used else \
         "You still have plenty of deals to try before your year is up."
@@ -264,7 +269,7 @@ def renewal_email(name: str, code: str, expires: str, saved: float, used: int, b
     if months:
         line += (f" Good news: you've earned {months} free month{'s' if months != 1 else ''} by referring friends, "
                  f"so when you renew your next year runs {12 + months} months for the usual A$49.")
-    return render("renewal", {"first_name": _first(name), "expires": expires, "code": code, "savings_line": line}, _card(name, code, expires))
+    return render("auto_renewal" if auto else "renewal", {"first_name": _first(name), "expires": expires, "code": code, "savings_line": line}, _card(name, code, expires))
 
 
 def gift_email(recipient: str, giver: str, message: str, code: str, length: str = "a full year"):

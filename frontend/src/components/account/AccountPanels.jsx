@@ -5,6 +5,7 @@ import { api, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { panel, saveBtn } from "@/components/account/AccountForms";
+import { AutoRenew } from "@/components/account/AutoRenew";
 
 const day = (iso) => (iso ? new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" }) : "—");
 const money = (n) => `$${Number(n || 0).toFixed(2)}`;
@@ -26,7 +27,8 @@ export function MembershipPanel() {
         <div><dt className="text-xs uppercase tracking-wider text-[#3D5E65]">Member number</dt><dd className="mt-1 font-mono font-semibold" data-testid="account-member-code">{user?.member_code || "—"}</dd></div>
       </dl>
       {months > 0 && <p className="mt-4 text-sm text-[#2F5A3A]" data-testid="account-bonus">{months} free month{months === 1 ? "" : "s"} saved from referrals, added when you renew.</p>}
-      {active && user?.can_renew === false ? (
+      <AutoRenew />
+      {active && user?.auto_renew ? null : active && user?.can_renew === false ? (
         <p className="mt-5 rounded-xl bg-[#F3F8F7] px-4 py-3 text-sm text-[#3D5E65]" data-testid="account-renew-locked">
           You can renew from <b>{day(user.renew_opens_at)}</b>, 2 months before your membership ends.
         </p>

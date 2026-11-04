@@ -22,7 +22,7 @@ def user_out(doc):
         data["membership_status"] = "expired"
     # Members can renew from 2 months before their membership ends.
     data["renew_opens_at"] = renew_opens_at(data)
-    data["can_renew"] = data["renew_opens_at"] is None or data["renew_opens_at"] <= now_iso()
+    data["can_renew"] = not data.get("auto_renew") and (data["renew_opens_at"] is None or data["renew_opens_at"] <= now_iso())
     data["has_password"] = bool(doc.get("password_hash"))
     return data
 

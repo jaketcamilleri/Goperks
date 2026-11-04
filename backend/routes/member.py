@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Depends
 
-from core import db, oid, now_iso, rand_code, make_live_token, hash_password, verify_password
+from core import db, oid, now_iso, rand_code, make_live_token, hash_password, verify_password, find_suburb
 from deps import user_out, current_user
 from models import Deal, Voucher, RedeemIn, GiftRedeemIn, AccountIn, PasswordChangeIn
 from services import used_this_term, activate_membership, referral_months_this_year, ensure_referral_code, REFERRAL_CAP, gift_days
@@ -21,6 +21,11 @@ async def update_account(body: AccountIn, user=Depends(current_user)):
     doc = await db.users.find_one({"_id": oid(user["id"])})
     email = body.email.lower()
     sets = {"name": body.name.strip(), "phone": (body.phone or "").strip() or None}
+    if body.suburb is not None:
+        place = find_suburb(body.suburb, body.postcode) if body.suburb.strip() else None
+        if body.suburb.strip() and not place:
+            raise HTTPException(400, "Pick your suburb from the list")
+        sets.update(suburb=place["name"] if place else None, postcode=place["postcode"] if place else None)
     if email != doc["email"]:
         if doc.get("password_hash") and not (body.current_password and verify_password(body.current_password, doc["password_hash"])):
             raise HTTPException(400, "Enter your current password to change your email")
@@ -29,6 +34,15 @@ async def update_account(body: AccountIn, user=Depends(current_user)):
         sets["email"] = email
     await db.users.update_one({"_id": doc["_id"]}, {"$set": sets})
     return user_out(await db.users.find_one({"_id": doc["_id"]}))
+
+
+@router.get("/me/home-area")
+async def home_area(user=Depends(current_user)):
+    """Centre of the member's suburb, used to sort deals near them."""
+    place = find_suburb(user.get("suburb") or "", user.get("postcode")) if user.get("suburb") else None
+    if not place:
+        return {"suburb": None, "postcode": None, "lat": None, "lng": None}
+    return {"suburb": place["name"], "postcode": place["postcode"], "lat": place["lat"], "lng": place["lng"]}
 
 
 @router.post("/me/password")

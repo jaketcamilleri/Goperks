@@ -1,5 +1,5 @@
 """Stripe checkout for memberships and gifts."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import stripe
@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from core import db, oid, now_iso, melb_today, MELB, STRIPE_WEBHOOK_SECRET, MEMBERSHIP_LOOKUP_KEY, GIFT_LOOKUP_KEY
 from deps import current_user
 from models import CheckoutIn
-from services import mark_paid, attach_referrer
+from services import mark_paid, attach_referrer, activate_membership
 
 router = APIRouter()
 MEMBERSHIP_PRICE_CENTS = 4900
@@ -39,6 +39,8 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
         if sd < melb_today() or sd > latest:
             raise HTTPException(400, "Delivery date must be between today and 12 months from now")
     lookup = GIFT_LOOKUP_KEY if is_gift else MEMBERSHIP_LOOKUP_KEY
+    if not is_gift and user.get("auto_renew"):
+        raise HTTPException(400, "Your membership renews automatically each year, so there's nothing to pay now. You can manage this in My account.")
     if not is_gift and not user.get("can_renew", True):
         opens = datetime.fromisoformat(user["renew_opens_at"]).astimezone(MELB).strftime("%-d %B %Y")
         raise HTTPException(400, f"Your membership is active. You can renew from {opens}, 2 months before it ends.")
@@ -135,4 +137,76 @@ async def stripe_webhook(request: Request):
     elif t == "charge.refunded":
         await db.payment_transactions.update_one({"stripe_payment_intent_id": obj.get("payment_intent")},
                                                  {"$set": {"status": "refunded", "payment_status": "refunded"}})
+    elif t == "invoice.paid" and obj.get("billing_reason") == "subscription_cycle":
+        await record_renewal(obj)
+    elif t in ("customer.subscription.updated", "customer.subscription.deleted"):
+        on = t.endswith("updated") and obj.get("status") in ("active", "trialing") and not obj.get("cancel_at_period_end")
+        await db.users.update_one({"stripe_subscription_id": obj["id"]}, {"$set": {"auto_renew": bool(on)}})
     return {"status": "ok"}
+
+
+def invoice_subscription(inv) -> Optional[str]:
+    sub = inv.get("subscription")
+    if not sub:
+        sub = ((inv.get("parent") or {}).get("subscription_details") or {}).get("subscription")
+    return sub if isinstance(sub, str) else (sub or {}).get("id")
+
+
+async def record_renewal(inv):
+    """Stripe charged the yearly renewal: record it once and add another year to the membership."""
+    sub = invoice_subscription(inv)
+    user = await db.users.find_one({"stripe_subscription_id": sub}, {"email": 1}) if sub else None
+    if not user:
+        return
+    res = await db.payment_transactions.update_one({"session_id": inv["id"]}, {"$setOnInsert": {
+        "session_id": inv["id"], "user_id": str(user["_id"]), "email": user["email"], "kind": "membership", "source": "auto_renewal",
+        "amount": (inv.get("amount_paid") or 0) / 100, "currency": inv.get("currency") or "aud", "stripe_subscription_id": sub,
+        "status": "completed", "payment_status": "paid", "created_at": now_iso(), "updated_at": now_iso()}}, upsert=True)
+    if res.upserted_id:
+        await activate_membership(str(user["_id"]), paid=True)
+
+
+def period_end(sub) -> Optional[str]:
+    end = sub.get("current_period_end")
+    if not end:
+        items = (sub.get("items") or {}).get("data") or []
+        end = items[0].get("current_period_end") if items else None
+    return datetime.fromtimestamp(end, timezone.utc).isoformat() if end else None
+
+
+@router.get("/me/subscription")
+async def my_subscription(user=Depends(current_user)):
+    doc = await db.users.find_one({"_id": oid(user["id"])}, {"stripe_subscription_id": 1})
+    sid = doc.get("stripe_subscription_id")
+    if not sid:
+        return {"has_subscription": False, "auto_renew": False, "renews_on": None}
+    try:
+        sub = stripe.Subscription.retrieve(sid)
+    except stripe.error.StripeError:
+        raise HTTPException(503, "Couldn't load your renewal details, please try again")
+    live = sub.get("status") in ("active", "trialing", "past_due")
+    auto = live and not sub.get("cancel_at_period_end")
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {"auto_renew": bool(auto)}})
+    return {"has_subscription": live, "auto_renew": bool(auto), "renews_on": period_end(sub) if live else None}
+
+
+async def set_auto_renew(user, on: bool):
+    doc = await db.users.find_one({"_id": oid(user["id"])}, {"stripe_subscription_id": 1})
+    if not doc.get("stripe_subscription_id"):
+        raise HTTPException(400, "Your membership doesn't renew automatically")
+    try:
+        stripe.Subscription.modify(doc["stripe_subscription_id"], cancel_at_period_end=not on)
+    except stripe.error.InvalidRequestError:
+        raise HTTPException(400, "This renewal has already ended. You can renew from the membership page when it's open.")
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {"auto_renew": on}})
+    return await my_subscription(user)
+
+
+@router.post("/me/subscription/cancel")
+async def cancel_auto_renew(user=Depends(current_user)):
+    return await set_auto_renew(user, False)
+
+
+@router.post("/me/subscription/resume")
+async def resume_auto_renew(user=Depends(current_user)):
+    return await set_auto_renew(user, True)

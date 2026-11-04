@@ -1,8 +1,8 @@
 // Legal text for Go Perks. Items in [square brackets] are placeholders the owner must fill in.
 export const LAST_UPDATED = "4 November 2026";
-export const ENTITY = "[Legal entity name]";
+export const ENTITY = "Go Perks Pty Ltd";
 export const ABN = "[ABN]";
-export const ADDRESS = "[Business address, Victoria]";
+export const ADDRESS = "946 Mt Alexander Rd, Essendon VIC 3040";
 export const CONTACT = "hello@goperks.au";
 
 export const TERMS = [
@@ -17,8 +17,8 @@ export const TERMS = [
   { h: "3. Membership and price", p: [
     "A membership costs A$49 (including GST) and lasts 12 months from the date your payment is confirmed. Prices are shown in Australian dollars.",
     "Payments are processed securely by Stripe. We don't see or store your full card details.",
-    "You can renew from 2 months before your membership ends. Renewing adds 12 months to the end of your current membership, plus any free months you've earned.",
-    `Your payment is set up as a yearly subscription. To stop future renewals, email ${CONTACT} before your renewal date.`,
+    "Your membership renews automatically each year and we charge A$49 to the card you paid with, unless you turn off automatic renewal in My account before your renewal date. We'll email you before your membership renews. Turning it off doesn't end your current membership; it just stops the next renewal.",
+    "If automatic renewal is off, or you joined with a gift code, you can renew yourself from 2 months before your membership ends. Renewing adds 12 months to the end of your current membership, plus any free months you've earned.",
   ] },
   { h: "4. Using deals", p: [
     "Deals are offered by independent local businesses (\"Partners\"), not by Go Perks. Each deal can be used once per membership year unless the deal says otherwise, and only while your membership is active.",
@@ -27,7 +27,7 @@ export const TERMS = [
   ] },
   { h: "5. Refunds and cancellation", p: [
     `If you're not happy, contact us at ${CONTACT}. You're entitled to a remedy under the Australian Consumer Law if the Service has a major problem, for example if it is significantly different from what we described.`,
-    "Outside of your rights under the Australian Consumer Law, membership fees are not refundable once deals have been used, but we will consider requests made within 14 days of payment where no deals have been used. [Owner to confirm refund policy.]",
+    "We don't offer refunds for change of mind, including for unused time or unused deals, except where the law requires. This doesn't limit your rights under the Australian Consumer Law.",
   ] },
   { h: "6. Referrals", p: [
     "If a friend joins with your referral code or link, their first year costs A$44.92 instead of A$49 (one month free). Once they pay, one free month is saved on your account and added when you next renew. You can earn up to 12 free months a year.",

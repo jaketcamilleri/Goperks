@@ -4,6 +4,7 @@ import { api, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SuburbPicker } from "@/components/SuburbPicker";
 
 const field = "mt-1.5 h-11 rounded-xl border-[#C2DEDA] bg-white";
 export const panel = "rounded-[24px] border border-[#C2DEDA] bg-white p-5 sm:p-7";
@@ -11,7 +12,7 @@ export const saveBtn = "mt-5 inline-flex rounded-full bg-[#17434C] px-6 py-3 tex
 
 export function DetailsForm() {
   const { user, setUser } = useAuth();
-  const [f, setF] = useState({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "", current_password: "" });
+  const [f, setF] = useState({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "", current_password: "", suburb: user?.suburb || "", postcode: user?.postcode || "" });
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
   const emailChanged = f.email.trim().toLowerCase() !== (user?.email || "");
@@ -20,7 +21,7 @@ export function DetailsForm() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { data } = await api.patch("/me", { ...f, phone: f.phone || null, current_password: f.current_password || null });
+      const { data } = await api.patch("/me", { ...f, phone: f.phone || null, current_password: f.current_password || null, suburb: f.postcode ? f.suburb : (f.suburb ? undefined : ""), postcode: f.postcode || null });
       setUser(data); setF((s) => ({ ...s, current_password: "" }));
       toast.success("Details saved");
     } catch (err) { toast.error(formatErr(err)); } finally { setBusy(false); }
@@ -33,6 +34,8 @@ export function DetailsForm() {
         <div><Label htmlFor="acc-name">Name</Label><Input id="acc-name" value={f.name} onChange={set("name")} required maxLength={80} className={field} data-testid="account-name-input" /></div>
         <div><Label htmlFor="acc-phone">Phone <span className="font-normal text-[#3D5E65]">(optional)</span></Label><Input id="acc-phone" value={f.phone} onChange={set("phone")} maxLength={30} className={field} data-testid="account-phone-input" /></div>
         <div className="sm:col-span-2"><Label htmlFor="acc-email">Email</Label><Input id="acc-email" type="email" value={f.email} onChange={set("email")} required className={field} data-testid="account-email-input" /></div>
+        <div className="sm:col-span-2"><Label htmlFor="acc-suburb">Your suburb <span className="font-normal text-[#3D5E65]">(for deals near you)</span></Label>
+          <SuburbPicker id="acc-suburb" suburb={f.suburb} postcode={f.postcode} onChange={(v) => setF((s) => ({ ...s, ...v }))} className="mt-1.5" testid="account-suburb-picker" /></div>
         {emailChanged && user?.has_password && (
           <div className="sm:col-span-2"><Label htmlFor="acc-cur">Current password <span className="font-normal text-[#3D5E65]">(needed to change your email)</span></Label>
             <Input id="acc-cur" type="password" value={f.current_password} onChange={set("current_password")} className={field} data-testid="account-email-password-input" /></div>

@@ -162,6 +162,9 @@ async def mark_paid(session_id: str, extra: dict):
     if res and res.get("kind") == "gift":
         await create_gift(res)
     elif res and res.get("user_id"):
+        sub = extra.get("stripe_subscription_id")
+        if sub:
+            await db.users.update_one({"_id": oid(res["user_id"])}, {"$set": {"stripe_subscription_id": sub, "auto_renew": True}})
         await activate_membership(res["user_id"], paid=True)
 
 
@@ -311,7 +314,7 @@ async def run_renewal_reminders():
         redeemed = await db.vouchers.find({"user_id": str(u["_id"]), "status": "redeemed"}).to_list(1000)
         saved = round(sum(v.get("amount_saved") or 0 for v in redeemed), 2)
         subject, html = renewal_email(u.get("name", ""), u.get("member_code", ""), nice_date(u["membership_expires_at"]), saved, len(redeemed),
-                                     u.get("bonus_days_pending") or 0)
+                                     u.get("bonus_days_pending") or 0, bool(u.get("auto_renew")))
         try:
             await send_email(to=u["email"], subject=subject, html=html)
             await db.users.update_one({"_id": u["_id"]}, {"$set": {"reminder_sent_for": u["membership_expires_at"]}})

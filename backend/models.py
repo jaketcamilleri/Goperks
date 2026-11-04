@@ -34,6 +34,7 @@ class User(BaseDocument):
     membership_status: str = "inactive"
     membership_expires_at: Optional[str] = None
     bonus_days_pending: int = 0
+    auto_renew: bool = False
     member_code: Optional[str] = None
     business_status: Optional[str] = None
     super_admin: bool = False
@@ -191,6 +192,8 @@ class AccountIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     email: EmailStr
     phone: Optional[str] = Field(default=None, max_length=30)
+    suburb: Optional[str] = Field(default=None, max_length=80)
+    postcode: Optional[str] = Field(default=None, max_length=4)
     current_password: Optional[str] = Field(default=None, max_length=200)
 
 
