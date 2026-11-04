@@ -8,12 +8,12 @@ from typing import Optional
 import jwt
 from fastapi import APIRouter, HTTPException, Depends
 
-from core import db, logger, oid, now_iso, hash_password, with_coords, month_start, month_range, MELB, CATEGORIES, JWT_ALGORITHM
+from core import db, logger, oid, now_iso, hash_password, with_coords, month_start, month_range, MELB, CATEGORIES, JWT_ALGORITHM, rand_code, melb_today
 from deps import user_out, require_role
-from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn
+from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn, AdminGiftIn
 from services import (log_activity, with_note, set_business_status, send_deal_decision, send_password_link, send_welcome,
                       send_partner_welcome, comp_membership, review_out, refresh_rating,
-                      ensure_referral_code, REFERRAL_CAP)
+                      ensure_referral_code, REFERRAL_CAP, send_gift_email, gift_length)
 
 router = APIRouter(prefix="/admin")
 team = require_role("admin", "staff")
@@ -244,6 +244,58 @@ async def admin_referrals(_=Depends(owner)):
                     "referred_by": names.get(d.get("referred_by")) if d.get("referred_by") else None,
                     "signed_up": signed.get(uid, 0), "paid": paid.get(uid, 0), "months_earned": months.get(uid, 0)})
     return {"cap": REFERRAL_CAP, "members": out}
+
+
+# ---------- Gift codes ----------
+GIFT_MONTHS = {1, 3, 6, 12}
+
+
+@router.get("/gifts")
+async def admin_gifts(_=Depends(owner)):
+    """Every gift code: bought by members and created here."""
+    gifts = await db.gifts.find({}, {"session_id": 0}).sort("created_at", -1).to_list(5000)
+    ids = {oid(x) for g in gifts for x in (g.get("buyer_id"), g.get("redeemed_by")) if x}
+    people = {str(u["_id"]): u.get("name") or u.get("email") for u in await db.users.find({"_id": {"$in": list(ids)}}, {"name": 1, "email": 1}).to_list(10000)}
+    return [{"id": str(g["_id"]), "code": g["code"], "months": g.get("months") or 12, "source": g.get("source") or "purchase",
+             "created_by": people.get(g.get("buyer_id"), ""), "recipient_name": g.get("recipient_name") or "",
+             "recipient_email": g.get("recipient_email") or "", "note": g.get("note") or "", "status": g.get("status"),
+             "email_sent": bool(g.get("email_sent")), "redeemed_by": people.get(g.get("redeemed_by"), ""),
+             "redeemed_at": g.get("redeemed_at"), "created_at": g.get("created_at")} for g in gifts]
+
+
+@router.post("/gifts")
+async def admin_create_gifts(body: AdminGiftIn, user=Depends(owner)):
+    if body.months not in GIFT_MONTHS:
+        raise HTTPException(400, "Choose 1, 3, 6 or 12 months")
+    if body.recipient_email and body.quantity != 1:
+        raise HTTPException(400, "To email a code, create one at a time")
+    if body.recipient_email and not (body.recipient_name or "").strip():
+        raise HTTPException(400, "Add the person's name so the email can greet them")
+    codes = []
+    for _ in range(body.quantity):
+        g = {"code": f"GIFT-{rand_code(4)}-{rand_code(4)}", "source": "admin", "buyer_id": user["id"], "months": body.months,
+             "recipient_name": (body.recipient_name or "").strip(), "recipient_email": (body.recipient_email or "").lower(),
+             "message": (body.message or "").strip(), "note": (body.note or "").strip(), "status": "unredeemed",
+             "send_on": melb_today(), "email_sent": not body.recipient_email, "created_at": now_iso()}
+        await db.gifts.insert_one(dict(g))
+        codes.append(g["code"])
+    emailed = False
+    if body.recipient_email:
+        await send_gift_email(g)
+        emailed = bool((await db.gifts.find_one({"code": g["code"]}, {"email_sent": 1})).get("email_sent"))
+    label = f"{len(codes)} code{'s' if len(codes) != 1 else ''} · {gift_length(body.months)}"
+    await log_activity(user, "gift.created", "gift", None, label,
+                       f"Emailed to {body.recipient_email}" if body.recipient_email else (body.note or ""))
+    return {"codes": codes, "emailed": emailed}
+
+
+@router.post("/gifts/{code}/cancel")
+async def admin_cancel_gift(code: str, user=Depends(owner)):
+    g = await db.gifts.find_one_and_update({"code": code.upper(), "status": "unredeemed"}, {"$set": {"status": "cancelled", "cancelled_at": now_iso()}})
+    if not g:
+        raise HTTPException(400, "Only unused codes can be cancelled")
+    await log_activity(user, "gift.cancelled", "gift", g["_id"], g["code"])
+    return {"status": "cancelled"}
 
 
 # ---------- People ----------

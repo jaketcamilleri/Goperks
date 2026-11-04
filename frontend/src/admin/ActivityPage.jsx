@@ -20,6 +20,7 @@ const ACTIONS = {
   "reports.sent": ["Sent partner reports", SYSTEM],
   "invites.sent": ["Sent member invites", GOOD], "invites.retried": ["Retried member invites", NEUTRAL],
   "pitch.sent": ["Sent partner pitches", GOOD],
+  "gift.created": ["Created gift codes", GOOD], "gift.cancelled": ["Cancelled gift code", BAD],
 };
 const labelOf = (a) => ACTIONS[a]?.[0] || a;
 const AREA = { deal: "Deal", business: "Business", member: "Member", staff: "Staff", review: "Review", invite: "Invites", prospect: "Prospects", system: "Automatic" };

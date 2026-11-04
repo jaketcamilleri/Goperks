@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from core import db, oid, now_iso, rand_code, make_live_token
 from deps import user_out, current_user
 from models import Deal, Voucher, RedeemIn, GiftRedeemIn
-from services import used_this_term, activate_membership, referral_months_this_year, ensure_referral_code, REFERRAL_CAP
+from services import used_this_term, activate_membership, referral_months_this_year, ensure_referral_code, REFERRAL_CAP, gift_days
 import os
 
 router = APIRouter()
@@ -166,9 +166,11 @@ async def gift_info(code: str):
     g = await db.gifts.find_one({"code": code.strip().upper()})
     if not g:
         raise HTTPException(404, "Gift code not found")
-    buyer = await db.users.find_one({"_id": oid(g["buyer_id"])})
-    return {"recipient_name": g["recipient_name"], "from_name": (buyer or {}).get("name", "A friend").split(" ")[0],
-            "message": g.get("message", ""), "status": g["status"]}
+    buyer = await db.users.find_one({"_id": oid(g["buyer_id"])}) if g.get("source") != "admin" else None
+    months = g.get("months") or 12
+    return {"recipient_name": g.get("recipient_name") or "you",
+            "from_name": "Go Perks" if g.get("source") == "admin" else (buyer or {}).get("name", "A friend").split(" ")[0],
+            "message": g.get("message", ""), "status": g["status"], "months": months}
 
 
 @router.post("/gifts/redeem")
@@ -178,5 +180,5 @@ async def redeem_gift(body: GiftRedeemIn, user=Depends(current_user)):
         {"$set": {"status": "redeemed", "redeemed_by": user["id"], "redeemed_at": now_iso()}})
     if not g:
         raise HTTPException(400, "This gift code is invalid or has already been used")
-    await activate_membership(user["id"])
+    await activate_membership(user["id"], days=gift_days(g.get("months") or 12))
     return user_out(await db.users.find_one({"_id": oid(user["id"])}))

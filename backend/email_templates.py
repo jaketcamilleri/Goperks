@@ -44,10 +44,10 @@ DEFAULTS = {
                  "Renew for another year at A$49 to keep every deal in the club. Renewing early adds 12 months on top of your current end date.",
                  "Renew my membership", "/join", sample={"first_name": "Tony", "expires": "18 November 2026", "code": "GP-AB12CD",
                                                          "savings_line": "So far you've saved $63.00 across 5 deals — your membership has more than paid for itself."}),
-    "gift": D("Gift membership", "member", "auto", ["first_name", "giver", "code"], "{giver} gifted you a year of {brand}", "A gift for you!",
-              "Hi {first_name}, {giver} has gifted you a full year of {brand} — exclusive deals at local cafes, kids activities, restaurants and days out.",
-              "Tap the button to create your free account and start your 12 months. The code works once.", "Claim my membership",
-              "/redeem-gift?code={code}", sample={"first_name": "Sam", "giver": "Tony", "code": "GIFT-AB12-CD34", "message": "Happy birthday!"}),
+    "gift": D("Gift membership", "member", "auto", ["first_name", "giver", "code", "length"], "{giver} gifted you {length} of {brand}", "A gift for you!",
+              "Hi {first_name}, {giver} has gifted you {length} of {brand} — exclusive deals at local cafes, kids activities, restaurants and days out.",
+              "Tap the button to create your free account and start your membership. The code works once.", "Claim my membership",
+              "/redeem-gift?code={code}", sample={"first_name": "Sam", "giver": "Tony", "code": "GIFT-AB12-CD34", "length": "a full year", "message": "Happy birthday!"}),
     "partner_welcome": D("Partner kit (approved)", "business", "auto", ["first_name", "business"], "Welcome to {brand} — your partner kit", "Your partner kit",
                          "Hi {first_name}, welcome to {brand}! {business} is now set up as a partner.\n\nHere's everything you need to get started:",
                          "Your portal also shows how many members claimed and redeemed your deals each month.", "Open my partner portal", "biz:/profile",
@@ -241,8 +241,8 @@ def renewal_email(name: str, code: str, expires: str, saved: float, used: int, b
     return render("renewal", {"first_name": _first(name), "expires": expires, "code": code, "savings_line": line}, _card(name, code, expires))
 
 
-def gift_email(recipient: str, giver: str, message: str, code: str):
-    return render("gift", {"first_name": _first(recipient), "giver": _first(giver, "A friend"), "code": code},
+def gift_email(recipient: str, giver: str, message: str, code: str, length: str = "a full year"):
+    return render("gift", {"first_name": _first(recipient), "giver": giver if giver == "Go Perks" else _first(giver, "A friend"), "code": code, "length": length},
                   _note(message) + _code_box("Your gift code", code))
 
 

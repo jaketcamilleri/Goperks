@@ -49,7 +49,7 @@ async def send_welcome(user_id: str):
         logger.warning("welcome email failed for %s: %s", user_id, e)
 
 
-async def activate_membership(user_id: str, paid: bool = False):
+async def activate_membership(user_id: str, paid: bool = False, days: int = 365):
     doc = await db.users.find_one({"_id": oid(user_id)})
     if not doc:
         return
@@ -59,7 +59,7 @@ async def activate_membership(user_id: str, paid: bool = False):
         base = datetime.fromisoformat(exp)
     await db.users.update_one({"_id": doc["_id"]}, {"$set": {
         "membership_status": "active",
-        "membership_expires_at": (base + timedelta(days=365 + (doc.get("bonus_days_pending") or 0))).isoformat(),
+        "membership_expires_at": (base + timedelta(days=days + (doc.get("bonus_days_pending") or 0))).isoformat(),
         "member_code": doc.get("member_code") or f"GP-{rand_code(6)}",
     }, "$unset": {"bonus_days_pending": ""}})
     if paid:
@@ -166,10 +166,19 @@ async def mark_paid(session_id: str, extra: dict):
 
 
 # ---------- Gifts ----------
+def gift_length(months: int) -> str:
+    return "a full year" if months >= 12 else f"{months} month{'s' if months != 1 else ''}"
+
+
+def gift_days(months: int) -> int:
+    return 365 if months >= 12 else months * 30
+
+
 async def send_gift_email(g: dict):
     try:
-        buyer = await db.users.find_one({"_id": oid(g["buyer_id"])})
-        subject, html = gift_email(g["recipient_name"], (buyer or {}).get("name", "A friend"), g.get("message") or "", g["code"])
+        buyer = await db.users.find_one({"_id": oid(g["buyer_id"])}) if g.get("source") != "admin" else None
+        giver = "Go Perks" if g.get("source") == "admin" else (buyer or {}).get("name", "A friend")
+        subject, html = gift_email(g["recipient_name"], giver, g.get("message") or "", g["code"], gift_length(g.get("months") or 12))
         await send_email(to=g["recipient_email"], subject=subject, html=html)
         await db.gifts.update_one({"code": g["code"]}, {"$set": {"email_sent": True, "sent_at": now_iso()}})
     except Exception as e:
@@ -181,7 +190,7 @@ async def create_gift(txn: dict):
     g = {
         "code": f"GIFT-{rand_code(4)}-{rand_code(4)}", "session_id": txn["session_id"], "buyer_id": txn["user_id"],
         "recipient_name": txn["gift_name"], "recipient_email": txn["gift_email"],
-        "message": txn.get("gift_message") or "", "status": "unredeemed", "send_on": send_on,
+        "message": txn.get("gift_message") or "", "status": "unredeemed", "send_on": send_on, "months": 12, "source": "purchase",
         "email_sent": False, "created_at": now_iso()}
     await db.gifts.insert_one(dict(g))
     if send_on <= melb_today():

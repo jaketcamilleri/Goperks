@@ -43,14 +43,16 @@ export default function RedeemGift() {
       {info && (
         <div className="mt-6 rounded-[24px] bg-[#17434C] p-6 text-[#EAF6F3]" data-testid="redeem-gift-info">
           <p className="font-display text-2xl">For {info.recipient_name}, from {info.from_name}</p>
+          <p className="mt-1 text-sm text-[#C2DEDA]" data-testid="redeem-gift-length">{(info.months ?? 12) >= 12 ? "A full year" : `${info.months} month${info.months === 1 ? "" : "s"}`} of free membership</p>
           {info.message && <p className="mt-3 border-l-2 border-[#EE8A63] pl-4 font-display italic text-[#C2DEDA]">“{info.message}”</p>}
-          {info.status !== "unredeemed" && <p className="mt-3 text-sm text-[#EE8A63]">This gift has already been claimed.</p>}
+          {info.status === "cancelled" && <p className="mt-3 text-sm text-[#EE8A63]">This gift code has been cancelled.</p>}
+          {info.status === "redeemed" && <p className="mt-3 text-sm text-[#EE8A63]">This gift has already been claimed.</p>}
         </div>
       )}
       {info === false && <p className="mt-6 rounded-2xl bg-[#FDF0EC] p-4 text-sm text-[#9A4024]" data-testid="redeem-gift-invalid">We couldn't find that gift code.</p>}
       <button onClick={redeem} disabled={busy || !info || info.status !== "unredeemed"} data-testid="redeem-gift-btn"
         className="mt-6 w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-50">
-        {busy ? "Activating…" : user ? "Start my 12 months" : "Create account to claim"}
+        {busy ? "Activating…" : user ? `Start my ${(info?.months ?? 12) >= 12 ? "12 months" : `${info.months} month${info.months === 1 ? "" : "s"}`}` : "Create account to claim"}
       </button>
       {!user && <p className="mt-4 text-center text-sm text-[#3D5E65]">Already a member? <Link to={`/login?next=${encodeURIComponent(`/redeem-gift?code=${code}`)}`} className="font-semibold text-[#9A4024]">Log in</Link></p>}
     </div>

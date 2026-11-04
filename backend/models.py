@@ -187,6 +187,15 @@ class GiftRedeemIn(BaseModel):
     code: str = Field(min_length=6, max_length=30)
 
 
+class AdminGiftIn(BaseModel):
+    months: int = Field(ge=1, le=12)
+    quantity: int = Field(default=1, ge=1, le=200)
+    recipient_name: Optional[str] = Field(default=None, max_length=100)
+    recipient_email: Optional[EmailStr] = None
+    message: Optional[str] = Field(default=None, max_length=500)
+    note: Optional[str] = Field(default=None, max_length=200)
+
+
 class DayHours(BaseModel):
     open: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     close: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
