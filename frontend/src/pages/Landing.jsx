@@ -8,6 +8,7 @@ import { CategoryTiles } from "@/components/CategoryTiles";
 import { DealRow } from "@/components/DealRow";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Pricing } from "@/components/landing/Pricing";
+import { ReferFriend } from "@/components/landing/ReferFriend";
 import { MemberVoices, Faq } from "@/components/landing/MemberVoices";
 import { BusinessCta } from "@/components/landing/BusinessCta";
 
@@ -46,6 +47,7 @@ export default function Landing() {
       {deals && deals.length > 0 && <Rows deals={deals} />}
       <div className="mt-10"><HowItWorks /></div>
       <Pricing />
+      <ReferFriend />
       <MemberVoices />
       <Faq />
       <BusinessCta />

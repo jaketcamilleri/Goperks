@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 import { PricingTicket } from "@/components/landing/Pricing";
 import { MemberCard } from "@/components/MemberCard";
+import { ReferralCodeField } from "@/components/ReferralCodeField";
 
 export default function Join() {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ export default function Join() {
 
   const cta = (
     <>
+      {user && !active && <ReferralCodeField className="mt-8 text-left" />}
       <button onClick={checkout} disabled={busy} data-testid="checkout-btn"
         className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#17434C] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#B9512E] active:scale-[0.98] disabled:opacity-60">
         <Lock className="h-4 w-4" />

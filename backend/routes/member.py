@@ -3,12 +3,11 @@ from datetime import datetime, timezone, timedelta
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Depends
-from pymongo.errors import DuplicateKeyError
 
 from core import db, oid, now_iso, rand_code, make_live_token
 from deps import user_out, current_user
 from models import Deal, Voucher, RedeemIn, GiftRedeemIn
-from services import used_this_term, activate_membership, referral_months_this_year, REFERRAL_CAP
+from services import used_this_term, activate_membership, referral_months_this_year, ensure_referral_code, REFERRAL_CAP
 import os
 
 router = APIRouter()
@@ -138,15 +137,8 @@ async def toggle_favorite(deal_id: str, user=Depends(current_user)):
 async def my_referral(user=Depends(current_user)):
     if user["role"] != "member":
         raise HTTPException(403, "Only members have a referral link")
-    doc = await db.users.find_one({"_id": oid(user["id"])}, {"referral_code": 1, "bonus_days_pending": 1})
-    code = doc.get("referral_code")
-    while not code:
-        try:
-            candidate = f"REF{rand_code(6)}"
-            await db.users.update_one({"_id": doc["_id"], "referral_code": {"$exists": False}}, {"$set": {"referral_code": candidate}})
-            code = (await db.users.find_one({"_id": doc["_id"]}, {"referral_code": 1})).get("referral_code")
-        except DuplicateKeyError:
-            continue
+    code = await ensure_referral_code(user["id"])
+    doc = await db.users.find_one({"_id": oid(user["id"])}, {"bonus_days_pending": 1})
     friends = await db.users.find({"referred_by": user["id"]}, {"name": 1, "created_at": 1, "referral_rewarded": 1}).sort("created_at", -1).to_list(200)
     return {"code": code, "link": f"{os.environ['FRONTEND_URL'].rstrip('/')}/join?ref={code}",
             "months_this_year": await referral_months_this_year(user["id"]), "cap": REFERRAL_CAP,

@@ -82,6 +82,19 @@ async def attach_referrer(user_id, email: str, ref: Optional[str]):
                                   {"$set": {"referred_by": str(referrer["_id"])}})
 
 
+async def ensure_referral_code(user_id) -> str:
+    """Return the member's referral code, creating a unique one the first time."""
+    doc = await db.users.find_one({"_id": oid(str(user_id))}, {"referral_code": 1})
+    code = doc.get("referral_code")
+    while not code:
+        try:
+            await db.users.update_one({"_id": doc["_id"], "referral_code": {"$exists": False}}, {"$set": {"referral_code": f"REF{rand_code(6)}"}})
+            code = (await db.users.find_one({"_id": doc["_id"]}, {"referral_code": 1})).get("referral_code")
+        except DuplicateKeyError:
+            continue
+    return code
+
+
 async def referral_months_this_year(referrer_id: str) -> int:
     since = (datetime.now(timezone.utc) - timedelta(days=365)).isoformat()
     return await db.referral_rewards.count_documents({"referrer_id": referrer_id, "referrer_granted": True, "created_at": {"$gte": since}})

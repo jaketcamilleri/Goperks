@@ -5,6 +5,7 @@ import { api, formatErr } from "@/lib/api";
 import { captureRef, getRef } from "@/lib/referral";
 import { Eye, EyeOff } from "lucide-react";
 import { startGoogleLogin } from "@/components/GoogleAuth";
+import { ReferralCodeField } from "@/components/ReferralCodeField";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -112,6 +113,7 @@ export default function Auth({ mode, business = false }) {
               {confirm && confirm === f.password && <p className="mt-1.5 text-xs font-semibold text-[#2F5A3A]" data-testid="auth-confirm-match">Passwords match</p>}
             </div>
           )}
+          {!isLogin && !business && <ReferralCodeField />}
           {err && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-error">{err}</p>}
           {wrongArea === "member" && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-wrong-area">This login is for business partners. <MainLink to="/login" className="font-semibold underline">Members log in here →</MainLink></p>}
           {wrongArea === "business" && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-wrong-area">That's a partner account. <BizLink to="/login" className="font-semibold underline">Log in at the partner area →</BizLink></p>}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X, ShieldCheck, Star, History, MailPlus, Target, PenLine } from "lucide-react";
+import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X, ShieldCheck, Star, History, MailPlus, Target, PenLine, Gift } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ap, MainLink } from "@/lib/site";
@@ -13,6 +13,7 @@ const NAV = [
   { to: "/businesses", label: "Businesses", icon: Store, badge: "pending_businesses" },
   { to: "/members", label: "Members", icon: Users, ownerOnly: true },
   { to: "/invites", label: "Invites", icon: MailPlus, ownerOnly: true },
+  { to: "/referrals", label: "Referrals", icon: Gift, ownerOnly: true },
   { to: "/prospects", label: "Prospects", icon: Target, ownerOnly: true },
   { to: "/emails", label: "Emails", icon: PenLine, ownerOnly: true },
   { to: "/reviews", label: "Reviews", icon: Star },

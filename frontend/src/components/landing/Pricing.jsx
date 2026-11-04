@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Gift } from "lucide-react";
 
 export const PERKS = [
   "Every deal in the club, all year",
@@ -23,6 +23,9 @@ export function PricingTicket({ cta }) {
           <span className="pb-2 text-[#3D5E65]">AUD / year</span>
         </p>
         <p className="mt-2 text-sm text-[#3D5E65]">That's less than a dollar a week.</p>
+        <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2.5 text-sm font-semibold text-[#9A4024]" data-testid="pricing-referral-line">
+          <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Refer a friend and you both get a free month. Earn up to 12 free months a year.
+        </p>
       </div>
       <div className="mx-8 border-t-2 border-dashed border-[#C2DEDA] sm:mx-10" />
       <div className="p-8 sm:p-10">

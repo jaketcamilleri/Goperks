@@ -12,7 +12,8 @@ from core import db, logger, oid, now_iso, hash_password, with_coords, month_sta
 from deps import user_out, require_role
 from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn
 from services import (log_activity, with_note, set_business_status, send_deal_decision, send_password_link, send_welcome,
-                      send_partner_welcome, comp_membership, review_out, refresh_rating)
+                      send_partner_welcome, comp_membership, review_out, refresh_rating,
+                      ensure_referral_code, REFERRAL_CAP)
 
 router = APIRouter(prefix="/admin")
 team = require_role("admin", "staff")
@@ -218,6 +219,31 @@ async def admin_payments(_=Depends(owner)):
 async def admin_activity(_=Depends(owner)):
     rows = await db.activity_log.find({}).sort("created_at", -1).to_list(2000)
     return [Activity.from_mongo(r).out() for r in rows]
+
+
+@router.get("/referrals")
+async def admin_referrals(_=Depends(owner)):
+    """Every member's referral code, who they brought in and the free months earned."""
+    docs = await db.users.find({"role": "member"}, {"name": 1, "email": 1, "referral_code": 1, "referred_by": 1,
+                                                    "referral_rewarded": 1, "created_at": 1}).sort("created_at", -1).to_list(5000)
+    names = {str(d["_id"]): d.get("name") or d.get("email") for d in docs}
+    signed, paid = {}, {}
+    for d in docs:
+        r = d.get("referred_by")
+        if r:
+            signed[r] = signed.get(r, 0) + 1
+            paid[r] = paid.get(r, 0) + (1 if d.get("referral_rewarded") else 0)
+    months = {}
+    async for g in db.referral_rewards.aggregate([{"$match": {"referrer_granted": True}}, {"$group": {"_id": "$referrer_id", "n": {"$sum": 1}}}]):
+        months[g["_id"]] = g["n"]
+    out = []
+    for d in docs:
+        uid = str(d["_id"])
+        out.append({"id": uid, "name": d.get("name") or "", "email": d.get("email"), "joined_at": d.get("created_at"),
+                    "code": d.get("referral_code") or await ensure_referral_code(uid),
+                    "referred_by": names.get(d.get("referred_by")) if d.get("referred_by") else None,
+                    "signed_up": signed.get(uid, 0), "paid": paid.get(uid, 0), "months_earned": months.get(uid, 0)})
+    return {"cap": REFERRAL_CAP, "members": out}
 
 
 # ---------- People ----------

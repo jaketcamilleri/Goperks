@@ -35,6 +35,7 @@ import { MobileTabBar } from "@/components/MobileTabBar";
 import ReviewsPage from "@/admin/ReviewsPage";
 import ActivityPage from "@/admin/ActivityPage";
 import InvitesPage from "@/admin/InvitesPage";
+import ReferralsPage from "@/admin/ReferralsPage";
 import ProspectsPage from "@/admin/ProspectsPage";
 import EmailsPage from "@/admin/EmailsPage";
 import Unsubscribe from "@/pages/Unsubscribe";
@@ -113,6 +114,7 @@ function adminRoutes() {
         <Route path={ap("/reviews")} element={<ReviewsPage />} />
         <Route path={ap("/activity")} element={<OwnerOnly><ActivityPage /></OwnerOnly>} />
         <Route path={ap("/invites")} element={<OwnerOnly><InvitesPage /></OwnerOnly>} />
+        <Route path={ap("/referrals")} element={<OwnerOnly><ReferralsPage /></OwnerOnly>} />
         <Route path={ap("/prospects")} element={<OwnerOnly><ProspectsPage /></OwnerOnly>} />
         <Route path={ap("/emails")} element={<OwnerOnly><EmailsPage /></OwnerOnly>} />
       </Route>
