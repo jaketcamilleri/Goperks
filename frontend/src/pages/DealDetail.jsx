@@ -36,10 +36,19 @@ export default function DealDetail() {
   const [deal, setDeal] = useState(null);
   const [voucher, setVoucher] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [used, setUsed] = useState(null);
 
   useEffect(() => {
     api.get(`/deals/${id}`).then((r) => setDeal(r.data)).catch(() => setDeal(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!user) { setUsed(null); return; }
+    api.get(`/deals/${id}/my-status`).then((r) => {
+      if (r.data?.active_voucher && !r.data?.used_this_term) setVoucher(r.data.active_voucher);
+      setUsed(r.data?.used_this_term ? r.data.used_at : null);
+    }).catch(() => setUsed(null));
+  }, [id, user]);
 
   const claim = async () => {
     if (!user) return nav(`/login?next=/deals/${id}`);
@@ -83,13 +92,18 @@ export default function DealDetail() {
             </div>
           )}
           <div className="mt-8">
-            {voucher ? <VoucherTicket v={voucher} /> : (
+            {voucher ? <VoucherTicket v={voucher} /> : used ? (
+              <div className="rounded-[24px] border border-dashed border-[#C2DEDA] bg-white p-6" data-testid="deal-used-this-term">
+                <p className="font-display text-2xl font-semibold">You've used this deal this year</p>
+                <p className="mt-2 text-sm text-[#3D5E65]">Redeemed on {new Date(used).toLocaleDateString("en-AU")}. Each deal is one use per membership year — it unlocks again when you renew.</p>
+              </div>
+            ) : (
               <button onClick={claim} disabled={busy} data-testid="claim-voucher-btn"
                 className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">
                 <Ticket className="h-5 w-5" /> {busy ? "Generating…" : label}
               </button>
             )}
-            <p className="mt-4 text-sm text-[#3D5E65]">Members can also simply show their digital member card at the counter.</p>
+            <p className="mt-4 text-sm text-[#3D5E65]" data-testid="deal-once-per-term-note">One use per member, per membership year.</p>
           </div>
         </div>
       </div>

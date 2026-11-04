@@ -467,6 +467,30 @@ async def stats():
 
 
 # ---------- Member ----------
+def term_start(user: dict) -> str:
+    exp = user.get("membership_expires_at")
+    return (datetime.fromisoformat(exp) - timedelta(days=365)).isoformat() if exp else ""
+
+
+async def used_this_term(user: dict, deal_id: str, exclude_id=None):
+    q = {"user_id": user["id"], "deal_id": deal_id, "status": "redeemed", "redeemed_at": {"$gte": term_start(user)}}
+    if exclude_id is not None:
+        q["_id"] = {"$ne": exclude_id}
+    return await db.vouchers.find_one(q)
+
+
+ONCE_PER_TERM = "You've already used this deal this membership year. It unlocks again when you renew."
+
+
+@api.get("/deals/{deal_id}/my-status")
+async def my_deal_status(deal_id: str, user=Depends(current_user)):
+    used = await used_this_term(user, deal_id)
+    active = await db.vouchers.find_one({"user_id": user["id"], "deal_id": deal_id, "status": "active",
+                                         "expires_at": {"$gt": now_iso()}})
+    return {"used_this_term": bool(used), "used_at": (used or {}).get("redeemed_at"),
+            "active_voucher": Voucher.from_mongo(active).out() if active else None}
+
+
 @api.post("/deals/{deal_id}/voucher")
 async def claim_voucher(deal_id: str, user=Depends(current_user)):
     if user["membership_status"] != "active" and user["role"] != "admin":
@@ -474,6 +498,8 @@ async def claim_voucher(deal_id: str, user=Depends(current_user)):
     deal = await db.deals.find_one({"_id": oid(deal_id), "status": "approved"})
     if not deal:
         raise HTTPException(404, "Deal not found")
+    if await used_this_term(user, deal_id):
+        raise HTTPException(409, ONCE_PER_TERM)
     existing = await db.vouchers.find_one({"user_id": user["id"], "deal_id": deal_id, "status": "active",
                                            "expires_at": {"$gt": now_iso()}})
     if existing:
@@ -504,6 +530,8 @@ async def redeem_voucher(voucher_id: str, body: RedeemIn = RedeemIn(), user=Depe
     v = await db.vouchers.find_one({"_id": oid(voucher_id), "user_id": user["id"], "status": "active"})
     if not v:
         raise HTTPException(404, "Voucher not found or already used")
+    if await used_this_term(user, v["deal_id"], v["_id"]):
+        raise HTTPException(409, ONCE_PER_TERM)
     saved = body.amount_saved if body.amount_saved is not None else v.get("est_saving", 0)
     await db.vouchers.update_one({"_id": v["_id"]}, {"$set": {"status": "redeemed", "redeemed_at": now_iso(), "amount_saved": saved}})
     return {"ok": True}
@@ -552,6 +580,9 @@ async def partner_redeem(body: CodeIn, user=Depends(require_role("business", "ad
     v = await find_partner_voucher(body.code, user)
     if v["status"] != "active" or v["expires_at"] < now_iso():
         raise HTTPException(400, "This voucher has already been used or has expired")
+    member = await db.users.find_one({"_id": oid(v["user_id"])})
+    if member and await used_this_term(user_out(member), v["deal_id"], v["_id"]):
+        raise HTTPException(409, "This member has already used this deal in their current membership year")
     await db.vouchers.update_one({"_id": v["_id"]}, {"$set": {
         "status": "redeemed", "redeemed_at": now_iso(), "amount_saved": v.get("est_saving", 0), "redeemed_by": user["id"]}})
     return {"ok": True}
