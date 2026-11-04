@@ -301,7 +301,8 @@ async def run_renewal_reminders():
             continue
         redeemed = await db.vouchers.find({"user_id": str(u["_id"]), "status": "redeemed"}).to_list(1000)
         saved = round(sum(v.get("amount_saved") or 0 for v in redeemed), 2)
-        subject, html = renewal_email(u.get("name", ""), u.get("member_code", ""), nice_date(u["membership_expires_at"]), saved, len(redeemed))
+        subject, html = renewal_email(u.get("name", ""), u.get("member_code", ""), nice_date(u["membership_expires_at"]), saved, len(redeemed),
+                                     u.get("bonus_days_pending") or 0)
         try:
             await send_email(to=u["email"], subject=subject, html=html)
             await db.users.update_one({"_id": u["_id"]}, {"$set": {"reminder_sent_for": u["membership_expires_at"]}})

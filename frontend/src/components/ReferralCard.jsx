@@ -8,7 +8,7 @@ const copyText = (value, label) =>
 
 function Stat({ icon: Icon, value, label, id }) {
   return (
-    <div className="rounded-2xl bg-[#0F3138] p-4" data-testid={`referral-stat-${id}`}>
+    <div className="min-w-0 rounded-2xl bg-[#0F3138] p-4" data-testid={`referral-stat-${id}`}>
       <Icon className="h-4 w-4 text-[#EE8A63]" />
       <p className="mt-2 font-display text-3xl font-semibold leading-none">{value}</p>
       <p className="mt-1 text-xs text-[#C2DEDA]">{label}</p>
@@ -44,8 +44,8 @@ export function ReferralCard() {
 
   return (
     <section className="mt-8 rounded-[28px] bg-[#17434C] p-6 text-[#EAF6F3] sm:p-10" data-testid="referral-card">
-      <div className="grid gap-8 lg:grid-cols-12">
-        <div className="lg:col-span-7">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="min-w-0 lg:col-span-7">
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#EE8A63]"><Gift className="h-4 w-4" /> Refer a friend</p>
           <h2 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">Your friend gets a month off. You get a free month.</h2>
           <p className="mt-3 max-w-lg text-sm text-[#C2DEDA] sm:text-base">Your friend enters your code when they sign up (or uses your link) and pays $44.92 for their first year instead of $49. Once they pay, a free month is saved on your account and added when you next renew. Up to {r.cap} free months a year.</p>
@@ -68,7 +68,7 @@ export function ReferralCard() {
           </div>
         </div>
 
-        <div className="lg:col-span-5">
+        <div className="min-w-0 lg:col-span-5">
           <div className="grid grid-cols-3 gap-2">
             <Stat id="signed" icon={UserPlus} value={friends.length} label="Friends signed up" />
             <Stat id="paid" icon={BadgeCheck} value={friends.filter((f) => f.paid).length} label="Friends joined" />

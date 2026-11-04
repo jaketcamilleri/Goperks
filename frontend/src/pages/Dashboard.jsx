@@ -9,6 +9,7 @@ import { SavedDeals } from "@/components/SavedDeals";
 import { WalletButtons } from "@/components/WalletButtons";
 import { RateVisits } from "@/components/RateVisits";
 import { ReferralCard } from "@/components/ReferralCard";
+import { BonusMonthsNote } from "@/components/BonusMonthsNote";
 
 function VoucherRow({ v, onRedeem }) {
   const live = v.status === "active";
@@ -50,8 +51,8 @@ export default function Dashboard() {
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-8 sm:px-8 lg:pt-12" data-testid="member-dashboard">
       <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">My account</p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
-      <div className="mt-8 grid gap-10 lg:grid-cols-12">
-        <div className="lg:col-span-5">
+      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12">
+        <div className="min-w-0 lg:col-span-5">
           <MemberCard live name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
           {active ? (
             <>
@@ -65,11 +66,12 @@ export default function Dashboard() {
               <Link to="/join" data-testid="dashboard-join-btn" className="mt-5 inline-flex rounded-full bg-[#B9512E] px-6 py-3 font-semibold text-[#EAF6F3]">Activate membership</Link>
             </div>
           )}
+          <BonusMonthsNote user={user} />
           <div className="mt-8"><SavingsTracker refreshKey={tick} /></div>
           <RateVisits refreshKey={tick} />
           {user?.role === "member" && <ReferralCard />}
         </div>
-        <div className="lg:col-span-6 lg:col-start-7">
+        <div className="min-w-0 lg:col-span-6 lg:col-start-7">
           <div className="flex items-end justify-between">
             <h2 className="font-display text-2xl font-semibold sm:text-3xl">My vouchers</h2>
             <Link to="/deals" className="text-sm font-semibold text-[#9A4024]" data-testid="dashboard-browse-link">Find more deals →</Link>

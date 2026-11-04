@@ -33,6 +33,7 @@ class User(BaseDocument):
     business_name: Optional[str] = None
     membership_status: str = "inactive"
     membership_expires_at: Optional[str] = None
+    bonus_days_pending: int = 0
     member_code: Optional[str] = None
     business_status: Optional[str] = None
     super_admin: bool = False

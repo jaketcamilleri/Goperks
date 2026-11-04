@@ -230,10 +230,14 @@ def welcome_email(name: str, code: str, expires: str):
     return render("welcome", {"first_name": _first(name), "code": code, "expires": expires}, _card(name, code, expires))
 
 
-def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
+def renewal_email(name: str, code: str, expires: str, saved: float, used: int, bonus_days: int = 0):
     line = (f"So far you've saved ${saved:,.2f} across {used} deal{'s' if used != 1 else ''} — "
             + ("your membership has more than paid for itself." if saved >= 49 else "and there's plenty more to unlock.")) if used else \
         "You still have plenty of deals to try before your year is up."
+    months = round(bonus_days / 30)
+    if months:
+        line += (f" Good news: you've earned {months} free month{'s' if months != 1 else ''} by referring friends, "
+                 f"so when you renew your next year runs {12 + months} months for the usual A$49.")
     return render("renewal", {"first_name": _first(name), "expires": expires, "code": code, "savings_line": line}, _card(name, code, expires))
 
 
