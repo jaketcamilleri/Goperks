@@ -30,7 +30,7 @@ export function Footer() {
           eat · play · save
         </p>
         <div className="mt-8 flex flex-col justify-between gap-2 border-t border-white/10 pt-6 text-sm text-[#AEB5BF] sm:flex-row">
-          <p>© 2026 Tiny's Vouchers by The Tiny Chef</p>
+          <p>© 2026 Local Perks</p>
           <p>Prices in AUD. Membership renews yearly.</p>
         </div>
       </div>

@@ -29,7 +29,7 @@ def _card(name: str, code: str, expires: str) -> str:
     return (
         '<table role="presentation" style="background:#1E2229;border-radius:18px;margin:20px 0;width:100%;max-width:420px"><tr>'
         '<td style="padding:22px;font-family:Arial,sans-serif;color:#FBF8F3">'
-        '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F3A72E">Tiny\'s Club member card</p>'
+        '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F3A72E">Local Perks member card</p>'
         f'<p style="margin:10px 0 4px;font-family:Georgia,serif;font-size:22px">{escape(name)}</p>'
         f'<p style="margin:0;font-family:Courier New,monospace;font-size:20px;font-weight:bold;letter-spacing:3px">{escape(code)}</p>'
         f'<p style="margin:8px 0 0;font-size:12px;color:#E5DEC9">Valid until {escape(expires)}</p>'

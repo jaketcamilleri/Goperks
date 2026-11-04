@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.serialization import pkcs7, pkcs12
 
 ASSETS = Path(__file__).parent / "wallet_assets"
-ORG = "Tiny's Vouchers"
+ORG = "Local Perks"
 APPLE_KEYS = ("APPLE_PASS_TYPE_ID", "APPLE_TEAM_ID", "APPLE_PASS_P12_BASE64", "APPLE_PASS_P12_PASSWORD")
 GOOGLE_KEYS = ("GOOGLE_WALLET_ISSUER_ID", "GOOGLE_WALLET_SERVICE_ACCOUNT_JSON")
 

@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LogoMark } from "@/components/Logo";
 
-function Barcode({ value = "TV-000000" }) {
+function Barcode({ value = "LP-000000" }) {
   const bars = Array.from(value.repeat(3)).map((ch, i) => ((ch.charCodeAt(0) + i) % 4) + 1);
   let x = 0;
   return (
@@ -15,7 +15,7 @@ function Barcode({ value = "TV-000000" }) {
   );
 }
 
-export function MemberCard({ name = "Your Name", code = "TV-XXXXXX", expires, status = "preview", className = "" }) {
+export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, status = "preview", className = "" }) {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const rx = useSpring(useTransform(my, [-0.5, 0.5], [14, -14]), { stiffness: 160, damping: 18 });
@@ -45,8 +45,8 @@ export function MemberCard({ name = "Your Name", code = "TV-XXXXXX", expires, st
         <div className="relative flex h-full flex-col justify-between" style={{ transform: "translateZ(40px)" }}>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <LogoMark className="h-8 w-8" />
-              <span className="font-display text-lg font-semibold">Tiny's Club</span>
+              <LogoMark className="h-7 w-auto" />
+              <span className="font-display text-lg font-extrabold">Local Perks</span>
             </div>
             <span
               data-testid="member-card-status"

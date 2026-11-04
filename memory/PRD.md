@@ -1,4 +1,6 @@
-# Tiny's Vouchers — PRD
+# Local Perks (formerly Tiny's Vouchers) — PRD
+
+Rebrand (2026-11-04): name "Local Perks", user-supplied logo at frontend/public/brand/ (background removed), favicon/apple-touch icon, new member codes LP-XXXXXX (old TV- codes still accepted at partner checker), email sender name, wallet pass org, Stripe product renamed. Demo login emails unchanged.
 
 ## Original problem statement
 "creating a online year subscription program to give deals and discounts to everyday people, i have started a website if you want to have a look and get ideas https://voucher.thetinychef.com.au/, they sign up and get exclusive deals to cafes, kids activies, dining places and more"
