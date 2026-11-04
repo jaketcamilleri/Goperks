@@ -86,6 +86,8 @@ class User(BaseDocument):
     website: Optional[str] = None
     instagram: Optional[str] = None
     opening_hours: Optional[str] = None
+    hours: Optional[dict] = None
+    photos: List[str] = Field(default_factory=list)
     about: Optional[str] = None
     logo_path: Optional[str] = None
     created_at: str = Field(default_factory=lambda: now_iso())
@@ -230,8 +232,43 @@ def oid(value):
     return ObjectId(value)
 
 
-PROFILE_REQUIRED = ("address", "suburb", "phone", "opening_hours", "about")
-PROFILE_FIELDS = PROFILE_REQUIRED + ("website", "instagram")
+PROFILE_REQUIRED = ("address", "suburb", "phone", "about")
+PROFILE_FIELDS = PROFILE_REQUIRED + ("website", "instagram", "opening_hours", "hours")
+DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+DAY_LABEL = dict(zip(DAYS, ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")))
+MELB = ZoneInfo("Australia/Melbourne")
+
+
+def _fmt_time(t: str) -> str:
+    h, m = map(int, t.split(":"))
+    return f"{h % 12 or 12}{'' if m == 0 else f':{m:02d}'}{'am' if h < 12 else 'pm'}"
+
+
+def hours_text(hours: dict) -> str:
+    """Group consecutive days with the same times: 'Mon–Fri 7am–3pm\nSat Closed'."""
+    rows, i = [], 0
+    span = lambda d: f"{_fmt_time(d['open'])}\u2013{_fmt_time(d['close'])}" if d else "Closed"
+    while i < 7:
+        j = i
+        while j + 1 < 7 and hours.get(DAYS[j + 1]) == hours.get(DAYS[i]):
+            j += 1
+        days = DAY_LABEL[DAYS[i]] + (f"\u2013{DAY_LABEL[DAYS[j]]}" if j > i else "")
+        rows.append(f"{days} {span(hours.get(DAYS[i]))}")
+        i = j + 1
+    return "\n".join(rows)
+
+
+def is_open_now(hours: Optional[dict]) -> Optional[bool]:
+    if not hours or not any(hours.get(d) for d in DAYS):
+        return None
+    now = datetime.now(MELB)
+    t = now.strftime("%H:%M")
+    today, yesterday = DAYS[now.weekday()], DAYS[now.weekday() - 1]
+    d = hours.get(today)
+    if d and (d["open"] <= t < d["close"] or (d["close"] <= d["open"] and t >= d["open"])):
+        return True
+    y = hours.get(yesterday)
+    return bool(y and y["close"] <= y["open"] and t < y["close"])
 
 
 def logo_url(path: Optional[str]) -> Optional[str]:
@@ -242,8 +279,10 @@ def user_out(doc):
     u = User.from_mongo(doc)
     data = u.out()
     data["logo_url"] = logo_url(data.pop("logo_path", None))
+    data["photos"] = [{"path": p, "url": logo_url(p)} for p in data.get("photos") or []]
     if data["role"] == "business":
-        data["profile_complete"] = all((data.get(k) or "").strip() for k in PROFILE_REQUIRED)
+        data["profile_complete"] = all((data.get(k) or "").strip() for k in PROFILE_REQUIRED) and \
+            any((data.get("hours") or {}).get(d) for d in DAYS)
     exp = data.get("membership_expires_at")
     if data["membership_status"] == "active" and exp and exp < now_iso():
         data["membership_status"] = "expired"
@@ -548,7 +587,15 @@ async def list_deals(category: Optional[str] = None, q: Optional[str] = None, su
     if q:
         query["$or"] = [{f: {"$regex": q, "$options": "i"}} for f in ("title", "business_name", "suburb", "description")]
     docs = await db.deals.find(query).sort([("featured", -1), ("created_at", -1)]).to_list(200)
-    return [Deal.from_mongo(d).out() for d in docs]
+    owner_ids = list({oid(d["submitted_by"]) for d in docs if d.get("submitted_by")})
+    owners = {str(o["_id"]): o async for o in db.users.find(
+        {"_id": {"$in": owner_ids}, "role": "business", "business_status": "approved"}, {"hours": 1})}
+    out = []
+    for d in docs:
+        item = Deal.from_mongo(d).out()
+        item["open_now"] = is_open_now((owners.get(d.get("submitted_by") or "") or {}).get("hours"))
+        out.append(item)
+    return out
 
 
 @api.get("/deals/{deal_id}")
@@ -560,6 +607,7 @@ async def get_deal(deal_id: str):
     owner = await db.users.find_one({"_id": oid(doc["submitted_by"]), "role": "business"}) if doc.get("submitted_by") else None
     if owner and owner.get("business_status") == "approved":
         out["partner"] = {k: owner.get(k) for k in PROFILE_FIELDS} | {
+            "photos": [logo_url(p) for p in owner.get("photos") or []], "open_now": is_open_now(owner.get("hours")),
             "business_name": owner.get("business_name"), "logo_url": logo_url(owner.get("logo_path"))}
     return out
 
@@ -741,6 +789,11 @@ async def submit_deal(body: DealIn, user=Depends(require_partner)):
     return d.out()
 
 
+class DayHours(BaseModel):
+    open: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    close: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
 class ProfileIn(BaseModel):
     business_name: str = Field(min_length=1, max_length=120)
     address: str = Field(min_length=3, max_length=200)
@@ -748,13 +801,19 @@ class ProfileIn(BaseModel):
     phone: str = Field(min_length=6, max_length=30)
     website: Optional[str] = Field(None, max_length=200)
     instagram: Optional[str] = Field(None, max_length=60)
-    opening_hours: str = Field(min_length=3, max_length=600)
+    hours: dict[str, Optional[DayHours]]
     about: str = Field(min_length=10, max_length=600)
 
 
 @api.put("/business/profile")
 async def update_profile(body: ProfileIn, user=Depends(require_approved_business)):
-    data = {k: (v.strip() if isinstance(v, str) else v) for k, v in body.model_dump().items()}
+    data = {k: (v.strip() if isinstance(v, str) else v) for k, v in body.model_dump(exclude={"hours"}).items()}
+    hours = {d: (body.hours.get(d).model_dump() if body.hours.get(d) else None) for d in DAYS}
+    if not any(hours.values()):
+        raise HTTPException(400, "Add your opening hours for at least one day")
+    if any(h and h["open"] == h["close"] for h in hours.values()):
+        raise HTTPException(400, "Opening and closing times can't be the same")
+    data["hours"], data["opening_hours"] = hours, hours_text(hours)
     if data.get("website") and not data["website"].startswith(("http://", "https://")):
         data["website"] = "https://" + data["website"]
     if data.get("instagram"):
@@ -764,32 +823,63 @@ async def update_profile(body: ProfileIn, user=Depends(require_approved_business
 
 
 LOGO_TYPES = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}
+MAX_PHOTOS = 6
 
 
-@api.post("/business/logo")
-async def upload_logo(file: UploadFile = File(...), user=Depends(require_approved_business)):
+async def store_image(file: UploadFile, user: dict, kind: str, max_mb: int) -> str:
     ext = LOGO_TYPES.get(file.content_type or "")
     if not ext:
         raise HTTPException(400, "Please upload a PNG, JPG or WebP image")
     data = await file.read()
-    if len(data) > 3 * 1024 * 1024:
-        raise HTTPException(400, "Logo must be under 3 MB")
-    path = f"{storage.APP_NAME}/logos/{user['id']}/{uuid.uuid4()}.{ext}"
+    if len(data) > max_mb * 1024 * 1024:
+        raise HTTPException(400, f"Image must be under {max_mb} MB")
+    path = f"{storage.APP_NAME}/{kind}s/{user['id']}/{uuid.uuid4()}.{ext}"
     try:
         result = await asyncio.to_thread(storage.put_object, path, data, file.content_type)
     except Exception as e:
-        logger.warning("logo upload failed: %s", e)
+        logger.warning("%s upload failed: %s", kind, e)
         raise HTTPException(502, "Upload failed, please try again")
-    await db.files.update_many({"owner_id": user["id"], "kind": "logo"}, {"$set": {"is_deleted": True}})
-    await db.files.insert_one({"storage_path": result["path"], "owner_id": user["id"], "kind": "logo", "content_type": file.content_type,
+    await db.files.insert_one({"storage_path": result["path"], "owner_id": user["id"], "kind": kind, "content_type": file.content_type,
                                "original_filename": file.filename, "size": result.get("size"), "is_deleted": False, "created_at": now_iso()})
-    await db.users.update_one({"_id": oid(user["id"])}, {"$set": {"logo_path": result["path"]}})
+    return result["path"]
+
+
+@api.post("/business/logo")
+async def upload_logo(file: UploadFile = File(...), user=Depends(require_approved_business)):
+    old = (await db.users.find_one({"_id": oid(user["id"])}, {"logo_path": 1})).get("logo_path")
+    path = await store_image(file, user, "logo", 3)
+    if old:
+        await db.files.update_one({"storage_path": old}, {"$set": {"is_deleted": True}})
+    await db.users.update_one({"_id": oid(user["id"])}, {"$set": {"logo_path": path}})
+    return user_out(await db.users.find_one({"_id": oid(user["id"])}))
+
+
+@api.post("/business/photos")
+async def upload_photo(file: UploadFile = File(...), user=Depends(require_approved_business)):
+    if len(user.get("photos") or []) >= MAX_PHOTOS:
+        raise HTTPException(400, f"You can add up to {MAX_PHOTOS} photos. Remove one to add another.")
+    path = await store_image(file, user, "photo", 5)
+    res = await db.users.update_one({"_id": oid(user["id"]), f"photos.{MAX_PHOTOS - 1}": {"$exists": False}}, {"$push": {"photos": path}})
+    if not res.modified_count:
+        await db.files.update_one({"storage_path": path}, {"$set": {"is_deleted": True}})
+        raise HTTPException(400, f"You can add up to {MAX_PHOTOS} photos. Remove one to add another.")
+    return user_out(await db.users.find_one({"_id": oid(user["id"])}))
+
+
+class PhotoPathIn(BaseModel):
+    path: str
+
+
+@api.post("/business/photos/remove")
+async def remove_photo(body: PhotoPathIn, user=Depends(require_approved_business)):
+    await db.users.update_one({"_id": oid(user["id"])}, {"$pull": {"photos": body.path}})
+    await db.files.update_one({"storage_path": body.path, "owner_id": user["id"]}, {"$set": {"is_deleted": True}})
     return user_out(await db.users.find_one({"_id": oid(user["id"])}))
 
 
 @api.get("/files/{path:path}")
 async def get_file(path: str):
-    rec = await db.files.find_one({"storage_path": path, "kind": "logo", "is_deleted": False})
+    rec = await db.files.find_one({"storage_path": path, "kind": {"$in": ["logo", "photo"]}, "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
     try:

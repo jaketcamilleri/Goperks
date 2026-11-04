@@ -9,10 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Eyebrow } from "@/components/Reveal";
 import { bp, assetUrl } from "@/lib/site";
+import { HoursEditor, defaultHours } from "@/components/HoursEditor";
+import { PhotoManager } from "@/components/PhotoManager";
 
 const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 const area = "mt-1.5 min-h-[96px] rounded-xl border-[#C2DEDA] bg-white";
-const KEYS = ["business_name", "address", "suburb", "phone", "website", "instagram", "opening_hours", "about"];
+const KEYS = ["business_name", "address", "suburb", "phone", "website", "instagram", "about"];
 
 function LogoPicker({ user, setUser }) {
   const ref = useRef(null);
@@ -61,6 +63,7 @@ export default function BusinessProfile() {
   const { user, setUser } = useAuth();
   const nav = useNavigate();
   const [f, setF] = useState(() => Object.fromEntries(KEYS.map((k) => [k, user?.[k] || ""])));
+  const [hours, setHours] = useState(() => user?.hours || defaultHours());
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const first = !user?.profile_complete;
@@ -71,9 +74,10 @@ export default function BusinessProfile() {
 
   const save = async (e) => {
     e.preventDefault();
+    if (!Object.values(hours).some(Boolean)) { toast.error("Tick at least one day you're open"); return; }
     setBusy(true);
     try {
-      const r = await api.put("/business/profile", { ...f, website: f.website || null, instagram: f.instagram || null });
+      const r = await api.put("/business/profile", { ...f, hours, website: f.website || null, instagram: f.instagram || null });
       setUser(r.data);
       toast.success(first ? "Profile complete — your portal is unlocked" : "Profile saved");
       nav(bp(""));
@@ -94,14 +98,16 @@ export default function BusinessProfile() {
         <Field k="website" label="Website" f={f} set={set} required={false} placeholder="yourbusiness.com.au" maxLength={200} />
         <Field k="instagram" label="Instagram" f={f} set={set} required={false} placeholder="@yourbusiness" maxLength={60} />
         <div className="sm:col-span-2">
-          <Label htmlFor="pf-hours">Opening hours</Label>
-          <Textarea id="pf-hours" required minLength={3} maxLength={600} value={f.opening_hours} onChange={set("opening_hours")} placeholder={"Mon–Fri 7am–3pm\nSat–Sun 8am–2pm"} className={area} data-testid="profile-opening_hours-input" />
+          <p className="text-sm font-medium">Opening hours</p>
+          <p className="mb-2 text-xs text-[#3D5E65]">Members see an “Open now” tag on your deals while you're open (Melbourne time).</p>
+          <HoursEditor value={hours} onChange={setHours} />
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="pf-about">Short description</Label>
           <Textarea id="pf-about" required minLength={10} maxLength={600} value={f.about} onChange={set("about")} placeholder="What makes your place special, in a sentence or two." className={area} data-testid="profile-about-input" />
           <p className="mt-1 text-xs text-[#3D5E65]">{f.about.length}/600</p>
         </div>
+        <PhotoManager user={user} setUser={setUser} />
         <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center">
           <button disabled={busy} type="submit" data-testid="profile-save-btn"
             className="rounded-full bg-[#B9512E] px-8 py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { MapPin, ArrowUpRight } from "lucide-react";
 import { catLabel } from "@/lib/api";
 import { HeartButton } from "@/components/HeartButton";
+import { OpenNowBadge } from "@/components/OpenNowBadge";
 
 export function DealCard({ deal, index = 0 }) {
   return (
@@ -29,6 +30,7 @@ export function DealCard({ deal, index = 0 }) {
           <span className="absolute bottom-4 right-4 grid h-11 w-11 translate-y-2 place-items-center rounded-full bg-[#EAF6F3] text-[#17434C] opacity-0 transition-[opacity,transform] duration-500 group-hover:translate-y-0 group-hover:opacity-100">
             <ArrowUpRight className="h-5 w-5" />
           </span>
+          {deal.open_now && <OpenNowBadge className="absolute bottom-4 left-4 shadow-lg" testId={`open-now-${deal.id}`} />}
         </div>
         <div className="px-1 pt-5">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#9A4024]">{catLabel(deal.category)}</p>
