@@ -9,7 +9,7 @@ const EMPTY = { title: "", business_name: "", category: "cafes", discount_label:
 export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showFeatured = false, busy = false }) {
   const [f, setF] = useState({ ...EMPTY, ...(initial || {}) });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
-  const field = "mt-1.5 h-12 rounded-xl border-[#E0D7C3] bg-white";
+  const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 
   return (
     <form
@@ -41,11 +41,11 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
       </div>
       <div className="sm:col-span-2">
         <Label>Description</Label>
-        <Textarea required value={f.description} onChange={set("description")} className="mt-1.5 min-h-[96px] rounded-xl border-[#E0D7C3] bg-white" data-testid="deal-form-description" />
+        <Textarea required value={f.description} onChange={set("description")} className="mt-1.5 min-h-[96px] rounded-xl border-[#C2DEDA] bg-white" data-testid="deal-form-description" />
       </div>
       <div className="sm:col-span-2">
         <Label>Terms & conditions</Label>
-        <Textarea value={f.terms} onChange={set("terms")} className="mt-1.5 min-h-[72px] rounded-xl border-[#E0D7C3] bg-white" data-testid="deal-form-terms" />
+        <Textarea value={f.terms} onChange={set("terms")} className="mt-1.5 min-h-[72px] rounded-xl border-[#C2DEDA] bg-white" data-testid="deal-form-terms" />
       </div>
       <div>
         <Label>Typical member saving (A$)</Label>
@@ -61,7 +61,7 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
         </label>
       )}
       <button disabled={busy} type="submit" data-testid="deal-form-submit"
-        className="rounded-full bg-[#D95329] px-8 py-4 font-semibold text-[#FBF8F3] transition-[background-color,transform] hover:bg-[#B63F18] active:scale-[0.98] disabled:opacity-60 sm:col-span-2 sm:justify-self-start">
+        className="rounded-full bg-[#B9512E] px-8 py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60 sm:col-span-2 sm:justify-self-start">
         {busy ? "Saving…" : submitLabel}
       </button>
     </form>

@@ -34,13 +34,13 @@ export function WalletButtons() {
 
   if (!status || (!status.apple && !status.google)) {
     return (
-      <p className="mt-4 flex items-center gap-2 text-sm text-[#525B68]" data-testid="wallet-coming-soon">
+      <p className="mt-4 flex items-center gap-2 text-sm text-[#3D5E65]" data-testid="wallet-coming-soon">
         <Wallet className="h-4 w-4" /> Apple Wallet & Google Wallet cards are coming soon.
       </p>
     );
   }
 
-  const cls = "flex h-12 items-center justify-center gap-2 rounded-full bg-[#12161A] px-5 text-sm font-semibold text-white transition-transform active:scale-95 disabled:opacity-60";
+  const cls = "flex h-12 items-center justify-center gap-2 rounded-full bg-[#0F3138] px-5 text-sm font-semibold text-white transition-transform active:scale-95 disabled:opacity-60";
   return (
     <div className="mt-4 flex flex-col gap-3 sm:flex-row" data-testid="wallet-buttons">
       {status.apple && (

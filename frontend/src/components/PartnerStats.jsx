@@ -4,8 +4,8 @@ import { StatusPill } from "@/pages/Business";
 
 function Big({ label, value, id }) {
   return (
-    <div className="rounded-[24px] border border-[#E0D7C3] bg-white p-5" data-testid={`partner-stat-${id}`}>
-      <p className="font-mono text-[11px] uppercase tracking-widest text-[#525B68]">{label}</p>
+    <div className="rounded-[24px] border border-[#C2DEDA] bg-white p-5" data-testid={`partner-stat-${id}`}>
+      <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">{label}</p>
       <p className="mt-2 font-display text-4xl font-semibold">{value ?? 0}</p>
     </div>
   );
@@ -24,7 +24,7 @@ export function PartnerStats() {
     <section className="mt-12" data-testid="partner-stats">
       <div className="flex items-end justify-between gap-4">
         <h2 className="font-display text-3xl font-semibold">Your deal stats</h2>
-        <span className="font-mono text-xs uppercase tracking-widest text-[#B63F18]">{s.month}</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-[#9A4024]">{s.month}</span>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Big id="claimed-month" label="Claimed this month" value={t.claimed_month} />
@@ -33,15 +33,15 @@ export function PartnerStats() {
         <Big id="saved-all" label="Members saved" value={`$${Math.round(t.saved_all || 0)}`} />
       </div>
       {rows.length > 0 && (
-        <div className="mt-6 overflow-x-auto rounded-[24px] border border-[#E0D7C3] bg-white" data-lenis-prevent>
+        <div className="mt-6 overflow-x-auto rounded-[24px] border border-[#C2DEDA] bg-white" data-lenis-prevent>
           <table className="w-full min-w-[560px] text-left text-sm" data-testid="partner-stats-table">
-            <thead className="font-mono text-[11px] uppercase tracking-widest text-[#525B68]">
+            <thead className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">
               <tr><th className="p-4">Deal</th><th className="p-4">Status</th><th className="p-4 text-right">Claimed (month)</th><th className="p-4 text-right">Redeemed (month)</th><th className="p-4 text-right">All-time redeemed</th></tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.deal_id} className="border-t border-[#E0D7C3]" data-testid={`partner-stats-row-${r.deal_id}`}>
-                  <td className="p-4 font-semibold">{r.title}<span className="ml-2 font-normal text-[#525B68]">{r.discount_label}</span></td>
+                <tr key={r.deal_id} className="border-t border-[#C2DEDA]" data-testid={`partner-stats-row-${r.deal_id}`}>
+                  <td className="p-4 font-semibold">{r.title}<span className="ml-2 font-normal text-[#3D5E65]">{r.discount_label}</span></td>
                   <td className="p-4"><StatusPill status={r.status} /></td>
                   <td className="p-4 text-right font-display text-lg">{r.claimed_month}</td>
                   <td className="p-4 text-right font-display text-lg">{r.redeemed_month}</td>

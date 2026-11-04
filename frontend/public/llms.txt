@@ -1,0 +1,10 @@
+# Local Perks
+
+> A yearly membership that unlocks exclusive local deals at cafes, kids activities, restaurants, family days out, everyday essentials and getaways. Members show a digital member card or a one-off voucher code at the counter.
+
+## Key pages
+- /: Home — what the membership is and how it works
+- /deals: Deals directory with category, suburb and map views
+- /join: Become a member
+- /gift: Gift a membership to family or friends
+- /business: For local businesses — list a deal for members

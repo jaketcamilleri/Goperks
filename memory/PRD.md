@@ -1,6 +1,8 @@
 # Local Perks (formerly Tiny's Vouchers) — PRD
 
 Rebrand (2026-11-04): name "Local Perks", user-supplied logo at frontend/public/brand/ (background removed), favicon/apple-touch icon, new member codes LP-XXXXXX (old TV- codes still accepted at partner checker), email sender name, wallet pass org, Stripe product renamed. Demo login emails unchanged.
+Palette (2026-11-04): mint bg #EAF6F3 / #D3ECE7, deep teal ink #17434C / #0F3138, coral-deep #B9512E (buttons/accents), coral #EE8A63 (fills), lines #C2DEDA. Emails + wallet passes match.
+Share/SEO: OG + Twitter tags with hosted share image (static.prod-images…/f452a3bd….jpeg, 1264x848, copy at public/og-image.jpg), Organization JSON-LD, noscript fallback, robots.txt, llms.txt. Canonical/og:url/sitemap omitted until production domain confirmed.
 
 ## Original problem statement
 "creating a online year subscription program to give deals and discounts to everyday people, i have started a website if you want to have a look and get ideas https://voucher.thetinychef.com.au/, they sign up and get exclusive deals to cafes, kids activies, dining places and more"

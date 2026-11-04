@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-    --sand: #FBF8F3;
-    --sand-2: #F3EDE2;
-    --ink: #1E2229;
-    --ink-2: #525B68;
-    --night: #12161A;
-    --terra: #D95329;
-    --terra-dark: #B63F18;
-    --marigold: #F3A72E;
+    --sand: #EAF6F3;
+    --sand-2: #D3ECE7;
+    --ink: #17434C;
+    --ink-2: #3D5E65;
+    --night: #0F3138;
+    --terra: #B9512E;
+    --terra-dark: #9A4024;
+    --marigold: #EE8A63;
     --sage: #4E7A58;
-    --line: #E5DEC9;
+    --line: #C2DEDA;
 }
 
 html.lenis, html.lenis body { height: auto; }
@@ -62,25 +62,25 @@ body {
 
 @layer base {
     :root {
-        --background: 39 60% 97%;
-        --foreground: 218 16% 14%;
+        --background: 166 45% 94%;
+        --foreground: 189 53% 19%;
         --card: 0 0% 100%;
-        --card-foreground: 218 16% 14%;
+        --card-foreground: 189 53% 19%;
         --popover: 0 0% 100%;
-        --popover-foreground: 218 16% 14%;
-        --primary: 15 69% 51%;
-        --primary-foreground: 39 60% 97%;
-        --secondary: 38 39% 92%;
-        --secondary-foreground: 218 16% 14%;
-        --muted: 38 39% 92%;
-        --muted-foreground: 215 11% 36%;
-        --accent: 38 39% 92%;
-        --accent-foreground: 218 16% 14%;
+        --popover-foreground: 189 53% 19%;
+        --primary: 15 60% 45%;
+        --primary-foreground: 166 45% 94%;
+        --secondary: 168 40% 88%;
+        --secondary-foreground: 189 53% 19%;
+        --muted: 168 40% 88%;
+        --muted-foreground: 190 25% 30%;
+        --accent: 168 40% 88%;
+        --accent-foreground: 189 53% 19%;
         --destructive: 0 72% 45%;
         --destructive-foreground: 0 0% 98%;
-        --border: 43 35% 84%;
-        --input: 43 35% 84%;
-        --ring: 15 69% 51%;
+        --border: 171 33% 81%;
+        --input: 171 33% 81%;
+        --ring: 15 60% 45%;
         --radius: 1rem;
     }
 }

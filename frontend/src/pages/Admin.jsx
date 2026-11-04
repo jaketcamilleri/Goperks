@@ -12,8 +12,8 @@ const TABS = ["pending", "approved", "rejected"];
 
 function Stat({ label, value, id }) {
   return (
-    <div className="rounded-[24px] border border-[#E0D7C3] bg-white p-5" data-testid={`admin-stat-${id}`}>
-      <p className="font-mono text-[11px] uppercase tracking-widest text-[#525B68]">{label}</p>
+    <div className="rounded-[24px] border border-[#C2DEDA] bg-white p-5" data-testid={`admin-stat-${id}`}>
+      <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">{label}</p>
       <p className="mt-2 font-display text-4xl font-semibold">{value ?? "—"}</p>
     </div>
   );
@@ -59,7 +59,7 @@ export default function Admin() {
           <Eyebrow>Admin</Eyebrow>
           <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight">Club control room</h1>
         </div>
-        <button onClick={() => setEditing("new")} data-testid="admin-new-deal-btn" className="inline-flex items-center gap-2 rounded-full bg-[#D95329] px-6 py-3 font-semibold text-[#FBF8F3]">
+        <button onClick={() => setEditing("new")} data-testid="admin-new-deal-btn" className="inline-flex items-center gap-2 rounded-full bg-[#B9512E] px-6 py-3 font-semibold text-[#EAF6F3]">
           <Plus className="h-4 w-4" /> New deal
         </button>
       </div>
@@ -75,31 +75,31 @@ export default function Admin() {
       <div className="mt-12 flex gap-2">
         {TABS.map((t) => (
           <button key={t} onClick={() => setTab(t)} data-testid={`admin-tab-${t}`}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold capitalize ${tab === t ? "bg-[#1E2229] text-[#FBF8F3]" : "border border-[#E0D7C3] bg-white"}`}>{t}</button>
+            className={`rounded-full px-5 py-2.5 text-sm font-semibold capitalize ${tab === t ? "bg-[#17434C] text-[#EAF6F3]" : "border border-[#C2DEDA] bg-white"}`}>{t}</button>
         ))}
       </div>
-      {deals.length === 0 ? <p className="mt-8 text-[#525B68]" data-testid="admin-empty">No {tab} deals.</p> : (
+      {deals.length === 0 ? <p className="mt-8 text-[#3D5E65]" data-testid="admin-empty">No {tab} deals.</p> : (
         <ul className="mt-8 space-y-3" data-testid="admin-deal-list">
           {deals.map((d) => (
-            <li key={d.id} className="flex flex-col gap-4 rounded-[24px] border border-[#E0D7C3] bg-white p-4 sm:flex-row sm:items-center" data-testid={`admin-deal-${d.id}`}>
-              {d.image_url ? <img src={d.image_url} alt="" className="h-20 w-full rounded-xl object-cover sm:w-28" /> : <div className="h-20 w-28 rounded-xl bg-[#F3EDE2]" />}
+            <li key={d.id} className="flex flex-col gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-4 sm:flex-row sm:items-center" data-testid={`admin-deal-${d.id}`}>
+              {d.image_url ? <img src={d.image_url} alt="" className="h-20 w-full rounded-xl object-cover sm:w-28" /> : <div className="h-20 w-28 rounded-xl bg-[#D3ECE7]" />}
               <div className="flex-1">
                 <p className="font-display text-lg font-semibold">{d.title}</p>
-                <p className="text-sm text-[#525B68]">{d.business_name} · {catLabel(d.category)} · {d.suburb} · <span className="font-semibold">{d.discount_label}</span></p>
+                <p className="text-sm text-[#3D5E65]">{d.business_name} · {catLabel(d.category)} · {d.suburb} · <span className="font-semibold">{d.discount_label}</span></p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusPill status={d.status} />
                 {d.status !== "approved" && <button onClick={() => setStatus(d.id, "approved")} aria-label="Approve" data-testid={`admin-approve-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full bg-[#4E7A58] text-white"><Check className="h-4 w-4" /></button>}
-                {d.status !== "rejected" && <button onClick={() => setStatus(d.id, "rejected")} aria-label="Reject" data-testid={`admin-reject-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full bg-[#FDF0EC] text-[#B63F18]"><X className="h-4 w-4" /></button>}
-                <button onClick={() => setEditing(d)} aria-label="Edit" data-testid={`admin-edit-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full border border-[#E0D7C3]"><Pencil className="h-4 w-4" /></button>
-                <button onClick={() => remove(d.id)} aria-label="Delete" data-testid={`admin-delete-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full border border-[#E0D7C3]"><Trash2 className="h-4 w-4" /></button>
+                {d.status !== "rejected" && <button onClick={() => setStatus(d.id, "rejected")} aria-label="Reject" data-testid={`admin-reject-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full bg-[#FDF0EC] text-[#9A4024]"><X className="h-4 w-4" /></button>}
+                <button onClick={() => setEditing(d)} aria-label="Edit" data-testid={`admin-edit-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full border border-[#C2DEDA]"><Pencil className="h-4 w-4" /></button>
+                <button onClick={() => remove(d.id)} aria-label="Delete" data-testid={`admin-delete-${d.id}`} className="grid h-10 w-10 place-items-center rounded-full border border-[#C2DEDA]"><Trash2 className="h-4 w-4" /></button>
               </div>
             </li>
           ))}
         </ul>
       )}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#FBF8F3]" data-lenis-prevent data-testid="admin-deal-dialog">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#EAF6F3]" data-lenis-prevent data-testid="admin-deal-dialog">
           <DialogHeader><DialogTitle className="font-display text-2xl">{editing === "new" ? "New deal" : "Edit deal"}</DialogTitle></DialogHeader>
           {editing && <DealForm initial={editing === "new" ? {} : editing} onSubmit={save} busy={busy} submitLabel="Save deal" showFeatured />}
         </DialogContent>

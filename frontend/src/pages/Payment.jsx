@@ -46,10 +46,10 @@ export function PaymentSuccess() {
     return (
       <div className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8" data-testid="gift-success-page">
         <MaskLines as="h1" className="font-display text-5xl font-semibold tracking-tight sm:text-6xl"
-          lines={[<>Gift <em key="s" className="font-normal italic text-[#D95329]">sent!</em></>]} />
-        <p className="mt-5 text-[#525B68] md:text-lg">We've emailed {gift?.recipient_name || "them"} their gift code. You can also share it yourself:</p>
-        <p className="mx-auto mt-8 w-fit rounded-[20px] bg-[#1E2229] px-8 py-5 font-mono text-2xl font-bold tracking-[0.15em] text-[#FBF8F3]" data-testid="gift-success-code">{gift?.code || "—"}</p>
-        <Link to="/deals" className="mt-10 inline-flex rounded-full bg-[#D95329] px-7 py-4 font-semibold text-[#FBF8F3]">Back to the deals</Link>
+          lines={[<>Gift <em key="s" className="font-normal italic text-[#B9512E]">sent!</em></>]} />
+        <p className="mt-5 text-[#3D5E65] md:text-lg">We've emailed {gift?.recipient_name || "them"} their gift code. You can also share it yourself:</p>
+        <p className="mx-auto mt-8 w-fit rounded-[20px] bg-[#17434C] px-8 py-5 font-mono text-2xl font-bold tracking-[0.15em] text-[#EAF6F3]" data-testid="gift-success-code">{gift?.code || "—"}</p>
+        <Link to="/deals" className="mt-10 inline-flex rounded-full bg-[#B9512E] px-7 py-4 font-semibold text-[#EAF6F3]">Back to the deals</Link>
       </div>
     );
   }
@@ -59,15 +59,15 @@ export function PaymentSuccess() {
       {state === "paid" ? (
         <>
           <MaskLines as="h1" className="font-display text-5xl font-semibold tracking-tight sm:text-6xl"
-            lines={[<>Welcome to <em className="font-normal italic text-[#D95329]">the club!</em></>]} testId="payment-success-title" />
-          <p className="mt-5 text-[#525B68] md:text-lg">Your membership is active. Here's your digital card — show it at the counter.</p>
+            lines={[<>Welcome to <em className="font-normal italic text-[#B9512E]">the club!</em></>]} testId="payment-success-title" />
+          <p className="mt-5 text-[#3D5E65] md:text-lg">Your membership is active. Here's your digital card — show it at the counter.</p>
           <div className="mx-auto mt-12 max-w-md">
             <MemberCard name={me?.name} code={me?.member_code} status="active"
               expires={me?.membership_expires_at ? new Date(me.membership_expires_at).toLocaleDateString("en-AU", { month: "short", year: "numeric" }) : undefined} />
           </div>
           <div className="mt-12 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/deals" className="rounded-full bg-[#D95329] px-7 py-4 font-semibold text-[#FBF8F3]" data-testid="success-browse-btn">Start browsing deals</Link>
-            <Link to="/dashboard" className="rounded-full border border-[#1E2229] px-7 py-4 font-semibold" data-testid="success-dashboard-btn">Go to my account</Link>
+            <Link to="/deals" className="rounded-full bg-[#B9512E] px-7 py-4 font-semibold text-[#EAF6F3]" data-testid="success-browse-btn">Start browsing deals</Link>
+            <Link to="/dashboard" className="rounded-full border border-[#17434C] px-7 py-4 font-semibold" data-testid="success-dashboard-btn">Go to my account</Link>
           </div>
         </>
       ) : state === "checking" ? (
@@ -75,8 +75,8 @@ export function PaymentSuccess() {
       ) : (
         <>
           <p className="font-display text-3xl" data-testid="payment-error">We couldn't confirm your payment yet.</p>
-          <p className="mt-4 text-[#525B68]">If you were charged, your membership will activate shortly. Check your account in a minute.</p>
-          <Link to="/dashboard" className="mt-8 inline-flex rounded-full bg-[#1E2229] px-7 py-4 font-semibold text-[#FBF8F3]">My account</Link>
+          <p className="mt-4 text-[#3D5E65]">If you were charged, your membership will activate shortly. Check your account in a minute.</p>
+          <Link to="/dashboard" className="mt-8 inline-flex rounded-full bg-[#17434C] px-7 py-4 font-semibold text-[#EAF6F3]">My account</Link>
         </>
       )}
     </div>
@@ -87,8 +87,8 @@ export function PaymentCancel() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-28 text-center" data-testid="payment-cancel-page">
       <h1 className="font-display text-5xl font-semibold tracking-tight">No worries.</h1>
-      <p className="mt-4 text-[#525B68] md:text-lg">Your payment was cancelled and you haven't been charged.</p>
-      <Link to="/join" className="mt-10 inline-flex rounded-full bg-[#D95329] px-7 py-4 font-semibold text-[#FBF8F3]" data-testid="cancel-retry-btn">Try again</Link>
+      <p className="mt-4 text-[#3D5E65] md:text-lg">Your payment was cancelled and you haven't been charged.</p>
+      <Link to="/join" className="mt-10 inline-flex rounded-full bg-[#B9512E] px-7 py-4 font-semibold text-[#EAF6F3]" data-testid="cancel-retry-btn">Try again</Link>
     </div>
   );
 }

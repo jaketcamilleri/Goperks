@@ -386,12 +386,12 @@ async def forgot_password(body: ForgotIn):
         "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=1)})
     link = f"{os.environ['FRONTEND_URL'].rstrip('/')}/reset-password?token={token}"
     html = (
-        '<table role="presentation" width="100%" style="background:#FBF8F3"><tr><td style="padding:32px;font-family:Georgia,serif;color:#1E2229">'
+        '<table role="presentation" width="100%" style="background:#EAF6F3"><tr><td style="padding:32px;font-family:Georgia,serif;color:#17434C">'
         f'<h1 style="font-size:26px;margin:0 0 16px">Reset your password</h1>'
         f'<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">Hi {escape(doc.get("name", "there"))}, we received a request to reset the password for your {escape(EMAIL_FROM_NAME)} account.</p>'
-        f'<p style="margin:28px 0"><a href="{escape(link)}" style="background:#D95329;color:#FBF8F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Choose a new password</a></p>'
-        '<p style="font-family:Arial,sans-serif;font-size:13px;color:#525B68">This link expires in 1 hour and can only be used once. If you didn\'t ask for this, you can ignore this email.</p>'
-        f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#818C9C">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
+        f'<p style="margin:28px 0"><a href="{escape(link)}" style="background:#B9512E;color:#EAF6F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Choose a new password</a></p>'
+        '<p style="font-family:Arial,sans-serif;font-size:13px;color:#3D5E65">This link expires in 1 hour and can only be used once. If you didn\'t ask for this, you can ignore this email.</p>'
+        f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
         '</td></tr></table>')
     await send_email(to=email, subject=f"Reset your {EMAIL_FROM_NAME} password", html=html)
     return generic

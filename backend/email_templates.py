@@ -10,13 +10,13 @@ def _app_url(path: str) -> str:
 
 def _layout(heading: str, body_html: str, cta_label: str, cta_path: str) -> str:
     return (
-        '<table role="presentation" width="100%" style="background:#FBF8F3"><tr><td style="padding:32px;color:#1E2229">'
-        '<p style="font-family:Arial,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#B63F18;margin:0 0 12px">'
+        '<table role="presentation" width="100%" style="background:#EAF6F3"><tr><td style="padding:32px;color:#17434C">'
+        '<p style="font-family:Arial,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#9A4024;margin:0 0 12px">'
         f'{escape(EMAIL_FROM_NAME)}</p>'
         f'<h1 style="font-family:Georgia,serif;font-size:28px;margin:0 0 18px">{heading}</h1>'
         f'{body_html}'
-        f'<p style="margin:28px 0"><a href="{escape(_app_url(cta_path))}" style="background:#D95329;color:#FBF8F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">{escape(cta_label)}</a></p>'
-        f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#818C9C">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
+        f'<p style="margin:28px 0"><a href="{escape(_app_url(cta_path))}" style="background:#B9512E;color:#EAF6F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">{escape(cta_label)}</a></p>'
+        f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
         '</td></tr></table>'
     )
 
@@ -27,12 +27,12 @@ def _p(text: str) -> str:
 
 def _card(name: str, code: str, expires: str) -> str:
     return (
-        '<table role="presentation" style="background:#1E2229;border-radius:18px;margin:20px 0;width:100%;max-width:420px"><tr>'
-        '<td style="padding:22px;font-family:Arial,sans-serif;color:#FBF8F3">'
-        '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F3A72E">Local Perks member card</p>'
+        '<table role="presentation" style="background:#17434C;border-radius:18px;margin:20px 0;width:100%;max-width:420px"><tr>'
+        '<td style="padding:22px;font-family:Arial,sans-serif;color:#EAF6F3">'
+        '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#EE8A63">Local Perks member card</p>'
         f'<p style="margin:10px 0 4px;font-family:Georgia,serif;font-size:22px">{escape(name)}</p>'
         f'<p style="margin:0;font-family:Courier New,monospace;font-size:20px;font-weight:bold;letter-spacing:3px">{escape(code)}</p>'
-        f'<p style="margin:8px 0 0;font-size:12px;color:#E5DEC9">Valid until {escape(expires)}</p>'
+        f'<p style="margin:8px 0 0;font-size:12px;color:#C2DEDA">Valid until {escape(expires)}</p>'
         '</td></tr></table>'
     )
 
@@ -48,11 +48,11 @@ def welcome_email(name: str, code: str, expires: str):
 def gift_email(recipient: str, giver: str, message: str, code: str):
     first = escape(recipient.split(" ")[0] if recipient else "there")
     giver_first = escape(giver.split(" ")[0] if giver else "A friend")
-    note = (f'<p style="font-family:Georgia,serif;font-size:18px;font-style:italic;line-height:1.5;border-left:3px solid #F3A72E;padding-left:14px;margin:18px 0">“{escape(message)}”</p>' if message else "")
+    note = (f'<p style="font-family:Georgia,serif;font-size:18px;font-style:italic;line-height:1.5;border-left:3px solid #EE8A63;padding-left:14px;margin:18px 0">“{escape(message)}”</p>' if message else "")
     body = (_p(f"Hi {first}, {giver_first} has gifted you a full year of {escape(EMAIL_FROM_NAME)} — exclusive deals at local cafes, kids activities, restaurants and days out.")
             + note
-            + '<table role="presentation" style="background:#1E2229;border-radius:18px;margin:20px 0;width:100%;max-width:420px"><tr><td style="padding:22px;font-family:Arial,sans-serif;color:#FBF8F3">'
-            '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F3A72E">Your gift code</p>'
+            + '<table role="presentation" style="background:#17434C;border-radius:18px;margin:20px 0;width:100%;max-width:420px"><tr><td style="padding:22px;font-family:Arial,sans-serif;color:#EAF6F3">'
+            '<p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#EE8A63">Your gift code</p>'
             f'<p style="margin:10px 0 0;font-family:Courier New,monospace;font-size:22px;font-weight:bold;letter-spacing:3px">{escape(code)}</p>'
             '</td></tr></table>'
             + _p("Tap the button to create your free account and start your 12 months. The code works once."))

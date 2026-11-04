@@ -37,8 +37,8 @@ export function FadeUp({ children, delay = 0, className = "", y = 28 }) {
 
 export function Eyebrow({ children, className = "" }) {
   return (
-    <p className={`font-mono text-xs uppercase tracking-[0.22em] text-[#B63F18] ${className}`}>
-      <span className="mr-2 inline-block h-1.5 w-1.5 -translate-y-0.5 rounded-full bg-[#D95329]" />
+    <p className={`font-mono text-xs uppercase tracking-[0.22em] text-[#9A4024] ${className}`}>
+      <span className="mr-2 inline-block h-1.5 w-1.5 -translate-y-0.5 rounded-full bg-[#B9512E]" />
       {children}
     </p>
   );

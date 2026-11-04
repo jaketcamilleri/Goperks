@@ -15,12 +15,12 @@ export function SavedDeals() {
   return (
     <section className="mt-20" data-testid="saved-deals">
       <div className="flex items-end justify-between gap-4">
-        <h2 className="font-display text-3xl font-semibold sm:text-4xl">Saved <em className="font-normal italic text-[#D95329]">favourites</em></h2>
-        <span className="font-mono text-xs uppercase tracking-widest text-[#525B68]" data-testid="saved-deals-count">{deals?.length ?? 0} saved</span>
+        <h2 className="font-display text-3xl font-semibold sm:text-4xl">Saved <em className="font-normal italic text-[#B9512E]">favourites</em></h2>
+        <span className="font-mono text-xs uppercase tracking-widest text-[#3D5E65]" data-testid="saved-deals-count">{deals?.length ?? 0} saved</span>
       </div>
       {deals && deals.length === 0 ? (
-        <p className="mt-6 rounded-[24px] border border-dashed border-[#E0D7C3] p-8 text-[#525B68]" data-testid="saved-deals-empty">
-          Tap the heart on any deal to keep it here. <Link to="/deals" className="font-semibold text-[#B63F18]">Browse deals →</Link>
+        <p className="mt-6 rounded-[24px] border border-dashed border-[#C2DEDA] p-8 text-[#3D5E65]" data-testid="saved-deals-empty">
+          Tap the heart on any deal to keep it here. <Link to="/deals" className="font-semibold text-[#9A4024]">Browse deals →</Link>
         </p>
       ) : (
         <div className="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-testid="saved-deals-grid">

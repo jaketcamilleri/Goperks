@@ -18,7 +18,7 @@ export function Featured() {
         <FadeUp>
           <Eyebrow>This month</Eyebrow>
           <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-            A taste of <em className="font-normal italic text-[#D95329]">what's inside</em>.
+            A taste of <em className="font-normal italic text-[#B9512E]">what's inside</em>.
           </h2>
         </FadeUp>
         <Link to="/deals" data-testid="featured-all-link" className="group inline-flex items-center gap-2 font-semibold">
