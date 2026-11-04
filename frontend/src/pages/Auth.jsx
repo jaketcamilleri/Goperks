@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api, formatErr } from "@/lib/api";
+import { captureRef, getRef } from "@/lib/referral";
 import { Eye, EyeOff } from "lucide-react";
 import { startGoogleLogin } from "@/components/GoogleAuth";
 import { useAuth } from "@/context/AuthContext";
@@ -17,6 +18,7 @@ export default function Auth({ mode, business = false }) {
   const next = params.get("next");
   const role = business ? "business" : "member";
   const [f, setF] = useState({ name: "", email: "", password: "", business_name: "" });
+  useEffect(() => { if (!business) captureRef(); }, [business]);
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState("");
@@ -35,7 +37,7 @@ export default function Auth({ mode, business = false }) {
     if (!isLogin && f.password !== confirm) { setErr("Passwords don't match"); return; }
     setBusy(true);
     try {
-      const body = isLogin ? { email: f.email, password: f.password } : { ...f, role, business_name: business ? f.business_name : null };
+      const body = isLogin ? { email: f.email, password: f.password } : { ...f, role, business_name: business ? f.business_name : null, ref: business ? undefined : getRef() };
       const { data } = await api.post(isLogin ? "/auth/login" : "/auth/register", body);
       if (business && data.role === "member") { await logout(); setWrongArea("member"); return; }
       if (!business && data.role === "business" && EXTERNAL_BIZ) { await logout(); setWrongArea("business"); return; }

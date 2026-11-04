@@ -107,6 +107,7 @@ class RegisterIn(BaseModel):
     name: str = Field(min_length=1)
     role: str = "member"
     business_name: Optional[str] = None
+    ref: Optional[str] = Field(None, max_length=20)
 
 
 class LoginIn(BaseModel):
@@ -116,6 +117,7 @@ class LoginIn(BaseModel):
 
 class GoogleSessionIn(BaseModel):
     session_id: str = Field(min_length=4, max_length=500)
+    ref: Optional[str] = Field(None, max_length=20)
 
 
 class ForgotIn(BaseModel):
@@ -177,6 +179,7 @@ class CheckoutIn(BaseModel):
     gift_email: Optional[EmailStr] = None
     gift_message: Optional[str] = Field(None, max_length=300)
     gift_send_date: Optional[str] = Field(None, max_length=10)
+    ref: Optional[str] = Field(None, max_length=20)
 
 
 class GiftRedeemIn(BaseModel):

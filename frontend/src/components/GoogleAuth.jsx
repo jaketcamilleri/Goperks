@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api, formatErr } from "@/lib/api";
+import { getRef } from "@/lib/referral";
 import { useAuth } from "@/context/AuthContext";
 import { bp, ap } from "@/lib/site";
 
@@ -24,7 +25,7 @@ export function AuthCallback() {
     const sessionId = new URLSearchParams(location.hash.slice(1)).get("session_id");
     const next = sessionStorage.getItem("lp_next");
     sessionStorage.removeItem("lp_next");
-    api.post("/auth/google", { session_id: sessionId })
+    api.post("/auth/google", { session_id: sessionId, ref: getRef() })
       .then(({ data }) => {
         setUser(data);
         const home = ["admin", "staff"].includes(data.role) ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";

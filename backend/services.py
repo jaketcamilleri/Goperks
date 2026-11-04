@@ -15,7 +15,7 @@ from deps import user_out
 from models import Activity
 from email_service import send_email, EMAIL_FROM_NAME
 from email_templates import (welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email,
-                             business_rejected_email, new_applicant_email, weekly_digest_email, partner_report_email)
+                             business_rejected_email, new_applicant_email, weekly_digest_email, partner_report_email, referral_reward_email)
 
 
 # ---------- Activity log ----------
@@ -49,7 +49,7 @@ async def send_welcome(user_id: str):
         logger.warning("welcome email failed for %s: %s", user_id, e)
 
 
-async def activate_membership(user_id: str):
+async def activate_membership(user_id: str, paid: bool = False):
     doc = await db.users.find_one({"_id": oid(user_id)})
     if not doc:
         return
@@ -59,10 +59,62 @@ async def activate_membership(user_id: str):
         base = datetime.fromisoformat(exp)
     await db.users.update_one({"_id": doc["_id"]}, {"$set": {
         "membership_status": "active",
-        "membership_expires_at": (base + timedelta(days=365)).isoformat(),
+        "membership_expires_at": (base + timedelta(days=365 + (doc.get("bonus_days_pending") or 0))).isoformat(),
         "member_code": doc.get("member_code") or f"GP-{rand_code(6)}",
-    }})
+    }, "$unset": {"bonus_days_pending": ""}})
+    if paid:
+        await reward_referral(doc)
     asyncio.create_task(send_welcome(user_id))
+
+
+# ---------- Referrals: a free month for the member and their friend when the friend pays ----------
+REFERRAL_DAYS = 30
+REFERRAL_CAP = 12
+
+
+async def attach_referrer(user_id, email: str, ref: Optional[str]):
+    """Link a new or never-paid member to the member whose link they used."""
+    if not ref:
+        return
+    referrer = await db.users.find_one({"referral_code": ref.strip().upper(), "role": "member"}, {"email": 1})
+    if referrer and referrer["email"] != email.lower() and str(referrer["_id"]) != str(user_id):
+        await db.users.update_one({"_id": oid(str(user_id)), "referred_by": {"$exists": False}, "role": "member"},
+                                  {"$set": {"referred_by": str(referrer["_id"])}})
+
+
+async def referral_months_this_year(referrer_id: str) -> int:
+    since = (datetime.now(timezone.utc) - timedelta(days=365)).isoformat()
+    return await db.referral_rewards.count_documents({"referrer_id": referrer_id, "referrer_granted": True, "created_at": {"$gte": since}})
+
+
+async def reward_referral(friend: dict):
+    if not friend.get("referred_by"):
+        return
+    if not await db.users.find_one_and_update({"_id": friend["_id"], "referral_rewarded": {"$ne": True}}, {"$set": {"referral_rewarded": True}}):
+        return
+    fresh = await db.users.find_one({"_id": friend["_id"]}, {"membership_expires_at": 1})
+    await db.users.update_one({"_id": friend["_id"]}, {"$set": {"membership_expires_at": (
+        datetime.fromisoformat(fresh["membership_expires_at"]) + timedelta(days=REFERRAL_DAYS)).isoformat()}})
+    ref_id = friend["referred_by"]
+    granted = await referral_months_this_year(ref_id) < REFERRAL_CAP
+    referrer = await db.users.find_one({"_id": oid(ref_id)})
+    await db.referral_rewards.insert_one({"referrer_id": ref_id, "friend_id": str(friend["_id"]), "referrer_granted": granted and bool(referrer),
+                                          "created_at": now_iso()})
+    if not granted or not referrer:
+        return
+    exp = referrer.get("membership_expires_at")
+    if referrer.get("membership_status") == "active" and exp and exp > now_iso():
+        new_exp = (datetime.fromisoformat(exp) + timedelta(days=REFERRAL_DAYS)).isoformat()
+        await db.users.update_one({"_id": referrer["_id"]}, {"$set": {"membership_expires_at": new_exp}})
+        line = f"Your membership now runs until **{nice_date(new_exp)}**."
+    else:
+        await db.users.update_one({"_id": referrer["_id"]}, {"$inc": {"bonus_days_pending": REFERRAL_DAYS}})
+        line = "We've saved it for you. It's added automatically when you next join or renew."
+    try:
+        subject, html = referral_reward_email(referrer.get("name", ""), friend.get("name", ""), line)
+        await send_email(to=referrer["email"], subject=subject, html=html)
+    except Exception as e:
+        logger.warning("referral email failed for %s: %s", referrer.get("email"), e)
 
 
 async def comp_membership(doc: dict, expires_on: Optional[str] = None):
@@ -105,7 +157,7 @@ async def mark_paid(session_id: str, extra: dict):
     if res and res.get("kind") == "gift":
         await create_gift(res)
     elif res and res.get("user_id"):
-        await activate_membership(res["user_id"])
+        await activate_membership(res["user_id"], paid=True)
 
 
 # ---------- Gifts ----------

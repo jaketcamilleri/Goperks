@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from core import db, now_iso, melb_today, MELB, STRIPE_WEBHOOK_SECRET, MEMBERSHIP_LOOKUP_KEY, GIFT_LOOKUP_KEY
 from deps import current_user
 from models import CheckoutIn
-from services import mark_paid
+from services import mark_paid, attach_referrer
 
 router = APIRouter()
 
@@ -26,6 +26,8 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
         if sd < melb_today() or sd > latest:
             raise HTTPException(400, "Delivery date must be between today and 12 months from now")
     lookup = GIFT_LOOKUP_KEY if is_gift else MEMBERSHIP_LOOKUP_KEY
+    if not is_gift and body.ref and not await db.payment_transactions.find_one({"user_id": user["id"], "kind": "membership", "payment_status": "paid"}):
+        await attach_referrer(user["id"], user["email"], body.ref)
     prices = stripe.Price.list(lookup_keys=[lookup], active=True, limit=1).data
     if not prices:
         raise HTTPException(500, "Membership price not configured")

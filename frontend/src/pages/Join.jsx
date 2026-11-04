@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Gift, Lock } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
+import { captureRef, getRef } from "@/lib/referral";
 import { useAuth } from "@/context/AuthContext";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 import { PricingTicket } from "@/components/landing/Pricing";
@@ -14,12 +15,21 @@ export default function Join() {
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const active = user?.membership_status === "active";
+  const [inviter, setInviter] = useState(null);
+  useEffect(() => {
+    captureRef();
+    const ref = getRef();
+    if (!ref) return undefined;
+    let live = true;
+    api.get(`/referrals/${ref}`).then((r) => { if (live) setInviter(r.data?.first_name || null); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
 
   const checkout = async () => {
     if (!user) return nav("/register?next=/join");
     setBusy(true);
     try {
-      const { data } = await api.post("/payments/checkout", { origin_url: window.location.origin });
+      const { data } = await api.post("/payments/checkout", { origin_url: window.location.origin, ref: getRef() });
       window.location.href = data.checkout_url;
     } catch (e) {
       toast.error(formatErr(e));
@@ -49,6 +59,7 @@ export default function Join() {
           <Eyebrow>Membership</Eyebrow>
           <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
             lines={[<>Your card to</>, <em key="e" className="font-normal italic text-[#B9512E]">the whole club.</em>]} />
+          {inviter && !active && <p className="mt-6 flex items-start gap-2 rounded-2xl bg-[#FDF0EC] p-4 text-[#9A4024]" data-testid="referral-banner"><Gift className="mt-0.5 h-5 w-5 shrink-0" /><span><b>{inviter} invited you.</b> Join and pay, and you'll both get a free month: 13 months for the price of 12.</span></p>}
           {active && <p className="mt-6 rounded-2xl bg-[#EBF3EC] p-4 text-[#2F5A3A]" data-testid="already-member-note">You're already a member until {new Date(user.membership_expires_at).toLocaleDateString("en-AU")}. Renewing adds another 12 months.</p>}
           <p className="mt-6 text-sm text-[#3D5E65]">Buying for someone else? <Link to="/gift" className="font-semibold text-[#9A4024]" data-testid="join-gift-link">Gift a membership →</Link> · Got a gift code? <Link to="/redeem-gift" className="font-semibold text-[#9A4024]" data-testid="join-redeem-link">Claim it</Link></p>
           <FadeUp delay={0.2} className="mt-12 max-w-md">

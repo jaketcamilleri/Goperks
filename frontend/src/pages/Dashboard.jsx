@@ -8,6 +8,7 @@ import { SavingsTracker } from "@/components/SavingsTracker";
 import { SavedDeals } from "@/components/SavedDeals";
 import { WalletButtons } from "@/components/WalletButtons";
 import { RateVisits } from "@/components/RateVisits";
+import { ReferralCard } from "@/components/ReferralCard";
 
 function VoucherRow({ v, onRedeem }) {
   const live = v.status === "active";
@@ -66,6 +67,7 @@ export default function Dashboard() {
           )}
           <div className="mt-8"><SavingsTracker refreshKey={tick} /></div>
           <RateVisits refreshKey={tick} />
+          {user?.role === "member" && <ReferralCard />}
         </div>
         <div className="lg:col-span-6 lg:col-start-7">
           <div className="flex items-end justify-between">

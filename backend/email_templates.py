@@ -75,6 +75,10 @@ DEFAULTS = {
                         "Hi {first_name}, here's how {business} went with {brand} members in **{month}**.",
                         "Your partner portal shows these numbers live, plus every review members leave.", "Open my partner portal", "biz:",
                         sample={"first_name": "Sue", "business": "Gigi's Gelato", "month": "October 2026", "used": "3"}),
+    "referral_reward": D("Referral free month", "member", "auto", ["first_name", "friend", "reward_line"], "You've earned a free month of {brand}",
+                         "A free month, on us", "Hi {first_name}, {friend} just joined {brand} with your link, so you've both earned a free month.\n\n{reward_line}",
+                         "Keep sharing your link. You can earn up to 12 free months a year.", "Share my link", "/dashboard",
+                         sample={"first_name": "Tony", "friend": "Sam", "reward_line": "Your membership now runs until 4 December 2027."}),
     "new_applicant": D("New partner application (to you)", "owner", "auto", ["business", "contact", "email"], "New partner application: {business}",
                        "New partner application", "A new business has applied to become a Go Perks partner and is waiting for your approval.",
                        "These buttons work once and expire after 14 days.", "Review applicants", "adm:/businesses",
@@ -285,6 +289,10 @@ def partner_report_email(name: str, business: str, month: str, r: dict):
     block = _stats((("Deals used", r["redeemed"]), ("Members saved", f"A${r['saved']:,.0f}"), ("Different members", r["members"])),
                    (("New reviews", r["new_reviews"]), ("Average rating", f"{r['rating']:.1f} / 5" if r["rating"] else "—"), ("Used all time", r["all_redeemed"]))) + deals_html
     return render("partner_report", {"first_name": _first(name), "business": business, "month": month, "used": r["redeemed"]}, block)
+
+
+def referral_reward_email(name: str, friend: str, reward_line: str):
+    return render("referral_reward", {"first_name": _first(name), "friend": _first(friend, "A friend"), "reward_line": reward_line})
 
 
 def invite_email(name: str, note: str, unsubscribe_url: str, template_key: str = "invite"):

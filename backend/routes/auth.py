@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Request, Response, Depends
 from core import db, now_iso, oid, hash_password, verify_password, make_token, set_auth_cookies, JWT_ALGORITHM
 from deps import user_out, current_user
 from models import User, RegisterIn, LoginIn, GoogleSessionIn, ForgotIn, ResetIn
-from services import send_applicant_alert, send_password_link
+from services import send_applicant_alert, send_password_link, attach_referrer
 
 router = APIRouter(prefix="/auth")
 
@@ -31,6 +31,8 @@ async def register(body: RegisterIn, response: Response):
     if body.role == "business":
         await db.users.update_one({"_id": res.inserted_id}, {"$set": {"business_status": "pending"}})
         asyncio.create_task(send_applicant_alert(str(res.inserted_id), body.name, body.business_name, email))
+    else:
+        await attach_referrer(res.inserted_id, email, body.ref)
     return user_out(await db.users.find_one({"_id": res.inserted_id}))
 
 
@@ -74,6 +76,7 @@ async def google_login(body: GoogleSessionIn, response: Response):
     if not doc:
         u = User(email=email, name=data.get("name") or email.split("@")[0], role="member")
         res = await db.users.insert_one({**u.to_mongo(), "picture": data.get("picture"), "auth_provider": "google"})
+        await attach_referrer(res.inserted_id, email, body.ref)
         doc = await db.users.find_one({"_id": res.inserted_id})
     elif data.get("picture") and not doc.get("picture"):
         await db.users.update_one({"_id": doc["_id"]}, {"$set": {"picture": data["picture"]}})
