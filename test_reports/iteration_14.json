@@ -1,0 +1,32 @@
+{
+  "summary": "Full end-to-end verification of the new admin Gift Codes feature. Backend pytest regression (backend/tests/test_admin_gifts.py) passes 1/1 covering: validation (invalid months -> 400; email+quantity>1 -> 400), batch create (3 codes), GET /admin/gifts rows (months=3, source='admin', status='unredeemed'), public GET /gifts/{code} with from_name='Go Perks' and months=3, member 403 on /admin/gifts, redeem gives ~90 days (3 months) to a fresh account, double-redeem rejected (400), cancel unused code + double-cancel rejected, redeem-after-cancel rejected, public info shows status='cancelled'.\n\nUI (admin logged in at /admin): sidebar 'Gift codes' link -> /admin/gifts loads [data-testid=admin-gifts-page] + [data-testid=gift-creator] + table. Batch flow: gift-months-3 + gift-mode-codes + quantity=2 + note 'TEST batch' + gift-create-btn -> gift-created-result shows 2 unique codes, gift-copy-all-btn visible, gift-created-codes text contains both. Both codes appeared in the table. Email flow: gift-months-12 + gift-mode-email; gift-create-btn is disabled with empty fields AND with invalid email ('notvalid'), becomes enabled after a valid email. On submit the toast reported emailed successfully, result row shows recipient 'TEST Person' with 'test_gift_ui@example.com · emailed' (email_sent=true). Cancel: window.confirm auto-accepted, status cell re-rendered as 'Cancelled' via gift-status-<id>. Public redeem (/redeem-gift?code=...): ANON for an unused admin batch code shows redeem-gift-info 'For you, from Go Perks' and redeem-gift-length '3 months of free membership'; button text 'Create account to claim'. Same page after logging in as a freshly-registered TEST member: button text 'Start my 3 months'. For the cancelled code the info banner shows 'This gift code has been cancelled.' and the redeem-gift-btn is disabled. Filters Unused/Redeemed/Made by admin/Bought by members/All all clickable; search input filters the table to the matching row; CSV export button visible. Activity log at /admin/activity contains both 'Created gift codes' and 'Cancelled gift code' entries. Phone 390x844: /admin/gifts loads cleanly with zero horizontal overflow (scrollWidth==clientWidth==390).\n\nAll created test data has been cleaned up (3 gifts + 1 test user deleted via Mongo).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_gifts.py",
+    "/app/test_reports/pytest/gifts_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GIFT_MONTHS enforced server-side as {1,3,6,12}; AdminGiftIn also pre-validates - good defence-in-depth.",
+    "admin_create_gifts inserts n gifts in a loop with await; fine for small batches but could be bulk_write for very large n (max 200). Not urgent.",
+    "send_gift_email is awaited (not create_task) for admin creates - correct, because the response reports emailed=bool so the UI can show the proper toast.",
+    "gift_info returns months=g.get('months') or 12 so old legacy purchase gifts without months default to 12 (1 year) - matches the brief and the TestAdminGiftCodes assertion uses months=3 for admin-created ones.",
+    "GiftsPage.jsx: window.confirm() for cancel is fine for admin-only tool but could be a shadcn AlertDialog for consistency.",
+    "GiftCreator ready-gate for email mode requires name + /\\S+@\\S+\\.\\S+/.test(email). Matches brief's 'disabled until name+valid email'.",
+    "Public redeem page: info.status is checked for 'cancelled'/'redeemed' banners and the button is disabled unless status==='unredeemed'. Clean.",
+    "No DELETE endpoint for admin gifts - cancel is the only reversible op (correct since codes may already be partly distributed)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (1/1 pytest)", "frontend": "100% - every brief item verified"},
+  "test_credentials": "admin@tinysvouchers.com.au / TinyAdmin!2026 at /admin.",
+  "seed_data_creation": "Created 2 batch admin gifts (GIFT-PEFL-WP79, GIFT-AK5F-6V4U), 1 emailed admin gift (GIFT-8WIY-E4IJ) to test_gift_ui@example.com, and 1 TEST member (test_gift_ui_1793793202@example.com) to verify the logged-in redeem button text. All 3 gifts and the test user were deleted from Mongo after the run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Admin Gift Codes feature is at /admin/gifts (owner-only). Testids: admin-gifts-page, gift-creator, gift-months-{1|3|6|12}, gift-mode-{email|codes}, gift-quantity-input, gift-recipient-name-input, gift-recipient-email-input, gift-message-input, gift-note-input, gift-create-btn, gift-created-result, gift-created-codes, gift-copy-all-btn, per-row gift-code-<id>, gift-status-<id>, gift-cancel-<id>. Public: /redeem-gift?code=... with redeem-gift-page, redeem-code-input, redeem-gift-info, redeem-gift-length, redeem-gift-btn, redeem-gift-invalid. Backend endpoints: GET /api/admin/gifts, POST /api/admin/gifts, POST /api/admin/gifts/{code}/cancel, GET /api/gifts/{code}, POST /api/gifts/redeem. Admin login at /admin (button text 'Sign in', not type=submit). Emails send via Resend to example.com addresses OK.",
+  "rca of the issue": "No defects found. Backend validation, admin-only guard, batch + emailed creation, cancellation, public info and redeem all work as specified; UI testids, filters, search, CSV export, activity logging, and mobile responsiveness (390px, no horizontal overflow) all check out."
+}

@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="3.351" timestamp="2026-11-04T11:51:02.163901+00:00" hostname="agent-env-8361c4f9-6f1f-47c5-a753-92fa7a50fe1c"><testcase classname="tests.test_admin_gifts" name="test_admin_gift_codes" time="2.184" /></testsuite></testsuites>
