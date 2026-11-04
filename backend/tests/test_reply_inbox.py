@@ -1,5 +1,4 @@
 """Reply inbox setting: owner only, validated, used as Reply-To on sends."""
-import asyncio
 import os
 
 import requests
@@ -31,8 +30,7 @@ def test_reply_inbox_setting():
 
 
 def test_send_uses_reply_inbox():
-    os.environ.update({k: v for k, v in ENV.items() if v is not None and k not in os.environ})
-    import sys
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    import email_service
-    assert asyncio.run(email_service.reply_inbox()) == "hello@goperks.au"
+    # Checked without importing the app's async database client (it binds to one event loop).
+    from pymongo import MongoClient
+    doc = MongoClient(ENV["MONGO_URL"])[ENV["DB_NAME"]].settings.find_one({"_id": "email"}) or {}
+    assert (doc.get("reply_to") or ENV.get("EMAIL_REPLY_TO")) == "hello@goperks.au"

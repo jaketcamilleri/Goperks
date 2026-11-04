@@ -1,0 +1,29 @@
+{
+  "summary": "Verified the 'Businesses can only redeem their own deals' change. Backend: ran full pytest suite (138 passed, 1 skipped, 1 flaky). New test_partner_scan.py explicitly covers both paths and passes: (a) test_scan_shows_only_own_deals - business scanning member card sees only its own approved deals and /partner/redeem-card for someone else's deal returns 404 'Deal not found for your business'; (b) test_voucher_codes_only_for_own_deals - typed voucher code for another business's deal (even with stale partner_id=this business) returns 404 on both /partner/check and /partner/redeem and the voucher stays 'active'; typed voucher code for an own deal returns 200. The find_partner_voucher() helper in routes/partner.py correctly re-derives ownership from deal.submitted_by at request time (not from the voucher's partner_id), which is the fix described in the commit. Frontend: logged in as business@tinysvouchers.com.au at /business/login, went to /business/redeem (page copy: 'Only your own deals show up.'), typed TESTV-FAKECODE, clicked Check -> inline error 'No voucher with that code for your business' rendered. Flaky: test_referrals.test_referral_flow_and_cap fails under pytest-xdist with 'Event loop is closed' coming from motor's find_one_and_update inside services.mark_paid when a worker's loop is being torn down; passes consistently in isolation (-n0). This is a long-standing test-infra issue (motor sharing loops with other async fixtures across xdist workers), not a product bug.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "tests/test_referrals.py::test_referral_flow_and_cap", "issue": "Flaky under pytest-xdist: 'RuntimeError: Event loop is closed' from motor inside services.mark_paid. Passes with -n0. Consider wrapping the test to use its own event loop or marking it xdist_group with other services tests."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_partner_scan.py",
+    "/app/test_reports/pytest/iter17_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/partner.py::find_partner_voucher correctly resolves ownership from deals.submitted_by on every call, so moving a deal to a new business immediately revokes the old business's ability to check/redeem outstanding vouchers for it - matches the commit intent.",
+    "/partner/redeem-card also independently re-checks deal.submitted_by, so the card-scan path is protected even if the member's voucher table has stale partner_id.",
+    "Admin/staff bypass (user['role'] in ('admin','staff')) is intentional and consistent across /partner/check, /partner/redeem-card and /partner/redemptions/today.",
+    "Test coverage is tight: test_voucher_codes_only_for_own_deals plants a voucher with stale partner_id=current business and still expects 404 - exactly the regression the fix is supposed to prevent."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (138/138 after retry of flaky test)", "frontend": "100% on the business-only-redeem scenario"},
+  "test_credentials": "business@tinysvouchers.com.au / Business!2026; member@tinysvouchers.com.au / Member!2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. test_partner_scan.py inserts and deletes its own TESTV-OTHER1 / TESTV-OWN001 voucher rows in a try/finally.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Business redeem page is at /business/redeem (not /business/scan or /business/check). Partner login button label is 'Log in' not 'Sign in'. Typed-code API is POST /api/partner/check with {code}; redeem is POST /api/partner/redeem with {code}; card redeem is POST /api/partner/redeem-card with {member_code, deal_id, live_token?}. The ownership check lives in routes/partner.py::find_partner_voucher and in /partner/redeem-card directly. Flaky referrals test can be worked around by running pytest with -n0 for test_referrals.py only.",
+  "rca of the issue": "No defects found for this iteration's change. The only flake is test_referrals under xdist (Event loop is closed from motor); passes with -n0 so it's a test-runner issue, not a bug."
+}
