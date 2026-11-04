@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Response, Depends, UploadFile, File
 
 import storage
-from core import db, logger, oid, now_iso, rand_code, with_coords, hours_text, check_live_token, CATEGORIES, DAYS
+from core import db, logger, oid, now_iso, rand_code, with_coords, hours_text, check_live_token, find_suburb, CATEGORIES, DAYS
 from deps import user_out, require_partner, require_approved_business
 from models import Deal, Voucher, DealIn, CodeIn, CardRedeemIn, ProfileIn, PhotoPathIn
 from services import used_this_term, review_out
@@ -157,6 +157,10 @@ async def update_profile(body: ProfileIn, user=Depends(require_approved_business
         raise HTTPException(400, "Add your opening hours for at least one day")
     if any(h and h["open"] == h["close"] for h in hours.values()):
         raise HTTPException(400, "Opening and closing times can't be the same")
+    place = find_suburb(data["suburb"], data["postcode"])
+    if not place:
+        raise HTTPException(400, "Please pick your suburb and postcode from the list")
+    data["suburb"] = place["name"]
     data["hours"], data["opening_hours"] = hours, hours_text(hours)
     if data.get("website") and not data["website"].startswith(("http://", "https://")):
         data["website"] = "https://" + data["website"]

@@ -8,6 +8,7 @@ load_dotenv(ROOT_DIR / ".env")
 import os
 import hmac
 import hashlib
+import json
 import logging
 import secrets
 import string
@@ -36,7 +37,12 @@ JWT_ALGORITHM = "HS256"
 CATEGORIES = ["cafes", "kids", "dining", "family-fun", "essentials", "travel"]
 MELB = ZoneInfo("Australia/Melbourne")
 PROFILE_REQUIRED = ("address", "suburb", "phone", "about")
-PROFILE_FIELDS = PROFILE_REQUIRED + ("website", "instagram", "opening_hours", "hours")
+PROFILE_FIELDS = PROFILE_REQUIRED + ("postcode", "website", "instagram", "opening_hours", "hours")
+VIC_SUBURBS = json.loads((ROOT_DIR / "data" / "vic_suburbs.json").read_text())
+_SUBURB_BY_KEY = {(s["name"].lower(), s["postcode"]): s for s in VIC_SUBURBS}
+_SUBURB_BY_NAME = {}
+for _s in VIC_SUBURBS:
+    _SUBURB_BY_NAME.setdefault(_s["name"].lower(), _s)
 DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 DAY_LABEL = dict(zip(DAYS, ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")))
 LIVE_STEP = 30  # seconds per live card code
@@ -141,9 +147,32 @@ def is_open_now(hours: Optional[dict]) -> Optional[bool]:
 
 
 # ---------- Location ----------
+def find_suburb(name: str, postcode: Optional[str] = None) -> Optional[dict]:
+    """A Victorian suburb from the postcode list, matched by name (and postcode when given)."""
+    key = (name or "").strip().lower()
+    return _SUBURB_BY_KEY.get((key, postcode)) if postcode else _SUBURB_BY_NAME.get(key)
+
+
+async def geocode_street(street: str, suburb: str, postcode: str = ""):
+    try:
+        async with httpx.AsyncClient(timeout=8) as c:
+            r = await c.get("https://nominatim.openstreetmap.org/search", headers={"User-Agent": "GoPerks/1.0"}, params={
+                "street": street, "city": suburb, "postalcode": postcode or None, "state": "Victoria", "country": "Australia",
+                "format": "json", "limit": 1})
+        data = r.json()
+        if data:
+            return float(data[0]["lat"]), float(data[0]["lon"])
+    except Exception as e:
+        logger.warning("street geocode failed for %s, %s: %s", street, suburb, e)
+    return None, None
+
+
 async def geocode(suburb: str):
     if not suburb or "multiple" in suburb.lower():
         return None, None
+    known = find_suburb(suburb)
+    if known:
+        return known["lat"], known["lng"]
     try:
         async with httpx.AsyncClient(timeout=6) as c:
             r = await c.get("https://nominatim.openstreetmap.org/search",

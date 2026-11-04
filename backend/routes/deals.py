@@ -3,9 +3,9 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Response, Depends
 
-from core import db, oid, now_iso, logo_url, is_open_now, MELB, PROFILE_FIELDS
+from core import db, oid, now_iso, logo_url, is_open_now, MELB, PROFILE_FIELDS, VIC_SUBURBS
 from deps import current_user, optional_user
 from models import Deal, ReviewIn
 from services import review_out, refresh_rating
@@ -55,6 +55,12 @@ async def get_deal(deal_id: str):
 async def list_suburbs():
     subs = await db.deals.distinct("suburb", {"status": "approved"})
     return sorted(s for s in subs if s)
+
+
+@router.get("/places/vic-suburbs")
+async def vic_suburbs(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return [{"name": s["name"], "postcode": s["postcode"]} for s in VIC_SUBURBS]
 
 
 @router.get("/stats")

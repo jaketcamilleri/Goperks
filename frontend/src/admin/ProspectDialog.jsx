@@ -3,12 +3,13 @@ import { toast } from "sonner";
 import { api, formatErr, CATEGORIES } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { btn } from "@/admin/DataTable";
+import { SuburbPicker } from "@/components/SuburbPicker";
 
 export const STATUSES = [
   ["new", "New"], ["contacted", "Contacted"], ["interested", "Interested"], ["joined", "Joined"], ["not_interested", "Not interested"],
 ];
 const field = "mt-1 h-10 w-full rounded-lg border border-[#D7E7E4] bg-white px-3 text-sm outline-none focus:border-[#17434C]";
-const BLANK = { business_name: "", category: "cafes", suburb: "", website: "", email: "", phone: "", status: "new", notes: "" };
+const BLANK = { business_name: "", category: "cafes", address: "", suburb: "", postcode: "", website: "", email: "", phone: "", status: "new", notes: "" };
 
 /** Add (prospect = null) or edit a prospect. */
 export function ProspectDialog({ prospect, onClose, onSaved }) {
@@ -18,6 +19,7 @@ export function ProspectDialog({ prospect, onClose, onSaved }) {
 
   const save = async (e) => {
     e.preventDefault();
+    if (f.suburb && !f.postcode) { toast.error("Pick the suburb from the list so we have the postcode"); return; }
     setBusy(true);
     const body = Object.fromEntries(Object.keys(BLANK).map((k) => [k, f[k] ?? ""]));
     try {
@@ -43,7 +45,12 @@ export function ProspectDialog({ prospect, onClose, onSaved }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-medium">Type<select value={f.category} onChange={set("category")} className={field} data-testid="prospect-category-select">
               {CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}</select></label>
-            <label className="block text-sm font-medium">Suburb<input value={f.suburb} onChange={set("suburb")} className={field} data-testid="prospect-suburb-input" /></label>
+            <div className="text-sm font-medium">Suburb and postcode
+              <SuburbPicker suburb={f.suburb} postcode={f.postcode} testid="prospect-suburb" className={field} placeholder="Suburb or postcode"
+                onChange={({ suburb, postcode }) => setF((cur) => ({ ...cur, suburb, postcode }))} />
+            </div>
+            <label className="block text-sm font-medium sm:col-span-2">Street address <span className="font-normal text-[#3D5E65]">(for the map)</span>
+              <input value={f.address} onChange={set("address")} placeholder="12 Anderson Street" className={field} data-testid="prospect-address-input" /></label>
             <label className="block text-sm font-medium">Email<input type="email" value={f.email} onChange={set("email")} className={field} data-testid="prospect-email-input" /></label>
             <label className="block text-sm font-medium">Phone<input value={f.phone} onChange={set("phone")} className={field} data-testid="prospect-phone-input" /></label>
           </div>
@@ -55,6 +62,9 @@ export function ProspectDialog({ prospect, onClose, onSaved }) {
           {prospect?.source_url && (
             <p className="text-xs text-[#3D5E65]">Email found on: {prospect.source_url.startsWith("http")
               ? <a href={prospect.source_url} target="_blank" rel="noreferrer" className="break-all font-semibold text-[#9A4024] hover:underline">{prospect.source_url}</a> : prospect.source_url}</p>
+          )}
+          {prospect?.pitch_status && (
+            <p className="text-xs text-[#3D5E65]" data-testid="prospect-pitch-info">Partner pitch: <b>{prospect.pitch_status === "sent" ? `sent ${new Date(prospect.pitched_at).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}` : prospect.pitch_status === "queued" ? "sending" : `not sent (${prospect.pitch_error || "error"})`}</b></p>
           )}
           <div className="flex gap-2 pt-1">
             {prospect && <button type="button" onClick={remove} className={btn.danger} data-testid="prospect-delete-btn">Remove</button>}

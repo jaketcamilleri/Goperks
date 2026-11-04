@@ -11,10 +11,11 @@ import { Eyebrow } from "@/components/Reveal";
 import { bp, assetUrl } from "@/lib/site";
 import { HoursEditor, defaultHours } from "@/components/HoursEditor";
 import { PhotoManager } from "@/components/PhotoManager";
+import { SuburbPicker } from "@/components/SuburbPicker";
 
 const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 const area = "mt-1.5 min-h-[96px] rounded-xl border-[#C2DEDA] bg-white";
-const KEYS = ["business_name", "address", "suburb", "phone", "website", "instagram", "about"];
+const KEYS = ["business_name", "address", "suburb", "postcode", "phone", "website", "instagram", "about"];
 
 function LogoPicker({ user, setUser }) {
   const ref = useRef(null);
@@ -75,6 +76,7 @@ export default function BusinessProfile() {
   const save = async (e) => {
     e.preventDefault();
     if (!Object.values(hours).some(Boolean)) { toast.error("Tick at least one day you're open"); return; }
+    if (!f.postcode) { toast.error("Pick your suburb from the list so we have the postcode"); return; }
     setBusy(true);
     try {
       const r = await api.put("/business/profile", { ...f, hours, website: f.website || null, instagram: f.instagram || null });
@@ -93,7 +95,11 @@ export default function BusinessProfile() {
         <LogoPicker user={user} setUser={setUser} />
         <div className="sm:col-span-2"><Field k="business_name" label="Business name" f={f} set={set} maxLength={120} /></div>
         <Field k="address" label="Street address" f={f} set={set} placeholder="12 Sydney Rd" maxLength={200} autoComplete="street-address" />
-        <Field k="suburb" label="Suburb" f={f} set={set} placeholder="Brunswick" maxLength={80} />
+        <div>
+          <Label htmlFor="pf-suburb">Suburb and postcode</Label>
+          <SuburbPicker id="pf-suburb" required suburb={f.suburb} postcode={f.postcode} testid="profile-suburb" className={`flex w-full border px-3 text-sm outline-none focus:border-[#17434C] ${field}`}
+            onChange={({ suburb, postcode }) => setF((cur) => ({ ...cur, suburb, postcode }))} />
+        </div>
         <Field k="phone" label="Phone" f={f} set={set} type="tel" placeholder="03 9000 0000" minLength={6} maxLength={30} />
         <Field k="website" label="Website" f={f} set={set} required={false} placeholder="yourbusiness.com.au" maxLength={200} />
         <Field k="instagram" label="Instagram" f={f} set={set} required={false} placeholder="@yourbusiness" maxLength={60} />

@@ -19,9 +19,10 @@ const ACTIONS = {
   "password_link.sent": ["Sent password link", NEUTRAL], "staff.removed": ["Removed staff", BAD],
   "reports.sent": ["Sent partner reports", SYSTEM],
   "invites.sent": ["Sent member invites", GOOD], "invites.retried": ["Retried member invites", NEUTRAL],
+  "pitch.sent": ["Sent partner pitches", GOOD],
 };
 const labelOf = (a) => ACTIONS[a]?.[0] || a;
-const AREA = { deal: "Deal", business: "Business", member: "Member", staff: "Staff", review: "Review", invite: "Invites", system: "Automatic" };
+const AREA = { deal: "Deal", business: "Business", member: "Member", staff: "Staff", review: "Review", invite: "Invites", prospect: "Prospects", system: "Automatic" };
 
 const FILTERS = [
   { key: "all", label: "All", test: () => true },

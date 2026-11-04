@@ -51,6 +51,7 @@ BIZ_PROFILE_BODY = {
     "business_name": "Tiny's Test Cafe",
     "address": "1 Test Lane",
     "suburb": "Melbourne",
+    "postcode": "3000",
     "phone": "0400000000",
     "website": "https://testcafe.example.com",
     "instagram": "tinytest",

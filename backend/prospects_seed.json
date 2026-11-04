@@ -6,7 +6,12 @@
   "website": "https://cornershopyarraville.com",
   "email": "11ballaratst@gmail.com",
   "phone": "",
-  "source_url": "https://www.cornershopyarraville.com/visit"
+  "source_url": "https://www.cornershopyarraville.com/visit",
+  "postcode": "3013",
+  "lat": -37.8161238,
+  "lng": 144.8911629,
+  "located": "exact",
+  "address": "9-11 Ballarat Street"
  },
  {
   "business_name": "Masak Masak",
@@ -15,7 +20,12 @@
   "website": "https://masakmasak.carrd.co",
   "email": "hello@masakmasak.com.au",
   "phone": "",
-  "source_url": "https://masakmasak.carrd.co"
+  "source_url": "https://masakmasak.carrd.co",
+  "postcode": "3013",
+  "lat": -37.8126528,
+  "lng": 144.8690656,
+  "located": "exact",
+  "address": "128 Roberts Street"
  },
  {
   "business_name": "Tailor Made",
@@ -24,7 +34,12 @@
   "website": "https://tailormadeyarraville.com",
   "email": "tailormade.yarraville@gmail.com",
   "phone": "",
-  "source_url": "https://www.tailormadeyarraville.com"
+  "source_url": "https://www.tailormadeyarraville.com",
+  "postcode": "3013",
+  "lat": -37.8103021,
+  "lng": 144.8895607,
+  "located": "exact",
+  "address": "84 Gamon Street"
  },
  {
   "business_name": "Willis & Anderson",
@@ -33,7 +48,12 @@
   "website": "https://willisanderson.com.au",
   "email": "contact@willisanderson.com.au",
   "phone": "",
-  "source_url": "https://www.willisanderson.com.au/"
+  "source_url": "https://www.willisanderson.com.au/",
+  "postcode": "3013",
+  "lat": -37.8169134,
+  "lng": 144.8920944,
+  "located": "exact",
+  "address": "1 Anderson Street"
  },
  {
   "business_name": "Wembley Coffee & Food",
@@ -42,7 +62,12 @@
   "website": "https://wembleycoffeefood.com.au",
   "email": "info@wembleycoffeefood.com.au",
   "phone": "",
-  "source_url": "https://www.wembleycoffeefood.com.au/"
+  "source_url": "https://www.wembleycoffeefood.com.au/",
+  "postcode": "3013",
+  "lat": -37.8196439,
+  "lng": 144.8738013,
+  "located": "exact",
+  "address": "10 WEMBLEY AVE"
  },
  {
   "business_name": "Seddon Deadly Sins",
@@ -51,7 +76,12 @@
   "website": "https://seddondeadlysins.com.au",
   "email": "orders@seddondeadlysins.com.au",
   "phone": "",
-  "source_url": "https://seddondeadlysins.com.au"
+  "source_url": "https://seddondeadlysins.com.au",
+  "postcode": "3011",
+  "lat": -37.8047818,
+  "lng": 144.8919571,
+  "located": "exact",
+  "address": "148 Victoria Street"
  },
  {
   "business_name": "Miss An'am",
@@ -60,7 +90,12 @@
   "website": "https://missanam.com.au",
   "email": "missanam.seddon@gmail.com",
   "phone": "",
-  "source_url": "https://missanam.com.au"
+  "source_url": "https://missanam.com.au",
+  "postcode": "3011",
+  "lat": -37.8064444,
+  "lng": 144.890849,
+  "located": "exact",
+  "address": "86A Charles Street"
  },
  {
   "business_name": "Rudimentary",
@@ -69,7 +104,12 @@
   "website": "https://rudimentary.com.au",
   "email": "info@rudimentary.com.au",
   "phone": "",
-  "source_url": "https://www.rudimentary.com.au/"
+  "source_url": "https://www.rudimentary.com.au/",
+  "postcode": "3011",
+  "lat": -37.7981687,
+  "lng": 144.901086,
+  "located": "exact",
+  "address": "16-20 Leeds Street"
  },
  {
   "business_name": "Brother Nancy",
@@ -78,7 +118,12 @@
   "website": "https://www.brothernancy.cafe",
   "email": "cafe@brothernancy.com.au",
   "phone": "",
-  "source_url": "https://www.brothernancy.cafe"
+  "source_url": "https://www.brothernancy.cafe",
+  "postcode": "3012",
+  "lat": -37.7930338,
+  "lng": 144.8728987,
+  "located": "exact",
+  "address": "182 Essex Street"
  },
  {
   "business_name": "Migrant Coffee",
@@ -87,7 +132,12 @@
   "website": "https://migrantcoffee.com",
   "email": "hello@migrantcoffee.com",
   "phone": "",
-  "source_url": "https://www.migrantcoffee.com/"
+  "source_url": "https://www.migrantcoffee.com/",
+  "postcode": "3012",
+  "lat": -37.7967641,
+  "lng": 144.8716166,
+  "located": "exact",
+  "address": "3/576 Barkly St"
  },
  {
   "business_name": "Bar Thyme",
@@ -96,7 +146,12 @@
   "website": "https://www.barthyme.com.au",
   "email": "hello@barthyme.com.au",
   "phone": "",
-  "source_url": "https://www.barthyme.com.au"
+  "source_url": "https://www.barthyme.com.au",
+  "postcode": "3011",
+  "lat": -37.7996509,
+  "lng": 144.8967339,
+  "located": "exact",
+  "address": "227 Barkly St"
  },
  {
   "business_name": "Harley & Rose",
@@ -105,7 +160,12 @@
   "website": "https://www.harleyandrose.net.au",
   "email": "hello@harleyandrose.net.au",
   "phone": "",
-  "source_url": "https://www.harleyandrose.net.au"
+  "source_url": "https://www.harleyandrose.net.au",
+  "postcode": "3012",
+  "lat": -37.7972928,
+  "lng": 144.8778438,
+  "located": "exact",
+  "address": "572 Barkly Street"
  },
  {
   "business_name": "Shadowfax Winery",
@@ -114,7 +174,12 @@
   "website": "https://www.shadowfax.com.au",
   "email": "cellardoor@shadowfax.com.au",
   "phone": "",
-  "source_url": "https://www.shadowfax.com.au"
+  "source_url": "https://www.shadowfax.com.au",
+  "postcode": "3030",
+  "lat": -37.8998,
+  "lng": 144.66414,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Climb 'n' Play",
@@ -123,7 +188,12 @@
   "website": "https://climbnplay.com.au",
   "email": "maidstone@climbnplay.com.au",
   "phone": "",
-  "source_url": "https://climbnplay.com.au"
+  "source_url": "https://climbnplay.com.au",
+  "postcode": "3012",
+  "lat": -37.783,
+  "lng": 144.878,
+  "located": "suburb",
+  "address": "3/98-108 Hampstead road"
  },
  {
   "business_name": "Crocs Playcentre Derrimut",
@@ -132,7 +202,12 @@
   "website": "https://derrimut.crocsplaycentre.com.au",
   "email": "bookings@crocsplaycentre.com.au",
   "phone": "",
-  "source_url": "https://derrimut.crocsplaycentre.com.au"
+  "source_url": "https://derrimut.crocsplaycentre.com.au",
+  "postcode": "3026",
+  "lat": -37.79271,
+  "lng": 144.77156,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Bumble Beez Playcentre",
@@ -141,7 +216,12 @@
   "website": "https://www.bumblebeezpc.com.au",
   "email": "info@bumblebeezpc.com.au",
   "phone": "",
-  "source_url": "https://www.bumblebeezpc.com.au"
+  "source_url": "https://www.bumblebeezpc.com.au",
+  "postcode": "3030",
+  "lat": -37.9147909,
+  "lng": 144.6612441,
+  "located": "exact",
+  "address": "27 Loop Road"
  },
  {
   "business_name": "BouncyRoos",
@@ -150,7 +230,12 @@
   "website": "https://www.bouncyroos.com.au",
   "email": "parties@bouncyroos.com.au",
   "phone": "",
-  "source_url": "https://www.bouncyroos.com.au"
+  "source_url": "https://www.bouncyroos.com.au",
+  "postcode": "3030",
+  "lat": -37.9137401,
+  "lng": 144.6586201,
+  "located": "exact",
+  "address": "13 Riverside Avenue"
  },
  {
   "business_name": "Assembly Yoga + Pilates",
@@ -159,7 +244,12 @@
   "website": "https://assemblystudios.com.au",
   "email": "hello@assemblystudios.com.au",
   "phone": "",
-  "source_url": "https://assemblystudios.com.au"
+  "source_url": "https://assemblystudios.com.au",
+  "postcode": "3012",
+  "lat": -37.7972678,
+  "lng": 144.8775026,
+  "located": "exact",
+  "address": "576 Barkly Street"
  },
  {
   "business_name": "Crew Studios",
@@ -168,7 +258,12 @@
   "website": "https://www.crewstudios.com.au",
   "email": "info@crewstudios.com.au",
   "phone": "",
-  "source_url": "https://www.crewstudios.com.au/contact"
+  "source_url": "https://www.crewstudios.com.au/contact",
+  "postcode": "3016",
+  "lat": -37.861,
+  "lng": 144.885,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Movement Culture",
@@ -177,7 +272,12 @@
   "website": "https://www.movementculture.net.au",
   "email": "hello@movementculture.net.au",
   "phone": "",
-  "source_url": "https://www.movementculture.net.au"
+  "source_url": "https://www.movementculture.net.au",
+  "postcode": "3018",
+  "lat": -37.86315,
+  "lng": 144.81202,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Kultured Barbers & Hairdressing",
@@ -186,7 +286,12 @@
   "website": "https://kulturedbarbers.com.au",
   "email": "kulturedbarbers@gmail.com",
   "phone": "",
-  "source_url": "https://kulturedbarbers.com.au"
+  "source_url": "https://kulturedbarbers.com.au",
+  "postcode": "3011",
+  "lat": -37.8008405,
+  "lng": 144.8968151,
+  "located": "exact",
+  "address": "30 French St"
  },
  {
   "business_name": "The Sun Bookshop",
@@ -195,7 +300,12 @@
   "website": "https://sunbookshop.com",
   "email": "info@sunbookshop.com",
   "phone": "",
-  "source_url": "https://sunbookshop.com"
+  "source_url": "https://sunbookshop.com",
+  "postcode": "3013",
+  "lat": -37.8160627,
+  "lng": 144.8908891,
+  "located": "exact",
+  "address": "10 Ballarat Street"
  },
  {
   "business_name": "Seddon Book Alley",
@@ -204,7 +314,12 @@
   "website": "https://seddonbookalley.com.au",
   "email": "info@seddonbookalley.com.au",
   "phone": "",
-  "source_url": "https://seddonbookalley.com.au"
+  "source_url": "https://seddonbookalley.com.au",
+  "postcode": "3011",
+  "lat": -37.8061115,
+  "lng": 144.8920447,
+  "located": "exact",
+  "address": "107 Victoria Street"
  },
  {
   "business_name": "Book and Paper",
@@ -213,7 +328,12 @@
   "website": "https://bookandpaper.com.au",
   "email": "contact@bookandpaper.com.au",
   "phone": "",
-  "source_url": "https://bookandpaper.com.au"
+  "source_url": "https://bookandpaper.com.au",
+  "postcode": "3016",
+  "lat": -37.8577743,
+  "lng": 144.897993,
+  "located": "exact",
+  "address": "36 Douglas Parade"
  },
  {
   "business_name": "Invite Me",
@@ -222,7 +342,12 @@
   "website": "https://inviteme.com.au",
   "email": "sales@inviteme.com.au",
   "phone": "",
-  "source_url": "https://inviteme.com.au"
+  "source_url": "https://inviteme.com.au",
+  "postcode": "3013",
+  "lat": -37.8165052,
+  "lng": 144.8885834,
+  "located": "exact",
+  "address": "81 Anderson Street"
  },
  {
   "business_name": "Village Idiom",
@@ -231,7 +356,12 @@
   "website": "https://villageidiom.com.au",
   "email": "shop@villageidiom.com.au",
   "phone": "",
-  "source_url": "https://www.villageidiom.com.au/"
+  "source_url": "https://www.villageidiom.com.au/",
+  "postcode": "3013",
+  "lat": -37.8163695,
+  "lng": 144.8903672,
+  "located": "exact",
+  "address": "34 Anderson Street"
  },
  {
   "business_name": "Creative House",
@@ -240,7 +370,12 @@
   "website": "https://creativehouseyarraville.com.au",
   "email": "creative.house@bigpond.com",
   "phone": "",
-  "source_url": "https://www.creativehouseyarraville.com.au/contact"
+  "source_url": "https://www.creativehouseyarraville.com.au/contact",
+  "postcode": "3013",
+  "lat": -37.8162504,
+  "lng": 144.8908294,
+  "located": "exact",
+  "address": "14 Ballarat St"
  },
  {
   "business_name": "Sedonia",
@@ -249,7 +384,12 @@
   "website": "https://sedonia.com.au",
   "email": "hello@sedonia.com.au",
   "phone": "",
-  "source_url": "https://www.sedonia.com.au/"
+  "source_url": "https://www.sedonia.com.au/",
+  "postcode": "3011",
+  "lat": -37.8083211,
+  "lng": 144.8903433,
+  "located": "exact",
+  "address": "39-41 Gamon Street"
  },
  {
   "business_name": "Far Fetched Designs",
@@ -258,7 +398,12 @@
   "website": "https://farfetcheddesigns.com.au",
   "email": "farfetcheddesigns.popup@gmail.com",
   "phone": "",
-  "source_url": "https://www.farfetcheddesigns.com.au/policies/contact-information"
+  "source_url": "https://www.farfetcheddesigns.com.au/policies/contact-information",
+  "postcode": "3011",
+  "lat": -37.8063905,
+  "lng": 144.8910094,
+  "located": "exact",
+  "address": "84 Charles Street"
  },
  {
   "business_name": "Simple Form",
@@ -267,7 +412,12 @@
   "website": "https://simpleform.com.au",
   "email": "hello@simpleform.com.au",
   "phone": "",
-  "source_url": "https://simpleform.com.au"
+  "source_url": "https://simpleform.com.au",
+  "postcode": "3011",
+  "lat": -37.8067573,
+  "lng": 144.8908883,
+  "located": "exact",
+  "address": "95 Charles Street"
  },
  {
   "business_name": "Offshoot",
@@ -276,7 +426,12 @@
   "website": "https://off-shoot.com.au",
   "email": "hello@off-shoot.com.au",
   "phone": "",
-  "source_url": "https://www.off-shoot.com.au/"
+  "source_url": "https://www.off-shoot.com.au/",
+  "postcode": "3011",
+  "lat": -37.80645,
+  "lng": 144.8908976,
+  "located": "exact",
+  "address": "86 Charles Street"
  },
  {
   "business_name": "Yarraville Blooms",
@@ -285,7 +440,12 @@
   "website": "https://yarravilleblooms.com.au",
   "email": "hello@yarravilleblooms.com.au",
   "phone": "",
-  "source_url": "https://www.yarravilleblooms.com.au/pages/contact"
+  "source_url": "https://www.yarravilleblooms.com.au/pages/contact",
+  "postcode": "3013",
+  "lat": -37.8166414,
+  "lng": 144.8915173,
+  "located": "exact",
+  "address": "10 Anderson St"
  },
  {
   "business_name": "Birchbox Flowers",
@@ -294,7 +454,12 @@
   "website": "https://birchboxflowers.com.au",
   "email": "sales@birchboxflowers.com.au",
   "phone": "",
-  "source_url": "https://www.birchboxflowers.com.au/"
+  "source_url": "https://www.birchboxflowers.com.au/",
+  "postcode": "3013",
+  "lat": -37.8168032,
+  "lng": 144.8899819,
+  "located": "exact",
+  "address": "51 Anderson Street"
  },
  {
   "business_name": "The Corner of Altona",
@@ -303,7 +468,12 @@
   "website": "https://www.thecornerofaltona.com.au",
   "email": "meet@thecornerofaltona.com.au",
   "phone": "",
-  "source_url": "https://www.thecornerofaltona.com.au"
+  "source_url": "https://www.thecornerofaltona.com.au",
+  "postcode": "3018",
+  "lat": -37.8677287,
+  "lng": 144.830529,
+  "located": "exact",
+  "address": "32-34 Pier St"
  },
  {
   "business_name": "Wolf Cafe & Eatery",
@@ -312,7 +482,12 @@
   "website": "https://www.wolfcafeandeatery.com.au",
   "email": "info@wolfcafeandeatery.com.au",
   "phone": "",
-  "source_url": "https://www.wolfcafeandeatery.com.au"
+  "source_url": "https://www.wolfcafeandeatery.com.au",
+  "postcode": "3025",
+  "lat": -37.844785,
+  "lng": 144.8414939,
+  "located": "exact",
+  "address": "31 Lobelia Drive"
  },
  {
   "business_name": "Inner West Swedish Baker",
@@ -321,7 +496,12 @@
   "website": "https://innerwestswedishbaker.com.au",
   "email": "innerwestswedishbaker@gmail.com",
   "phone": "",
-  "source_url": "https://innerwestswedishbaker.com.au/contact/"
+  "source_url": "https://innerwestswedishbaker.com.au/contact/",
+  "postcode": "3012",
+  "lat": -37.7975041,
+  "lng": 144.8774903,
+  "located": "exact",
+  "address": "549A Barkly St"
  },
  {
   "business_name": "Alfa Bakehouse",
@@ -330,7 +510,12 @@
   "website": "https://www.alfabakehouse.com.au",
   "email": "info@alfabakehouse.com.au",
   "phone": "",
-  "source_url": "https://www.alfabakehouse.com.au/contact"
+  "source_url": "https://www.alfabakehouse.com.au/contact",
+  "postcode": "3011",
+  "lat": -37.8057805,
+  "lng": 144.8921964,
+  "located": "exact",
+  "address": "Austin Street"
  },
  {
   "business_name": "Gigi's Gelato",
@@ -339,7 +524,12 @@
   "website": "https://gigisgelato.com.au",
   "email": "sue@gigisgelato.com.au",
   "phone": "",
-  "source_url": "https://gigisgelato.com.au"
+  "source_url": "https://gigisgelato.com.au",
+  "postcode": "3013",
+  "lat": -37.816843,
+  "lng": 144.8916228,
+  "located": "exact",
+  "address": "15 Anderson Street"
  },
  {
   "business_name": "Biancolatte Gelateria & Cannoleria",
@@ -348,7 +538,12 @@
   "website": "https://www.biancolatte.com.au",
   "email": "info@biancolatte.com.au",
   "phone": "",
-  "source_url": "https://www.biancolatte.com.au"
+  "source_url": "https://www.biancolatte.com.au",
+  "postcode": "3013",
+  "lat": -37.8164352,
+  "lng": 144.891147,
+  "located": "exact",
+  "address": "17 Ballarat St"
  },
  {
   "business_name": "3 Grains",
@@ -357,7 +552,12 @@
   "website": "https://www.3grains.com.au",
   "email": "info@3grains.com.au",
   "phone": "",
-  "source_url": "https://www.3grains.com.au"
+  "source_url": "https://www.3grains.com.au",
+  "postcode": "3013",
+  "lat": -37.8163838,
+  "lng": 144.8908047,
+  "located": "exact",
+  "address": "20 Ballarat Street"
  },
  {
   "business_name": "Albright Studios",
@@ -366,7 +566,12 @@
   "website": "https://www.albrightstudios.com.au",
   "email": "admin@albrightstudios.com.au",
   "phone": "",
-  "source_url": "https://www.albrightstudios.com.au"
+  "source_url": "https://www.albrightstudios.com.au",
+  "postcode": "3011",
+  "lat": -37.8074411,
+  "lng": 144.9000814,
+  "located": "exact",
+  "address": "4a Hyde Street"
  },
  {
   "business_name": "WestEnd Performing Arts",
@@ -375,7 +580,12 @@
   "website": "https://westendperformingarts.com.au",
   "email": "info@westendperformingarts.com.au",
   "phone": "",
-  "source_url": "https://westendperformingarts.com.au"
+  "source_url": "https://westendperformingarts.com.au",
+  "postcode": "3020",
+  "lat": -37.78366,
+  "lng": 144.83757,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Leaps N Beats Dance",
@@ -384,7 +594,12 @@
   "website": "http://www.leapsnbeatsdance.com.au",
   "email": "info@leapsnbeatsdance.com.au",
   "phone": "",
-  "source_url": "https://www.leapsnbeatsdance.com.au/contact-us/"
+  "source_url": "https://www.leapsnbeatsdance.com.au/contact-us/",
+  "postcode": "3013",
+  "lat": -37.8115135,
+  "lng": 144.9004552,
+  "located": "exact",
+  "address": "3 Harris st"
  },
  {
   "business_name": "Let's Swim! Swim School",
@@ -393,7 +608,12 @@
   "website": "https://www.letsswim.com.au",
   "email": "newport@letsswim.com.au",
   "phone": "",
-  "source_url": "https://www.letsswim.com.au"
+  "source_url": "https://www.letsswim.com.au",
+  "postcode": "3016",
+  "lat": -37.85176,
+  "lng": 144.869,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "The Creative Music Studio",
@@ -402,7 +622,12 @@
   "website": "https://www.thecreativemusicstudio.com",
   "email": "info@thecreativemusicstudio.com",
   "phone": "",
-  "source_url": "https://www.thecreativemusicstudio.com"
+  "source_url": "https://www.thecreativemusicstudio.com",
+  "postcode": "3015",
+  "lat": -37.842,
+  "lng": 144.884,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Pups On Parade",
@@ -411,7 +636,12 @@
   "website": "https://www.pupsonparade.com.au",
   "email": "hello@pupsonparade.com.au",
   "phone": "",
-  "source_url": "https://www.pupsonparade.com.au"
+  "source_url": "https://www.pupsonparade.com.au",
+  "postcode": "3016",
+  "lat": -37.8584071,
+  "lng": 144.8980776,
+  "located": "exact",
+  "address": "14 Douglas Parade"
  },
  {
   "business_name": "Le Spa De Jour",
@@ -420,7 +650,12 @@
   "website": "https://lespadejour.com",
   "email": "support@lespadejour.com",
   "phone": "",
-  "source_url": "https://lespadejour.com"
+  "source_url": "https://lespadejour.com",
+  "postcode": "3011",
+  "lat": -37.803684,
+  "lng": 144.8919644,
+  "located": "exact",
+  "address": "120 Victoria Street"
  },
  {
   "business_name": "Uncanny Animals",
@@ -429,7 +664,12 @@
   "website": "https://uncannyanimals.com.au",
   "email": "bookings@uncannyanimals.com.au",
   "phone": "",
-  "source_url": "https://www.uncannyanimals.com.au/pages/contact"
+  "source_url": "https://www.uncannyanimals.com.au/pages/contact",
+  "postcode": "3013",
+  "lat": -37.8165679,
+  "lng": 144.8892017,
+  "located": "exact",
+  "address": "69 Anderson Street"
  },
  {
   "business_name": "Doggy Dooz",
@@ -438,7 +678,12 @@
   "website": "https://doggydooz.com.au",
   "email": "info@doggydooz.com.au",
   "phone": "",
-  "source_url": "https://www.doggydooz.com.au/"
+  "source_url": "https://www.doggydooz.com.au/",
+  "postcode": "3011",
+  "lat": -37.8063149,
+  "lng": 144.89041,
+  "located": "exact",
+  "address": "94 Charles Street"
  },
  {
   "business_name": "Hobsons Bay Pet Care",
@@ -447,7 +692,12 @@
   "website": "https://www.dogsdogsdogs.com.au",
   "email": "admin@dogsdogsdogs.com.au",
   "phone": "",
-  "source_url": "https://www.dogsdogsdogs.com.au"
+  "source_url": "https://www.dogsdogsdogs.com.au",
+  "postcode": "3016",
+  "lat": -37.861,
+  "lng": 144.885,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Augustus Gelatery Werribee",
@@ -456,7 +706,12 @@
   "website": "https://augustusgelatery.com.au",
   "email": "scoop@augustusgelatery.com.au",
   "phone": "03 8763 1486",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/augustus-gelatery-werribee-0"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/augustus-gelatery-werribee-0",
+  "postcode": "3030",
+  "lat": -37.902657,
+  "lng": 144.6584629,
+  "located": "exact",
+  "address": "76 Watton Street"
  },
  {
   "business_name": "Bean Smuggler",
@@ -465,7 +720,12 @@
   "website": "https://beansmuggler.com.au",
   "email": "beansmuggler.pointcook@gmail.com",
   "phone": "03 9395 1212",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bean-smuggler"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bean-smuggler",
+  "postcode": "3030",
+  "lat": -37.898588,
+  "lng": 144.7097154,
+  "located": "exact",
+  "address": "225-229 Sneydes Road"
  },
  {
   "business_name": "Bellissima Italian Pantry",
@@ -474,7 +734,12 @@
   "website": "https://www.bellissima.com.au",
   "email": "ciao@bellissima.com.au",
   "phone": "03 9742 2260",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bellissima-italian-pantry"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bellissima-italian-pantry",
+  "postcode": "3030",
+  "lat": -37.89286,
+  "lng": 144.6765809,
+  "located": "exact",
+  "address": "45 Railway Ave"
  },
  {
   "business_name": "Cake Creations by Kate",
@@ -483,7 +748,12 @@
   "website": "https://cakecreationsbykate.com.au",
   "email": "sales@ccbk.com.au",
   "phone": "03 9395 9656",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/cake-creations-kate"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/cake-creations-kate",
+  "postcode": "3030",
+  "lat": -37.91781,
+  "lng": 144.74773,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Chatterbox Cafe",
@@ -492,7 +762,12 @@
   "website": "http://www.chatterboxcafe.com.au",
   "email": "info@chatterboxcafe.com.au",
   "phone": "03 9741 7495",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/chatterbox-cafe"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/chatterbox-cafe",
+  "postcode": "3030",
+  "lat": -37.9012943,
+  "lng": 144.6617562,
+  "located": "exact",
+  "address": "63 Watton Street"
  },
  {
   "business_name": "Fusion Ceylon",
@@ -501,7 +776,12 @@
   "website": "https://fusionceylon.com.au",
   "email": "info@fusionceylon.com.au",
   "phone": "0433 696 726",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/fusion-ceylon"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/fusion-ceylon",
+  "postcode": "3030",
+  "lat": -37.9005837,
+  "lng": 144.6631676,
+  "located": "exact",
+  "address": "27 Watton Street"
  },
  {
   "business_name": "The Garden Feast",
@@ -510,7 +790,12 @@
   "website": "https://gardenfeast.com.au",
   "email": "nursery@gardenfeast.com.au",
   "phone": "03 9741 3100",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/garden-feast"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/garden-feast",
+  "postcode": "3030",
+  "lat": -37.8938133,
+  "lng": 144.6745914,
+  "located": "exact",
+  "address": "71 Railway Avenue"
  },
  {
   "business_name": "Little Espresso",
@@ -519,7 +804,12 @@
   "website": "",
   "email": "littleespresso@outlook.com",
   "phone": "03 8386 7241",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-espresso"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-espresso",
+  "postcode": "3030",
+  "lat": -37.8825998,
+  "lng": 144.7360131,
+  "located": "exact",
+  "address": "4 Main Street"
  },
  {
   "business_name": "Little Growling Cafe",
@@ -528,7 +818,12 @@
   "website": "https://littlegrowlingcafe.com.au",
   "email": "littlegrowlingcafe@gmail.com",
   "phone": "0404 311 833",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-growling-cafe"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-growling-cafe",
+  "postcode": "3029",
+  "lat": -37.8470281,
+  "lng": 144.6517562,
+  "located": "exact",
+  "address": "180 Davis Road"
  },
  {
   "business_name": "Little Miss Violet",
@@ -537,7 +832,12 @@
   "website": "",
   "email": "littlemissvioletcafe@gmail.com",
   "phone": "03 8353 8630",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-miss-violet"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-miss-violet",
+  "postcode": "3030",
+  "lat": -37.91781,
+  "lng": 144.74773,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Notorious Espresso",
@@ -546,7 +846,12 @@
   "website": "https://notoriousespresso.com.au",
   "email": "hello@notoriousesp.com",
   "phone": "0432 098 070",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/notorious-espresso"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/notorious-espresso",
+  "postcode": "3030",
+  "lat": -37.9016181,
+  "lng": 144.661227,
+  "located": "exact",
+  "address": "81 Watton Street"
  },
  {
   "business_name": "Sons of Manor",
@@ -555,7 +860,12 @@
   "website": "https://sonsofmanor.com.au",
   "email": "info@sonsofmanor.com.au",
   "phone": "03 7036 6965",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/sons-manor"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/sons-manor",
+  "postcode": "3024",
+  "lat": -37.8734,
+  "lng": 144.582,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "The South Corner",
@@ -564,7 +874,12 @@
   "website": "https://www.thesouthcorner.cafe",
   "email": "info@thesouthcorner.cafe",
   "phone": "03 9741 5142",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/south-corner"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/south-corner",
+  "postcode": "3030",
+  "lat": -37.8998,
+  "lng": 144.66414,
+  "located": "suburb",
+  "address": ""
  },
  {
   "business_name": "Wolf on Watton",
@@ -573,7 +888,12 @@
   "website": "https://wolfonwatton.com.au",
   "email": "hello@wolfonwatton.com.au",
   "phone": "",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/wolf-watton"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/wolf-watton",
+  "postcode": "3030",
+  "lat": -37.9030188,
+  "lng": 144.6577145,
+  "located": "exact",
+  "address": "90A Watton Street"
  },
  {
   "business_name": "Village Cantina Werribee",
@@ -582,6 +902,11 @@
   "website": "",
   "email": "hola@villagecantina.com.au",
   "phone": "03 9974 2959",
-  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/village-cantina-werribee"
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/village-cantina-werribee",
+  "postcode": "3030",
+  "lat": -37.9000707,
+  "lng": 144.6627547,
+  "located": "exact",
+  "address": "4C Watton Street"
  }
 ]

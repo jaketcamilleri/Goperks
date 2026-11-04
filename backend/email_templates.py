@@ -189,6 +189,26 @@ def invite_email(name: str, note: str, unsubscribe_url: str):
         _layout("Your year of local perks starts here", body, "Become a member", "/join", footer)
 
 
+def partner_pitch_email(business: str, sender: str, note: str, unsubscribe_url: str):
+    li = lambda t: f'<li style="margin:0 0 6px">{t}</li>'
+    perks = ('<ul style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;margin:0 0 14px;padding-left:20px">'
+             + li("<b>It's free to join.</b>")
+             + li(f"<b>We advertise your business</b> on {escape(EMAIL_FROM_NAME)}, so local members can find you.")
+             + li("<b>You choose the offer</b> you give members, and you can update it any time.") + "</ul>")
+    note_html = (f'<p style="font-family:Georgia,serif;font-size:17px;font-style:italic;line-height:1.5;border-left:3px solid #EE8A63;padding-left:14px;margin:18px 0">'
+                 f'\u201c{escape(note)}\u201d</p>') if note else ""
+    who = escape(sender.split(" ")[0]) if sender else "the team"
+    body = (_p(f"Hi {escape(business)} team,")
+            + _p(f"I'm {who} from {escape(EMAIL_FROM_NAME)}, a A$49-a-year membership that gives local people exclusive deals and discounts "
+                 "at cafes, restaurants, kids' activities, family days out and everyday essentials.")
+            + _p(f"We'd love to have {escape(business)} on board as a partner:") + perks + note_html
+            + _p("Tap below to create your partner account, or just reply to this email with any questions."))
+    footer = (f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Rather not hear from us? '
+              f'<a href="{escape(unsubscribe_url)}" style="color:#5E7F84">Unsubscribe</a> and we won\'t email you again.</p>')
+    return (f"Free to join: put {business} in front of local {EMAIL_FROM_NAME} members",
+            _layout("Become a local partner", body, "Become a partner", "biz:/register", footer))
+
+
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
     first = escape(name.split(" ")[0] if name else "there")
     saved_line = (f"So far you've saved <b>${saved:,.2f}</b> across {used} deal{'s' if used != 1 else ''} — "

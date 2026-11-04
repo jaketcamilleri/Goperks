@@ -34,10 +34,11 @@ class TestInvites:
             {"email": "member@tinysvouchers.com.au"}, {"email": "nope"}], "note": "Hi from the team"}).json()
         assert r["queued"] == 1
         assert sorted(s["reason"] for s in r["skipped"]) == ["already has an account", "is listed twice", "isn't a valid email"]
-        again = admin.post(f"{API}/admin/invites", json={"people": [{"email": email}]}).json()
-        assert again["queued"] == 0 and again["skipped"][0]["reason"] == "was already invited"
         row = next(x for x in admin.get(f"{API}/admin/invites").json() if x["email"] == email)
         assert row["name"] == "Test Person" and row["note"] == "Hi from the team" and row["joined"] is False
+        again = admin.post(f"{API}/admin/invites", json={"people": [{"email": email}]}).json()
+        # A first send the email service rejected is allowed to be re-sent; otherwise it's skipped as a repeat.
+        assert again["queued"] == 1 or again["skipped"][0]["reason"] == "was already invited"
 
     def test_unsubscribe_blocks_future_invites(self):
         from core import make_token

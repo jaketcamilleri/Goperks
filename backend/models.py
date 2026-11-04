@@ -38,6 +38,7 @@ class User(BaseDocument):
     super_admin: bool = False
     address: Optional[str] = None
     suburb: Optional[str] = None
+    postcode: Optional[str] = None
     phone: Optional[str] = None
     website: Optional[str] = None
     instagram: Optional[str] = None
@@ -191,6 +192,7 @@ class ProfileIn(BaseModel):
     business_name: str = Field(min_length=1, max_length=120)
     address: str = Field(min_length=3, max_length=200)
     suburb: str = Field(min_length=2, max_length=80)
+    postcode: str = Field(pattern=r"^3\d{3}$")
     phone: str = Field(min_length=6, max_length=30)
     website: Optional[str] = Field(None, max_length=200)
     instagram: Optional[str] = Field(None, max_length=60)
