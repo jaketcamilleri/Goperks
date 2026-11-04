@@ -1,19 +1,6 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LogoMark } from "@/components/Logo";
-
-function Barcode({ value = "LP-000000" }) {
-  const bars = Array.from(value.repeat(3)).map((ch, i) => ((ch.charCodeAt(0) + i) % 4) + 1);
-  let x = 0;
-  return (
-    <svg viewBox="0 0 160 36" className="h-9 w-full" preserveAspectRatio="none" aria-hidden="true">
-      {bars.map((w, i) => {
-        const rect = i % 2 === 0 ? <rect key={i} x={x} y="0" width={w} height="36" fill="#17434C" /> : null;
-        x += w + 1;
-        return rect;
-      })}
-    </svg>
-  );
-}
+import { QRCodeSVG } from "qrcode.react";
 
 export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, status = "preview", className = "" }) {
   const mx = useMotionValue(0);
@@ -61,14 +48,14 @@ export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, st
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Member no.</p>
                 <p className="font-mono text-sm font-bold sm:text-base" data-testid="member-card-code">{code}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Valid until</p>
+                <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Valid until</p>
                 <p className="font-mono text-sm font-bold sm:text-base">{expires || "12 months"}</p>
               </div>
-            </div>
-            <div className="mt-3 rounded-lg bg-[#EAF6F3] px-3 py-1.5">
-              <Barcode value={code} />
+              {active && /^(LP|TV)-[A-Z0-9]{6}$/.test(code || "") && (
+                <div className="rounded-xl bg-white p-1.5" data-testid="member-card-qr">
+                  <QRCodeSVG value={code} size={84} level="M" fgColor="#17434C" />
+                </div>
+              )}
             </div>
           </div>
         </div>

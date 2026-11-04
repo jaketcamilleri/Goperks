@@ -7,3 +7,11 @@ crons:
     method: POST
     # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
     enabled: true
+  - name: gift-deliveries
+    description: "Emails gift memberships scheduled for today (sent 7am Melbourne)"
+    cron: "0 7 * * *"
+    timezone: "Australia/Melbourne"
+    endpoint: "{{BASE_URL}}/api/cron/gift-deliveries"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true

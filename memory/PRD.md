@@ -44,6 +44,8 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 ## Business rules
 - Each deal can be redeemed once per member per membership year (term = membership_expires_at - 365 days). Enforced on claim, member self-redeem, partner voucher redeem and partner card redeem (/api/partner/redeem-card); deal page shows "used this year" state.
 - Auth: email/password + Emergent Google sign-in (/api/auth/google exchanges session_id, matches by email, issues same JWT cookies). Refresh cookie 30 days.
+- Gifts: optional delivery date (today..+12 months, Melbourne date). Future gifts stored with send_on/email_sent=false; cron gift-deliveries 7am Melbourne -> /api/cron/gift-deliveries.
+- Member card + vouchers show real QR codes (qrcode.react); partner checker has camera Scan button (html5-qrcode) that fills and checks the code.
 
 ## Backlog
 - P1: Favourites; member-entered actual saving amount

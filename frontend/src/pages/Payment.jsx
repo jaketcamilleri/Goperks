@@ -47,7 +47,11 @@ export function PaymentSuccess() {
       <div className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8" data-testid="gift-success-page">
         <MaskLines as="h1" className="font-display text-5xl font-semibold tracking-tight sm:text-6xl"
           lines={[<>Gift <em key="s" className="font-normal italic text-[#B9512E]">sent!</em></>]} />
-        <p className="mt-5 text-[#3D5E65] md:text-lg">We've emailed {gift?.recipient_name || "them"} their gift code. You can also share it yourself:</p>
+        <p className="mt-5 text-[#3D5E65] md:text-lg" data-testid="gift-success-message">
+          {gift?.email_sent === false && gift?.send_on
+            ? `We'll email ${gift?.recipient_name || "them"} their gift at 7am on ${new Date(gift.send_on + "T00:00:00").toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}. Here's the code in case you'd like it now:`
+            : `We've emailed ${gift?.recipient_name || "them"} their gift code. You can also share it yourself:`}
+        </p>
         <p className="mx-auto mt-8 w-fit rounded-[20px] bg-[#17434C] px-8 py-5 font-mono text-2xl font-bold tracking-[0.15em] text-[#EAF6F3]" data-testid="gift-success-code">{gift?.code || "—"}</p>
         <Link to="/deals" className="mt-10 inline-flex rounded-full bg-[#B9512E] px-7 py-4 font-semibold text-[#EAF6F3]">Back to the deals</Link>
       </div>

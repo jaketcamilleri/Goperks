@@ -7,6 +7,7 @@ import { api, catLabel, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Eyebrow } from "@/components/Reveal";
 import { HeartButton } from "@/components/HeartButton";
+import { QRCodeSVG } from "qrcode.react";
 
 export function VoucherTicket({ v }) {
   const copy = () => { navigator.clipboard?.writeText(v.code); toast.success("Voucher code copied"); };
@@ -24,6 +25,9 @@ export function VoucherTicket({ v }) {
           {v.code} <Copy className="h-5 w-5 text-[#EE8A63]" />
         </button>
         <p className="mt-3 text-sm text-[#BFD9D6]">{v.business_name} · valid until {new Date(v.expires_at).toLocaleDateString("en-AU")}</p>
+        <div className="mt-5 w-fit rounded-2xl bg-white p-3" data-testid="voucher-qr">
+          <QRCodeSVG value={v.code} size={140} level="M" fgColor="#17434C" />
+        </div>
       </div>
     </motion.div>
   );

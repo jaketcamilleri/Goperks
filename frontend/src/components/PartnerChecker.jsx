@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { ScanLine, CheckCircle2, XCircle } from "lucide-react";
+import { ScanLine, CheckCircle2, XCircle, Camera } from "lucide-react";
+import { CameraScanner } from "@/components/CameraScanner";
 import { api, formatErr } from "@/lib/api";
 
 const fmt = (iso) => (iso ? new Date(iso).toLocaleDateString("en-AU") : "—");
@@ -55,13 +56,22 @@ export function PartnerChecker() {
   const [res, setRes] = useState(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [camera, setCamera] = useState(false);
 
-  const check = async (e) => {
-    e?.preventDefault();
+  const checkCode = async (value) => {
     setBusy(true); setErr(""); setRes(null);
-    try { const { data } = await api.post("/partner/check", { code }); setRes(data); }
+    try { const { data } = await api.post("/partner/check", { code: value }); setRes(data); }
     catch (e2) { setErr(formatErr(e2)); } finally { setBusy(false); }
   };
+  const check = async (e) => {
+    e?.preventDefault();
+    await checkCode(code);
+  };
+  const onScan = useCallback((value) => {
+    setCamera(false);
+    setCode(value);
+    checkCode(value);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const redeem = async () => {
     setBusy(true);
     try { await api.post("/partner/redeem", { code }); toast.success("Voucher redeemed"); await check(); }
@@ -77,7 +87,7 @@ export function PartnerChecker() {
     <div className="grain relative overflow-hidden rounded-[32px] bg-[#17434C] p-6 text-[#EAF6F3] sm:p-8" data-testid="partner-checker">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">At the counter</p>
       <h2 className="mt-2 font-display text-3xl font-semibold">Check a code</h2>
-      <p className="mt-1 text-sm text-[#BFD9D6]">Type a voucher code (e.g. AB12-CD34) or a member card number (LP-XXXXXX).</p>
+      <p className="mt-1 text-sm text-[#BFD9D6]">Scan the QR on their phone, or type a voucher code (e.g. AB12-CD34) or member card number (LP-XXXXXX).</p>
       <form onSubmit={check} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <ScanLine className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#EE8A63]" />
@@ -88,7 +98,12 @@ export function PartnerChecker() {
         <button disabled={busy} data-testid="partner-check-btn" className="h-14 rounded-full bg-[#B9512E] px-8 font-semibold transition-colors hover:bg-[#9A4024] disabled:opacity-60">
           {busy ? "Checking…" : "Check"}
         </button>
+        <button type="button" onClick={() => { setRes(null); setErr(""); setCamera(!camera); }} data-testid="partner-scan-btn"
+          className="flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 px-6 font-semibold transition-colors hover:bg-white/10">
+          <Camera className="h-5 w-5" /> {camera ? "Stop" : "Scan"}
+        </button>
       </form>
+      {camera && <CameraScanner onScan={onScan} onClose={() => setCamera(false)} />}
       {err && <p className="mt-5 rounded-2xl bg-[#FDF0EC] p-4 text-sm text-[#9A4024]" data-testid="partner-check-error">{err}</p>}
       {res && <Result r={res} onRedeem={redeem} onRedeemCard={redeemCard} busy={busy} />}
     </div>

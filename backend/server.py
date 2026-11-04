@@ -7,6 +7,7 @@ load_dotenv(ROOT_DIR / ".env")
 import os
 import asyncio
 import hmac
+from zoneinfo import ZoneInfo
 import logging
 import secrets
 import string
@@ -174,6 +175,7 @@ class CheckoutIn(BaseModel):
     gift_name: Optional[str] = Field(None, max_length=80)
     gift_email: Optional[EmailStr] = None
     gift_message: Optional[str] = Field(None, max_length=300)
+    gift_send_date: Optional[str] = Field(None, max_length=10)
 
 
 class GiftRedeemIn(BaseModel):
@@ -320,19 +322,37 @@ async def mark_paid(session_id: str, extra: dict):
         await activate_membership(res["user_id"])
 
 
-async def create_gift(txn: dict):
-    code = f"GIFT-{rand_code(4)}-{rand_code(4)}"
-    await db.gifts.insert_one({
-        "code": code, "session_id": txn["session_id"], "buyer_id": txn["user_id"],
-        "recipient_name": txn["gift_name"], "recipient_email": txn["gift_email"],
-        "message": txn.get("gift_message") or "", "status": "unredeemed", "created_at": now_iso()})
+def melb_today() -> str:
+    return datetime.now(ZoneInfo("Australia/Melbourne")).date().isoformat()
+
+
+async def send_gift_email(g: dict):
     try:
-        buyer = await db.users.find_one({"_id": oid(txn["user_id"])})
-        subject, html = gift_email(txn["gift_name"], (buyer or {}).get("name", "A friend"), txn.get("gift_message") or "", code)
-        await send_email(to=txn["gift_email"], subject=subject, html=html)
-        await db.gifts.update_one({"code": code}, {"$set": {"email_sent": True}})
+        buyer = await db.users.find_one({"_id": oid(g["buyer_id"])})
+        subject, html = gift_email(g["recipient_name"], (buyer or {}).get("name", "A friend"), g.get("message") or "", g["code"])
+        await send_email(to=g["recipient_email"], subject=subject, html=html)
+        await db.gifts.update_one({"code": g["code"]}, {"$set": {"email_sent": True, "sent_at": now_iso()}})
     except Exception as e:
-        logger.warning("gift email failed for %s: %s", code, e)
+        logger.warning("gift email failed for %s: %s", g["code"], e)
+
+
+async def create_gift(txn: dict):
+    send_on = txn.get("gift_send_date") or melb_today()
+    g = {
+        "code": f"GIFT-{rand_code(4)}-{rand_code(4)}", "session_id": txn["session_id"], "buyer_id": txn["user_id"],
+        "recipient_name": txn["gift_name"], "recipient_email": txn["gift_email"],
+        "message": txn.get("gift_message") or "", "status": "unredeemed", "send_on": send_on,
+        "email_sent": False, "created_at": now_iso()}
+    await db.gifts.insert_one(dict(g))
+    if send_on <= melb_today():
+        await send_gift_email(g)
+
+
+async def run_gift_deliveries():
+    due = await db.gifts.find({"email_sent": False, "send_on": {"$lte": melb_today()}}).to_list(500)
+    for g in due:
+        await send_gift_email(g)
+    logger.info("scheduled gifts processed: %s", len(due))
 
 
 # ---------- Auth ----------
@@ -782,6 +802,14 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
     is_gift = body.kind == "gift"
     if is_gift and not (body.gift_name and body.gift_email):
         raise HTTPException(400, "Please add the recipient's name and email")
+    if is_gift and body.gift_send_date:
+        try:
+            sd = datetime.strptime(body.gift_send_date, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            raise HTTPException(400, "Please choose a valid delivery date")
+        latest = (datetime.now(ZoneInfo("Australia/Melbourne")).date() + timedelta(days=365)).isoformat()
+        if sd < melb_today() or sd > latest:
+            raise HTTPException(400, "Delivery date must be between today and 12 months from now")
     lookup = GIFT_LOOKUP_KEY if is_gift else MEMBERSHIP_LOOKUP_KEY
     prices = stripe.Price.list(lookup_keys=[lookup], active=True, limit=1).data
     if not prices:
@@ -810,6 +838,7 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
         "gift_name": body.gift_name if is_gift else None,
         "gift_email": body.gift_email.lower() if is_gift else None,
         "gift_message": body.gift_message if is_gift else None,
+        "gift_send_date": body.gift_send_date if is_gift else None,
         "amount": float((price.unit_amount or 0) / 100),
         "currency": price.currency, "status": "initiated", "payment_status": "pending",
         "created_at": now_iso(), "updated_at": now_iso(),
@@ -903,6 +932,32 @@ async def run_renewal_reminders():
         except Exception as e:
             logger.warning("renewal reminder failed for %s: %s", u["email"], e)
     logger.info("renewal reminders sent: %s", sent)
+
+
+def verify_cron(request: Request):
+    auth = request.headers.get("Authorization", "")
+    secret = os.environ.get("WEBHOOK_CRON_SECRET", "")
+    if not secret or not auth.startswith("Bearer ") or not hmac.compare_digest(auth[7:], secret):
+        raise HTTPException(401, "Unauthorized")
+
+
+@api.post("/cron/gift-deliveries")
+async def cron_gift_deliveries(request: Request):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    verify_cron(request)
+    try:
+        envelope = await request.json()
+    except Exception:
+        envelope = None
+    if envelope is not None and not isinstance(envelope, dict):
+        raise HTTPException(400, "Invalid body")
+    run_id = request.headers.get("X-Webhook-Id") or (envelope or {}).get("run_id") or now_iso()
+    try:
+        await db.cron_runs.insert_one({"_id": f"gifts:{run_id}", "created_at": now_iso()})
+    except Exception:
+        return {"status": "duplicate"}
+    asyncio.create_task(run_gift_deliveries())
+    return {"status": "accepted"}
 
 
 @api.post("/cron/renewal-reminders")

@@ -15,16 +15,18 @@ const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 export default function GiftPage() {
   const { user } = useAuth();
   const nav = useNavigate();
-  const [f, setF] = useState({ gift_name: "", gift_email: "", gift_message: "" });
+  const [f, setF] = useState({ gift_name: "", gift_email: "", gift_message: "", gift_send_date: "" });
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+  const maxDate = (() => { const d = new Date(today + "T00:00:00"); d.setFullYear(d.getFullYear() + 1); d.setDate(d.getDate() - 1); return d.toLocaleDateString("en-CA"); })();
 
   const submit = async (e) => {
     e.preventDefault();
     if (!user) { nav("/register?next=/gift"); return; }
     setBusy(true);
     try {
-      const { data } = await api.post("/payments/checkout", { ...f, kind: "gift", origin_url: window.location.origin });
+      const { data } = await api.post("/payments/checkout", { ...f, gift_send_date: f.gift_send_date || null, kind: "gift", origin_url: window.location.origin });
       window.location.href = data.checkout_url;
     } catch (e2) {
       toast.error(formatErr(e2));
@@ -56,6 +58,15 @@ export default function GiftPage() {
               <div><Label>Their name</Label><Input required maxLength={80} value={f.gift_name} onChange={set("gift_name")} className={field} data-testid="gift-name-input" /></div>
               <div><Label>Their email</Label><Input required type="email" value={f.gift_email} onChange={set("gift_email")} className={field} data-testid="gift-email-input" /></div>
               <div><Label>Personal note (optional)</Label><Textarea maxLength={300} value={f.gift_message} onChange={set("gift_message")} placeholder="Happy birthday! Enjoy some weekend adventures." className="mt-1.5 min-h-[96px] rounded-xl border-[#C2DEDA] bg-white" data-testid="gift-message-input" /></div>
+              <div>
+                <Label htmlFor="gift-date">Delivery date</Label>
+                <Input id="gift-date" type="date" min={today} max={maxDate} value={f.gift_send_date} onChange={set("gift_send_date")} className={field} data-testid="gift-date-input" />
+                <p className="mt-1.5 text-xs text-[#3D5E65]" data-testid="gift-date-hint">
+                  {f.gift_send_date && f.gift_send_date > today
+                    ? `We'll email it at 7am (Melbourne time) on ${new Date(f.gift_send_date + "T00:00:00").toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}.`
+                    : "Leave empty to send straight after payment, or pick a birthday or Christmas morning."}
+                </p>
+              </div>
             </div>
             <p className="mt-6 flex items-end gap-2"><span className="font-display text-5xl font-semibold">$49</span><span className="pb-1 text-[#3D5E65]">AUD, one-off — no auto-renew</span></p>
             <button disabled={busy} data-testid="gift-checkout-btn"
