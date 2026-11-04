@@ -1,0 +1,35 @@
+{
+  "summary": "Tested the new Go Perks 'Business area + locked portal until profile complete' changes. Added /app/backend/tests/test_business_profile.py (10 new tests). Full regression (existing + new) = 56 passed, 1 skipped (gate test that auto-skips once seed profile is complete). Playwright smoke confirmed: /register has auth-business-link and no member/business role toggle; /login has partner link; /business/register & /business/login use biz-navbar with PARTNERS badge and no Google button; member logging in on /business/login is shown auth-wrong-area; business portal /business shows business-profile-link card after profile completed; /business/profile has business-profile-form and profile-logo-input; nav-for-businesses present on main navbar; /business/sticker redirects to /business/login?next=... when logged out; /business/forgot-password renders with back link to /business/login; mobile 390px partner navbar fits (logo + PARTNERS badge + Log in).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Business portal (/business)", "issues": ["Recharts logs 'width(-1)/height(-1)' warnings on mount (carry-over from iteration 1)."]},
+      {"screen": "Global", "issues": ["Still occasional console warning 'ensure container has non-static position' from a scroll library on /business."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_business_profile.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py now 1413 lines - still growing, worth splitting (auth/deals/admin/business/payments/cron) for maintainability.",
+    "require_partner uses 403 for both 'not approved' and 'profile incomplete' - frontend relies on error text to distinguish. Consider a machine-readable code field in the error body so UI isn't text-matching.",
+    "upload_logo: files collection uses is_deleted soft-delete but the old blobs in Emergent object storage are not deleted - small cost leak over time; acceptable for MVP.",
+    "GET /api/files/{path} only serves kind='logo'; if more file kinds are added later, remove the hard filter or make it dynamic.",
+    "ProfileIn: 'about' min_length=10 - server returns 422 (pydantic) rather than a friendly 400; frontend should surface the validation detail cleanly."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_business_profile.py"
+  ],
+  "success_rate": {"backend": "100% (56/56 run, 1 intentional skip)", "frontend": "100% on smoke"},
+  "test_credentials": "Used seed creds from /app/memory/test_credentials.md. Created a few TEST_ pending business users; did NOT touch jaketcamileri@gmail.com.",
+  "seed_data_creation": "Seed business@tinysvouchers.com.au profile was filled in via PUT /api/business/profile with 'Tiny''s Test Cafe' address 1 Test Lane, Melbourne, hours Mon-Fri 8-4, about 'A lovely test cafe for regression runs.', instagram tinytest, website https://testcafe.example.com, plus a 2x2 PNG logo uploaded. One TEST_ approved deal submitted under this business for partner-card verification on /api/deals/{id}. Main agent said this can be reset.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "test_business_profile.py exercises the profile gate (require_partner returns 403 with 'profile' text when incomplete), PUT /business/profile normalises website/instagram, logo upload accepts PNG/JPG/WebP <3MB and serves via /api/files/{path}, pending business cannot PUT profile (403), and partner block appears on /api/deals/{id} once owner profile is filled. If the seed business profile is reset to incomplete again, the TestProfileGate.test_partner_endpoints_blocked_when_incomplete test will run instead of being skipped.",
+  "rca of the issue": "No issues found. One pre-existing minor: /business/deals POST requires 'discount_label' field — updated test accordingly."
+}
