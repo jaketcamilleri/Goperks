@@ -77,6 +77,22 @@ def partner_welcome_email(name: str, business: str):
     return f"Welcome to {EMAIL_FROM_NAME} \u2014 your partner kit", _layout("Your partner kit", body, "Get my window sticker", "/business/sticker")
 
 
+def deal_decision_email(name: str, title: str, approved: bool, note: str):
+    first = escape(name.split(" ")[0] if name else "there")
+    t = escape(title)
+    note_html = (f'<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;background:#FFFFFF;border-left:3px solid #EE8A63;padding:12px 14px;margin:16px 0">'
+                 f'<b>Note from the Go Perks team:</b><br>{escape(note)}</p>') if note else ""
+    if approved:
+        body = (_p(f"Hi {first}, great news \u2014 your deal <b>\u201c{t}\u201d</b> has been approved and is now live for members.")
+                + note_html
+                + _p("Members can find it in the deals directory and on the map. Scan their QR code at the counter to redeem it, and keep an eye on your monthly stats in the portal."))
+        return f"Your deal is live on {EMAIL_FROM_NAME}", _layout("You're live!", body, "View my partner portal", "/business")
+    body = (_p(f"Hi {first}, thanks for submitting <b>\u201c{t}\u201d</b>. Unfortunately we couldn't approve it this time.")
+            + note_html
+            + _p("You're welcome to adjust the offer and submit it again from your partner portal."))
+    return f"Update on your {EMAIL_FROM_NAME} deal", _layout("About your deal", body, "Submit a new deal", "/business")
+
+
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
     first = escape(name.split(" ")[0] if name else "there")
     saved_line = (f"So far you've saved <b>${saved:,.2f}</b> across {used} deal{'s' if used != 1 else ''} — "

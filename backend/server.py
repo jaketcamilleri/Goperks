@@ -29,7 +29,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
-from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email
+from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -141,6 +141,7 @@ class DealIn(BaseModel):
 
 class StatusIn(BaseModel):
     status: str
+    note: Optional[str] = Field(None, max_length=500)
 
 
 class ForgotIn(BaseModel):
@@ -783,10 +784,25 @@ async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("
 async def admin_set_status(deal_id: str, body: StatusIn, _=Depends(require_role("admin"))):
     if body.status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "Invalid status")
-    res = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": {"status": body.status}}, return_document=True)
-    if not res:
+    prev = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": {"status": body.status}})
+    if not prev:
         raise HTTPException(404, "Deal not found")
+    res = await db.deals.find_one({"_id": prev["_id"]})
+    if prev["status"] != body.status and body.status in ("approved", "rejected"):
+        asyncio.create_task(send_deal_decision(res, body.note or ""))
     return Deal.from_mongo(res).out()
+
+
+async def send_deal_decision(deal: dict, note: str):
+    try:
+        owner = await db.users.find_one({"_id": oid(deal["submitted_by"])}) if deal.get("submitted_by") else None
+        if not owner or owner.get("role") != "business":
+            return
+        subject, html = deal_decision_email(owner.get("name", ""), deal["title"], deal["status"] == "approved", note)
+        await send_email(to=owner["email"], subject=subject, html=html)
+        await db.deals.update_one({"_id": deal["_id"]}, {"$set": {"decision_emailed_at": now_iso()}})
+    except Exception as e:
+        logger.warning("deal decision email failed for %s: %s", deal.get("_id"), e)
 
 
 @api.delete("/admin/deals/{deal_id}")

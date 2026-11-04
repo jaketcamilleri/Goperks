@@ -33,7 +33,13 @@ export default function Admin() {
   useEffect(() => { load(); }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setStatus = async (id, status) => {
-    try { await api.post(`/admin/deals/${id}/status`, { status }); toast.success(`Deal ${status}`); load(); }
+    let note = "";
+    if (status === "rejected") {
+      const answer = window.prompt("Optional: add a short reason for the business (it's included in their email).", "");
+      if (answer === null) return;
+      note = answer.trim();
+    }
+    try { await api.post(`/admin/deals/${id}/status`, { status, note: note || null }); toast.success(`Deal ${status} — the business will be emailed`); load(); }
     catch (e) { toast.error(formatErr(e)); }
   };
   const remove = async (id) => {

@@ -3,6 +3,7 @@
 Rebrand 2 (2026-11-04): name "Go Perks"; logos in frontend/public/brand/: go-perks-logo-horizontal(-light).png (header/footer/member card), go-perks-logo-stacked(-light).png (window sticker), go-perks-mark.png — AI-edited from the user's Local Perks logo (lettering changed to Go Perks). New member codes GP-XXXXXX (LP-/TV- still accepted); share image static.prod-images…/ab4e2e87….jpeg (copy public/og-image.jpg).
 Partner window sticker: /business/sticker (business/admin), print-only CSS, QR to /join.
 Partner welcome kit: email sent on business registration (4-step guide: submit deal, print sticker, scan codes, redeem) with button to /business/sticker.
+Deal decision emails: approve/reject (status change only) emails the submitting business; admin can add an optional reason on reject (included in email).
 
 Rebrand (2026-11-04): name "Local Perks", user-supplied logo at frontend/public/brand/ (background removed), favicon/apple-touch icon, new member codes LP-XXXXXX (old TV- codes still accepted at partner checker), email sender name, wallet pass org, Stripe product renamed. Demo login emails unchanged.
 Palette (2026-11-04): mint bg #EAF6F3 / #D3ECE7, deep teal ink #17434C / #0F3138, coral-deep #B9512E (buttons/accents), coral #EE8A63 (fills), lines #C2DEDA. Emails + wallet passes match.
