@@ -45,7 +45,7 @@ const FAQ = [
   ["How do I use a deal?", "Open the deal and either show your live member card for the partner to scan, or tap “Get my voucher code” and show the code at the counter."],
   ["Can I use a deal more than once?", "Each deal can be used once per membership year. It unlocks again when you renew."],
   ["Why does my card have a moving clock?", "The live clock and changing QR code prove it's your real card, not a screenshot. Partners check it at the counter."],
-  ["How does refer a friend work?", "Every member gets their own referral code, shown on their dashboard. Your friend types it in when they sign up (or uses your invite link). Once they pay, you both get a free month added to your membership. You can earn up to 12 free months a year."],
+  ["How does refer a friend work?", "Every member gets their own referral code, shown on their dashboard. Your friend types it in when they sign up (or uses your invite link) and pays $44.92 for their first year instead of $49, so they get one month free. Once they pay, you get a free month added to your next renewal. You can earn up to 12 free months a year."],
   ["Can I give Go Perks as a present?", "Yes. Buy a gift membership, add a message and pick the day it arrives in their inbox."],
   ["I run a local business. How do I join?", "Apply in the partner area. Once we approve you, add your profile and submit your first deal."],
 ];

@@ -67,7 +67,7 @@ async def activate_membership(user_id: str, paid: bool = False):
     asyncio.create_task(send_welcome(user_id))
 
 
-# ---------- Referrals: a free month for the member and their friend when the friend pays ----------
+# ---------- Referrals: the friend pays 11 months' price for their first year; the member gets a free month at their next renewal ----------
 REFERRAL_DAYS = 30
 REFERRAL_CAP = 12
 
@@ -101,13 +101,11 @@ async def referral_months_this_year(referrer_id: str) -> int:
 
 
 async def reward_referral(friend: dict):
+    """Friend's first payment went through (their month off was taken at checkout). Save a free month for the referrer's next renewal."""
     if not friend.get("referred_by"):
         return
     if not await db.users.find_one_and_update({"_id": friend["_id"], "referral_rewarded": {"$ne": True}}, {"$set": {"referral_rewarded": True}}):
         return
-    fresh = await db.users.find_one({"_id": friend["_id"]}, {"membership_expires_at": 1})
-    await db.users.update_one({"_id": friend["_id"]}, {"$set": {"membership_expires_at": (
-        datetime.fromisoformat(fresh["membership_expires_at"]) + timedelta(days=REFERRAL_DAYS)).isoformat()}})
     ref_id = friend["referred_by"]
     granted = await referral_months_this_year(ref_id) < REFERRAL_CAP
     referrer = await db.users.find_one({"_id": oid(ref_id)})
@@ -115,14 +113,8 @@ async def reward_referral(friend: dict):
                                           "created_at": now_iso()})
     if not granted or not referrer:
         return
-    exp = referrer.get("membership_expires_at")
-    if referrer.get("membership_status") == "active" and exp and exp > now_iso():
-        new_exp = (datetime.fromisoformat(exp) + timedelta(days=REFERRAL_DAYS)).isoformat()
-        await db.users.update_one({"_id": referrer["_id"]}, {"$set": {"membership_expires_at": new_exp}})
-        line = f"Your membership now runs until **{nice_date(new_exp)}**."
-    else:
-        await db.users.update_one({"_id": referrer["_id"]}, {"$inc": {"bonus_days_pending": REFERRAL_DAYS}})
-        line = "We've saved it for you. It's added automatically when you next join or renew."
+    await db.users.update_one({"_id": referrer["_id"]}, {"$inc": {"bonus_days_pending": REFERRAL_DAYS}})
+    line = "It's saved on your account and added automatically when you next renew, so you get an extra month on your next year."
     try:
         subject, html = referral_reward_email(referrer.get("name", ""), friend.get("name", ""), line)
         await send_email(to=referrer["email"], subject=subject, html=html)

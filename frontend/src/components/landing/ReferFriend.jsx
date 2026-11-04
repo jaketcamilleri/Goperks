@@ -3,8 +3,8 @@ import { Gift, Share2, CalendarPlus } from "lucide-react";
 
 const STEPS = [
   { icon: Gift, title: "Get your code", text: "Every member has their own referral code on their dashboard." },
-  { icon: Share2, title: "Share it with a friend", text: "Send your code or invite link by text, WhatsApp or email." },
-  { icon: CalendarPlus, title: "You both get a free month", text: "When your friend joins and pays, a month is added to both memberships." },
+  { icon: Share2, title: "Your friend saves a month", text: "They enter your code when they join and pay $44.92 for their first year instead of $49." },
+  { icon: CalendarPlus, title: "You get a free month", text: "Once they pay, a free month is added to your next renewal." },
 ];
 
 export function ReferFriend() {
@@ -16,7 +16,7 @@ export function ReferFriend() {
           <h2 className="mt-2 font-display text-3xl font-semibold leading-tight tracking-tight text-[#17434C] sm:text-4xl">
             Give a month, <span className="italic text-[#B9512E]">get a month.</span>
           </h2>
-          <p className="mt-4 max-w-md text-[#3D5E65] md:text-lg">Bring a friend into the club and you'll both get a free month. Earn up to 12 free months a year.</p>
+          <p className="mt-4 max-w-md text-[#3D5E65] md:text-lg">Share your code: your friend's first year is one month free, and you get a free month at your next renewal. Earn up to 12 free months a year.</p>
           <Link to="/join" className="mt-7 inline-block rounded-full bg-[#B9512E] px-6 py-3.5 font-semibold text-white transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98]" data-testid="refer-friend-join-btn">
             Join and start sharing
           </Link>

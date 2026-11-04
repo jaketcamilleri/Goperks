@@ -49,7 +49,7 @@ export default function ReferralsPage() {
 
   return (
     <div data-testid="admin-referrals-page">
-      <PageHead title="Referrals" sub={`Every member's referral code and who they've brought in. Each friend who pays earns both people a free month (up to ${data?.cap ?? 12} a year).`} />
+      <PageHead title="Referrals" sub={`Every member's referral code and who they've brought in. Each friend who uses a code pays $44.92 for their first year; once they pay, the member earns a free month at their next renewal (up to ${data?.cap ?? 12} a year).`} />
       {rows && <Totals rows={rows} />}
       <DataTable id="referrals" columns={COLUMNS} rows={rows} filters={FILTERS} exportName="go-perks-referrals"
         searchKeys={["name", "email", "code", "referred_by"]} empty="No members yet." />

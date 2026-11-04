@@ -60,16 +60,31 @@ def test_referral_flow_and_cap():
         made.append(b["_id"])
         assert "referred_by" not in b
 
+        # The friend's month off is a price discount at checkout; their membership is the normal 12 months.
+        price = requests.Session()
+        price.post(f"{API}/auth/login", json={"email": email, "password": "Test!2026"})
+        assert price.get(f"{API}/payments/my-price").json() == {"amount": 44.92, "referral_discount": True}
+        assert member.get(f"{API}/payments/my-price").json()["amount"] == 49.0
+        co = price.post(f"{API}/payments/checkout", json={"origin_url": "https://example.com"})
+        assert co.status_code == 200, co.text
+        assert co.json()["amount"] == 44.92 and co.json()["referral_discount"] is True
+        import stripe
+        stripe.api_key = ENV["STRIPE_SECRET_KEY"]
+        assert stripe.checkout.Session.retrieve(co.json()["session_id"]).amount_total == 4492
+        sids.append(co.json()["session_id"])
+
         sids.append(pay(str(friend["_id"])))
         friend = DB.users.find_one({"_id": friend["_id"]})
-        assert friend["membership_status"] == "active" and 393 <= days_from_now(friend["membership_expires_at"]) <= 395
-        after = DB.users.find_one({"_id": me["_id"]})["membership_expires_at"]
-        assert round((datetime.fromisoformat(after) - datetime.fromisoformat(original_exp)).days) == 30
+        assert friend["membership_status"] == "active" and 363 <= days_from_now(friend["membership_expires_at"]) <= 365
+        # The member's free month is saved for their next renewal, not added now.
+        me_now = DB.users.find_one({"_id": me["_id"]})
+        after = me_now["membership_expires_at"]
+        assert after == original_exp and me_now["bonus_days_pending"] == 30
         assert DB.referral_rewards.count_documents({"friend_id": str(friend["_id"])}) == 1
         info2 = member.get(f"{API}/me/referral").json()
         assert info2["months_this_year"] == info["months_this_year"] + 1 and info2["friends"][0] == {**info2["friends"][0], "first_name": "Sam", "paid": True}
 
-        # At the cap the friend still gets a month but the member doesn't.
+        # At the cap the friend still gets their discount but the member doesn't get another month.
         fillers = DB.referral_rewards.insert_many([{"referrer_id": str(me["_id"]), "friend_id": "test_filler", "referrer_granted": True,
                                                     "created_at": datetime.now(timezone.utc).isoformat()} for _ in range(12)]).inserted_ids
         email2 = f"test_ref_{uuid.uuid4().hex[:6]}@example.com"
@@ -77,8 +92,8 @@ def test_referral_flow_and_cap():
         f2 = DB.users.find_one({"email": email2})
         made.append(f2["_id"])
         sids.append(pay(str(f2["_id"])))
-        assert 393 <= days_from_now(DB.users.find_one({"_id": f2["_id"]})["membership_expires_at"]) <= 395
-        assert DB.users.find_one({"_id": me["_id"]})["membership_expires_at"] == after
+        assert 363 <= days_from_now(DB.users.find_one({"_id": f2["_id"]})["membership_expires_at"]) <= 365
+        assert DB.users.find_one({"_id": me["_id"]})["bonus_days_pending"] == 30
         DB.referral_rewards.delete_many({"_id": {"$in": fillers}})
     finally:
         DB.users.update_one({"_id": me["_id"]}, {"$set": {"membership_expires_at": original_exp}, "$unset": {"bonus_days_pending": ""}})

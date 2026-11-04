@@ -9,7 +9,7 @@ export const PERKS = [
   "New local deals added every month",
 ];
 
-export function PricingTicket({ cta }) {
+export function PricingTicket({ cta, price }) {
   return (
     <div
       className="ticket-edge relative overflow-hidden rounded-[28px] bg-[#EAF6F3] text-[#17434C] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]" data-testid="pricing-ticket">
@@ -18,13 +18,14 @@ export function PricingTicket({ cta }) {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#9A4024]">Annual membership</span>
           <span className="rounded-full bg-[#EBF3EC] px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest text-[#2F5A3A]">No lock-in</span>
         </div>
-        <p className="mt-6 flex items-end gap-2">
-          <span className="font-display text-7xl font-semibold leading-none sm:text-8xl" data-testid="pricing-amount">$49</span>
-          <span className="pb-2 text-[#3D5E65]">AUD / year</span>
+        <p className="mt-6 flex flex-wrap items-end gap-x-2">
+          {price && price !== 49 && <span className="pb-2 font-display text-2xl text-[#3D5E65] line-through" data-testid="pricing-full-amount">$49</span>}
+          <span className="font-display text-7xl font-semibold leading-none sm:text-8xl" data-testid="pricing-amount">${price && price !== 49 ? price.toFixed(2) : 49}</span>
+          <span className="pb-2 text-[#3D5E65]">AUD / {price && price !== 49 ? "first year" : "year"}</span>
         </p>
         <p className="mt-2 text-sm text-[#3D5E65]">That's less than a dollar a week.</p>
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2.5 text-sm font-semibold text-[#9A4024]" data-testid="pricing-referral-line">
-          <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Refer a friend and you both get a free month. Earn up to 12 free months a year.
+          <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Invited by a friend? Your first year is $44.92 (one month free), and they get a free month at their next renewal.
         </p>
       </div>
       <div className="mx-8 border-t-2 border-dashed border-[#C2DEDA] sm:mx-10" />
