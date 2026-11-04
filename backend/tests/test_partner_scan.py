@@ -18,7 +18,8 @@ def test_scan_shows_only_own_deals():
     assert s.post(f"{API}/auth/login", json={"email": "business@tinysvouchers.com.au", "password": "Business!2026"}).status_code == 200
     res = s.post(f"{API}/partner/check", json={"code": code}).json()
     own = {str(d["_id"]) for d in DB.deals.find({"status": "approved", "submitted_by": str(biz["_id"])}, {"_id": 1})}
-    assert res["type"] == "member" and {d["deal_id"] for d in res["deals"]} == own
+    # Every deal offered belongs to this business (other tests may add deals for it in parallel, so not equality).
+    assert res["type"] == "member" and {d["deal_id"] for d in res["deals"]} <= own
     other = DB.deals.find_one({"status": "approved", "submitted_by": {"$ne": str(biz["_id"])}})
     if other:
         r = s.post(f"{API}/partner/redeem-card", json={"member_code": code, "deal_id": str(other["_id"])})

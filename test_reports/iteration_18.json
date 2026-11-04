@@ -1,0 +1,36 @@
+{
+  "summary": "Verified three new features: (1) Automatic yearly renewal (/me/subscription, /me/subscription/cancel|resume, Stripe webhook invoice.paid -> record_renewal + activate_membership), (2) Admin invites follow-up nudge (/admin/invites/followup, /admin/invites/followup-sent, FollowUpComposer UI), (3) NearbyDeals section on member home with /me/home-area + SuburbPicker save path. Backend (targeted): tests/test_auto_renewal.py::test_auto_renewal_flow, tests/test_invites.py (incl. test_invite_follow_up), tests/test_account.py, tests/test_reply_inbox.py all pass (8/8). Full suite: 139 passed, 1 skipped, 1 flaky (test_partner_scan.py::test_scan_shows_only_own_deals flakes under pytest-xdist LoadScope - another worker inserts a deal under the same business while this test is asserting the set of own deals; passes 100% in isolation). test_auto_renewal_flow validates: /auth/me shows auto_renew=True and can_renew=False while subscription active; second /payments/checkout rejects with 400 containing 'renews automatically'; /me/subscription returns has_subscription/auto_renew/renews_on; cancel sets cancel_at_period_end on Stripe and flips can_renew=True; resume restores; invoice.paid webhook (subscription_cycle) extends membership by ~365 days exactly once (idempotent on event replay) and inserts a $49 paid payment_transactions row; customer.subscription.updated with cancel_at_period_end=True flips auto_renew=False on the user doc. Frontend: logged in as member@tinysvouchers.com.au -> '/' shows member-dashboard + nearby-deals ('Set your suburb to see what's close' for a member with no suburb saved). /account loads account-page + account-membership (Status Active, Renews by 4 November 2027). auto-renew section correctly hidden because the seeded member has no stripe_subscription_id (AutoRenew returns null when !sub.has_subscription). Admin /admin/invites shows Follow-up nudge card (followup-composer) with 'followup-count: 1 person has been invited but haven't signed up yet.' and an enabled followup-write-btn 'Write 1 follow-up'. 'Member invites' section above is intact, 2-row invites table (Sent/Not sent) renders.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "tests/test_partner_scan.py::test_scan_shows_only_own_deals", "issue": "Flaky under pytest-xdist LoadScope: another worker's test (likely in test_deals or test_business_* suites) inserts an approved deal for the same demo business during the assertion window; passes 100% in isolation with -n0. Consider xdist_group('scan') to serialize this with any suite that mutates the demo business's deals."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_auto_renewal.py",
+    "/app/backend/tests/test_invites.py",
+    "/app/test_reports/pytest/iter18_results.xml",
+    "/app/test_reports/pytest/iter18_full.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/payments.py::record_renewal correctly uses $setOnInsert + upsert keyed on invoice.id so replayed webhook events only extend the membership once (test_auto_renewal_flow asserts this).",
+    "routes/payments.py::invoice_subscription handles both the top-level invoice.subscription and the newer parent.subscription_details.subscription shape - defensive.",
+    "routes/payments.py::my_subscription re-reads cancel_at_period_end from Stripe and writes the derived auto_renew back to the user doc, so the UI stays accurate even if the subscription was changed in the Stripe dashboard.",
+    "routes/payments.py::set_auto_renew catches InvalidRequestError (e.g., subscription already ended) with a clear message rather than leaking a 500.",
+    "routes/invites.py::follow_up_candidates excludes joined + opted-out emails and keyed off followed_up_at - prevents the same person getting a second follow-up.",
+    "/admin/invites/followup-sent is append-only (sets followed_up_at and errors 404 if the invite isn't in 'sent' status) - good.",
+    "AutoRenew.jsx returns null when !sub.has_subscription so members without a Stripe subscription see no empty card - correct hide behaviour.",
+    "NearbyDeals.jsx: SuburbPicker save path posts the full account payload (name, email, phone, suburb, postcode) through PATCH /me - resilient to email constraint but will prompt for current_password if the user's email changed in the same session; low risk as suburb-only save won't change email.",
+    "FollowUpComposer.jsx hides the form once drafts are returned (!result && count > 0) - avoids double-drafting."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "99.3% (139/140 after accounting for 1 skipped; the 1 failure is a known xdist flake, passes with -n0)", "frontend": "100% on checked surfaces (member home, /account, admin /invites)"},
+  "test_credentials": "member@tinysvouchers.com.au / Member!2026; admin@tinysvouchers.com.au / TinyAdmin!2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "test_auto_renewal_flow creates a TEST_ user + a real Stripe test subscription (pm_card_visa) and cleans both up in finally (stripe.Subscription.cancel + Mongo delete of the user and their payment_transactions rows). No example.com emails are actually sent (Resend-only transactional paths are not exercised here; auto-renewal webhook only writes DB + activates membership).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Auto-renew testids: auto-renew, auto-renew-status, auto-renew-toggle-btn (only rendered when /me/subscription returns has_subscription=true). Follow-up composer testids: followup-composer, followup-count, followup-template-select, followup-note-input, followup-write-btn. Nearby deals testids: nearby-deals, nearby-origin, nearby-locate-btn, nearby-see-all, nearby-set-suburb, nearby-suburb-picker, nearby-list, nearby-empty, nearby-location-denied. Admin invites follow-up is appended to the existing /admin/invites page (not a new route). The seeded member has no stripe_subscription_id, so to visually test AutoRenew you must either run test_auto_renewal_flow (which plants one and cleans up) or manually seed stripe_subscription_id on the user in Mongo. test_partner_scan is still flaky under xdist - same class of issue as iter17's test_referrals - safe to re-run with -n0 or add xdist_group.",
+  "rca of the issue": "No product defects. The flaky partner_scan test is a cross-worker data race in the xdist LoadScope split, not a bug in find_partner_voucher or /partner/redeem-card (both pass in isolation and iter17 full-suite)."
+}
