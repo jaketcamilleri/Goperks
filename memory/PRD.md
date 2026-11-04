@@ -67,11 +67,12 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - 2026-11-04: Admin activity log: owner-only Admin > Activity page (filters, search, CSV) backed by GET /api/admin/activity; logs deal add/edit (changed fields)/approve/reject/back-to-review/delete (single + bulk), business approve/reject (control room, bulk, email quick-link), review hide/show, account create/edit, membership activate/end-date/deactivate, card resend, password link, staff removal, and automatic partner report runs.
 - 2026-11-04: Monthly partner report email: cron `partner-reports` runs daily 9am Melbourne and only acts on the 1st (?force=true with the cron secret runs it any day); emails each approved partner with a live deal last month's deals used, member savings, different members, new reviews, average rating, all-time uses + per-deal table; once per partner per month (partner_reports unique), failed sends are removed so they can retry. Partner portal stats show a note about the monthly email.
 - 2026-11-04: Tests: iteration_6 passed 114/1 skipped (incl. new tests/test_activity_reports.py). Test records cleaned up afterwards.
+- 2026-11-04: Member invites (owner only): Admin > Invites page; paste one or many 'Name, email' lines plus an optional note (300 chars); sends the ready-made join email (routes/invites.py, invite_email) in the background; skips invalid, duplicates, existing accounts, already invited and unsubscribed; failed sends show 'Not sent' with a Retry button; the table shows Sent/Joined/Unsubscribed; every email has an unsubscribe link to /unsubscribe (signed token, email_optouts collection); sends are logged in Activity. Tested iteration_7: 117 passed.
 - 2026-11-04: One-off marketing email to customer Tony (Tiny@thetinychef.com.au) approved by owner (subject 'A year of local deals for A$49. Join Go Perks', 'Hi Tony', CTA -> /join). NOT SENT YET: tiny@thetinychef.com has no mail records (rejected); .com.au attempt blocked by email service rate limit (429). Owner asked to wait; retry when they next message.
 
 ## Backlog
 - P0: Connect own web addresses for main site, business area and admin area (needs addresses from owner)
-- P1: Tony's membership email: owner said not to worry about it (not sent)
+- P1: Tony's invite (tiny@thetinychef.com.au) queued by the owner from Admin > Invites shows 'Not sent' (rate limit at the time); the owner can press Retry. Note: a member 'Tiny Chef' (tinychefau@gmail.com) already exists
 - P1: Favourites; member-entered actual saving amount
 - P2: Map marker clustering; email receipts/renewal reminders; image upload for deals
 
