@@ -4,6 +4,7 @@ import { Check, X } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 import { Eyebrow } from "@/components/Reveal";
+import { ap } from "@/lib/site";
 
 const DONE = { approved: "Approved — they've been emailed their partner kit.", rejected: "Rejected — they've been emailed your decision." };
 
@@ -65,7 +66,7 @@ export default function AdminDecide() {
         </div>
       )}
       {err && <p className="mt-6 rounded-xl bg-[#FDF0EC] p-4 text-sm text-[#9A4024]" data-testid="decide-error">{err}</p>}
-      <Link to="/admin" className="mt-8 inline-block text-sm font-semibold text-[#9A4024]" data-testid="decide-control-room-link">Go to the control room →</Link>
+      <Link to={ap("")} className="mt-8 inline-block text-sm font-semibold text-[#9A4024]" data-testid="decide-control-room-link">Go to the control room →</Link>
     </div>
   );
 }

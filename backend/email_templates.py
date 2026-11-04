@@ -7,6 +7,8 @@ from email_service import EMAIL_FROM_NAME
 def _app_url(path: str) -> str:
     if path.startswith("biz:"):
         return f"{os.environ['BUSINESS_URL'].rstrip('/')}{path[4:]}"
+    if path.startswith("adm:"):
+        return f"{os.environ['ADMIN_URL'].rstrip('/')}{path[4:]}"
     return f"{os.environ['FRONTEND_URL'].rstrip('/')}{path}"
 
 
@@ -118,10 +120,10 @@ def new_applicant_email(name: str, business: str, email: str, token: str):
             + row("Business", business) + row("Contact", name) + row("Email", email) + '</table>'
             + _p("They can't submit deals until you approve them. Decide straight from here (you'll confirm on the next screen):")
             + '<p style="margin:18px 0 6px">'
-            + _btn("Approve", _app_url(f"/admin/decide?token={token}&action=approve"), "#4E7A58", "#FFFFFF")
-            + _btn("Reject", _app_url(f"/admin/decide?token={token}&action=reject"), "#FDF0EC", "#9A4024")
+            + _btn("Approve", _app_url(f"adm:/decide?token={token}&action=approve"), "#4E7A58", "#FFFFFF")
+            + _btn("Reject", _app_url(f"adm:/decide?token={token}&action=reject"), "#FDF0EC", "#9A4024")
             + '</p>' + _p("These buttons work once and expire after 14 days."))
-    return f"New partner application: {business}", _layout("New partner application", body, "Review applicants", "/admin")
+    return f"New partner application: {business}", _layout("New partner application", body, "Review applicants", "adm:/businesses")
 
 
 def weekly_digest_email(s: dict):
@@ -139,7 +141,7 @@ def weekly_digest_email(s: dict):
             + '</tr><tr>' + stat("Sign-ups", s["signups"]) + stat("Deals redeemed", s["redeemed"]) + stat("Deals to review", s["pending_deals"])
             + '</tr></table>' + pending_html)
     return f"Your Go Perks week: {s['members']} new member{'s' if s['members'] != 1 else ''}, A${s['revenue']:,.0f}", \
-        _layout("Your Monday summary", body, "Open the control room", "/admin")
+        _layout("Your Monday summary", body, "Open the control room", "adm:")
 
 
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):

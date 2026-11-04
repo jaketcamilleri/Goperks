@@ -16,16 +16,21 @@ import { PaymentSuccess, PaymentCancel } from "@/pages/Payment";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Business from "@/pages/Business";
-import Admin from "@/pages/Admin";
 import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
 import { AuthCallback } from "@/components/GoogleAuth";
 import GiftPage from "@/pages/Gift";
 import StickerPage from "@/pages/Sticker";
 import RedeemGift from "@/pages/RedeemGift";
 import AdminDecide from "@/pages/AdminDecide";
+import AdminShell from "@/admin/AdminShell";
+import Overview from "@/admin/Overview";
+import DealsPage from "@/admin/DealsPage";
+import PeoplePage from "@/admin/PeoplePage";
+import { PaymentsPage, CheckPage } from "@/admin/PaymentsPage";
+import { Logo } from "@/components/Logo";
 import BusinessProfile from "@/pages/BusinessProfile";
 import { BizNavbar } from "@/components/BizNavbar";
-import { IS_BIZ_HOST, EXTERNAL_BIZ, BIZ_URL, MAIN_URL, bp } from "@/lib/site";
+import { IS_BIZ_HOST, EXTERNAL_BIZ, BIZ_URL, MAIN_URL, bp, IS_ADMIN_HOST, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
 
 function Layout() {
   return (
@@ -63,17 +68,54 @@ function bizRoutes() {
       <Route path={bp("")} element={<Business />} />
       <Route path={bp("/login")} element={<Auth mode="login" business />} />
       <Route path={bp("/register")} element={<Auth mode="register" business />} />
-      <Route path={bp("/forgot-password")} element={<ForgotPassword business />} />
-      <Route path={bp("/reset-password")} element={<ResetPassword business />} />
+      <Route path={bp("/forgot-password")} element={<ForgotPassword loginPath={bp("/login")} />} />
+      <Route path={bp("/reset-password")} element={<ResetPassword loginPath={bp("/login")} />} />
       <Route path={bp("/profile")} element={bizOnly(<BusinessProfile />)} />
       <Route path={bp("/sticker")} element={bizOnly(<StickerPage />)} />
     </Route>
   );
 }
 
+function AdminPlain() {
+  return (
+    <div className="min-h-screen bg-[#F3F8F7]">
+      <header className="flex h-14 items-center gap-2 bg-[#0F3138] px-5"><Logo light /><span className="rounded bg-[#EE8A63] px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-[#0F3138]">Admin</span></header>
+      <Outlet />
+    </div>
+  );
+}
+
+function adminRoutes() {
+  return (
+    <>
+      <Route element={<AdminPlain />}>
+        <Route path={ap("/decide")} element={<AdminDecide />} />
+        <Route path={ap("/forgot-password")} element={<ForgotPassword loginPath={ap("")} />} />
+        <Route path={ap("/reset-password")} element={<ResetPassword loginPath={ap("")} />} />
+      </Route>
+      <Route element={<AdminShell />}>
+        <Route path={ap("")} element={<Overview />} />
+        <Route path={ap("/deals")} element={<DealsPage />} />
+        <Route path={ap("/businesses")} element={<PeoplePage role="business" />} />
+        <Route path={ap("/members")} element={<PeoplePage role="member" />} />
+        <Route path={ap("/payments")} element={<PaymentsPage />} />
+        <Route path={ap("/check")} element={<CheckPage />} />
+      </Route>
+    </>
+  );
+}
+
 function AppRoutes() {
   const location = useLocation();
   if (location.hash?.includes("session_id=")) return <AuthCallback />;
+  if (IS_ADMIN_HOST) {
+    return (
+      <Routes>
+        {adminRoutes()}
+        <Route path="*" element={<GoElsewhere base={MAIN_URL} />} />
+      </Routes>
+    );
+  }
   if (IS_BIZ_HOST) {
     return (
       <Routes>
@@ -85,6 +127,7 @@ function AppRoutes() {
   return (
         <Routes>
           {EXTERNAL_BIZ ? <Route path="/business/*" element={<GoElsewhere base={BIZ_URL} strip="/business" />} /> : bizRoutes()}
+          {EXTERNAL_ADMIN ? <Route path="/admin/*" element={<GoElsewhere base={ADMIN_URL} strip="/admin" />} /> : adminRoutes()}
           <Route element={<Layout />}>
             <Route path="/" element={<Landing />} />
             <Route path="/deals" element={<Deals />} />
@@ -99,8 +142,6 @@ function AppRoutes() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/admin/decide" element={<AdminDecide />} />
-            <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
           </Route>
         </Routes>
   );

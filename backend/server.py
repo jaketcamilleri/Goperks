@@ -524,22 +524,30 @@ async def forgot_password(body: ForgotIn):
         {"user_id": str(doc["_id"]), "created_at": {"$gt": datetime.now(timezone.utc) - timedelta(minutes=2)}})
     if recent:
         return generic
+    await send_password_link(doc)
+    return generic
+
+
+async def send_password_link(doc: dict, invite: bool = False):
     token = secrets.token_urlsafe(32)
+    hours = 72 if invite else 1
     await db.password_reset_tokens.insert_one({
         "token": token, "user_id": str(doc["_id"]), "used": False,
-        "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=1)})
-    base = os.environ["BUSINESS_URL"] if doc.get("role") == "business" else os.environ["FRONTEND_URL"]
+        "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=hours)})
+    base = {"business": os.environ["BUSINESS_URL"], "admin": os.environ["ADMIN_URL"]}.get(doc.get("role"), os.environ["FRONTEND_URL"])
     link = f"{base.rstrip('/')}/reset-password?token={token}"
+    heading = "Your account is ready" if invite else "Reset your password"
+    intro = (f"we've set up a {escape(EMAIL_FROM_NAME)} account for you. Choose a password to log in." if invite
+             else f"we received a request to reset the password for your {escape(EMAIL_FROM_NAME)} account.")
     html = (
         '<table role="presentation" width="100%" style="background:#EAF6F3"><tr><td style="padding:32px;font-family:Georgia,serif;color:#17434C">'
-        f'<h1 style="font-size:26px;margin:0 0 16px">Reset your password</h1>'
-        f'<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">Hi {escape(doc.get("name", "there"))}, we received a request to reset the password for your {escape(EMAIL_FROM_NAME)} account.</p>'
-        f'<p style="margin:28px 0"><a href="{escape(link)}" style="background:#B9512E;color:#EAF6F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Choose a new password</a></p>'
-        '<p style="font-family:Arial,sans-serif;font-size:13px;color:#3D5E65">This link expires in 1 hour and can only be used once. If you didn\'t ask for this, you can ignore this email.</p>'
+        f'<h1 style="font-size:26px;margin:0 0 16px">{heading}</h1>'
+        f'<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">Hi {escape(doc.get("name", "there"))}, {intro}</p>'
+        f'<p style="margin:28px 0"><a href="{escape(link)}" style="background:#B9512E;color:#EAF6F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Choose a {"" if invite else "new "}password</a></p>'
+        f'<p style="font-family:Arial,sans-serif;font-size:13px;color:#3D5E65">This link expires in {"3 days" if invite else "1 hour"} and can only be used once. If you didn\'t expect this, you can ignore this email.</p>'
         f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5E7F84">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
         '</td></tr></table>')
-    await send_email(to=email, subject=f"Reset your {EMAIL_FROM_NAME} password", html=html)
-    return generic
+    await send_email(to=doc["email"], subject=f"{heading} — {EMAIL_FROM_NAME}", html=html)
 
 
 @api.post("/auth/reset-password")
@@ -1012,7 +1020,7 @@ async def admin_stats(_=Depends(require_role("admin"))):
     paid = await db.payment_transactions.find({"payment_status": "paid"}, {"amount": 1, "kind": 1}).to_list(100000)
     return {
         "members": await db.users.count_documents({"role": "member"}),
-        "active_members": await db.users.count_documents({"membership_status": "active", "membership_expires_at": {"$gt": now_iso()}}),
+        "active_members": await db.users.count_documents({"role": "member", "membership_status": "active", "membership_expires_at": {"$gt": now_iso()}}),
         "businesses": await db.users.count_documents({"role": "business", "business_status": "approved"}),
         "pending_businesses": await db.users.count_documents({"role": "business", "business_status": "pending"}),
         "pending_deals": await db.deals.count_documents({"status": "pending"}),
@@ -1022,6 +1030,162 @@ async def admin_stats(_=Depends(require_role("admin"))):
         "revenue": round(sum(p.get("amount") or 0 for p in paid), 2),
         "gifts_sold": sum(1 for p in paid if p.get("kind") == "gift"),
     }
+
+
+class AdminCreateIn(BaseModel):
+    role: str
+    name: str = Field(min_length=1, max_length=120)
+    email: EmailStr
+    business_name: Optional[str] = Field(None, max_length=120)
+    password: Optional[str] = Field(None, min_length=6, max_length=128)
+    activate: bool = False
+    send_invite: bool = True
+
+
+async def comp_membership(doc: dict, expires_on: Optional[str] = None):
+    """Make a member's account valid without payment (12 months, or until a chosen date)."""
+    if expires_on:
+        try:
+            exp = datetime.strptime(expires_on, "%Y-%m-%d").replace(hour=23, minute=59, tzinfo=MELB).astimezone(timezone.utc)
+        except ValueError:
+            raise HTTPException(400, "Expiry must be a date like 2027-11-04")
+        if exp <= datetime.now(timezone.utc):
+            raise HTTPException(400, "Expiry date must be in the future")
+    else:
+        base = datetime.now(timezone.utc)
+        cur = doc.get("membership_expires_at")
+        if doc.get("membership_status") == "active" and cur and cur > base.isoformat():
+            base = datetime.fromisoformat(cur)
+        exp = base + timedelta(days=365)
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {
+        "membership_status": "active", "membership_expires_at": exp.isoformat(),
+        "member_code": doc.get("member_code") or f"GP-{rand_code(6)}", "comped_by_admin": True}})
+
+
+@api.post("/admin/users")
+async def admin_create_user(body: AdminCreateIn, _=Depends(require_role("admin"))):
+    if body.role not in ("member", "business"):
+        raise HTTPException(400, "Role must be member or business")
+    if body.role == "business" and not (body.business_name or "").strip():
+        raise HTTPException(400, "Business name is required")
+    email = body.email.lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(400, "An account with this email already exists")
+    doc = User(email=email, name=body.name.strip(), role=body.role,
+               business_name=(body.business_name or "").strip() or None).to_mongo()
+    doc["password_hash"] = hash_password(body.password or secrets.token_urlsafe(24))
+    doc["created_by_admin"] = True
+    if body.role == "business":
+        doc["business_status"] = "approved"
+    res = await db.users.insert_one(doc)
+    created = await db.users.find_one({"_id": res.inserted_id})
+    if body.role == "member" and body.activate:
+        await comp_membership(created)
+        created = await db.users.find_one({"_id": res.inserted_id})
+    if body.send_invite:
+        try:
+            await send_password_link(created, invite=True)
+        except Exception as e:
+            logger.warning("invite email failed for %s: %s", email, e)
+    if body.role == "business":
+        asyncio.create_task(send_partner_welcome(email, created.get("name", ""), created.get("business_name") or "Your business"))
+    elif body.activate:
+        asyncio.create_task(send_welcome(str(res.inserted_id)))
+    return user_out(created)
+
+
+class AdminUserPatch(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=120)
+    business_name: Optional[str] = Field(None, min_length=1, max_length=120)
+    membership: Optional[str] = None
+    expires_on: Optional[str] = None
+
+
+@api.patch("/admin/users/{user_id}")
+async def admin_update_user(user_id: str, body: AdminUserPatch, _=Depends(require_role("admin"))):
+    doc = await db.users.find_one({"_id": oid(user_id)})
+    if not doc:
+        raise HTTPException(404, "User not found")
+    sets = {k: v.strip() for k, v in (("name", body.name), ("business_name", body.business_name)) if v}
+    if sets:
+        await db.users.update_one({"_id": doc["_id"]}, {"$set": sets})
+    if body.membership == "activate" or body.expires_on:
+        if doc.get("role") != "member":
+            raise HTTPException(400, "Only member accounts have a membership")
+        was_active = doc.get("membership_status") == "active"
+        await comp_membership(doc, body.expires_on)
+        if not was_active:
+            asyncio.create_task(send_welcome(user_id))
+    elif body.membership == "deactivate":
+        await db.users.update_one({"_id": doc["_id"]}, {"$set": {"membership_status": "inactive"}})
+    elif body.membership:
+        raise HTTPException(400, "Invalid membership action")
+    return user_out(await db.users.find_one({"_id": doc["_id"]}))
+
+
+@api.post("/admin/users/{user_id}/resend-card")
+async def admin_resend_card(user_id: str, _=Depends(require_role("admin"))):
+    doc = await db.users.find_one({"_id": oid(user_id), "role": "member"})
+    if not doc or doc.get("membership_status") != "active" or not doc.get("member_code"):
+        raise HTTPException(400, "This member doesn't have an active card")
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {"welcome_sent": False}})
+    await send_welcome(user_id)
+    return {"ok": True}
+
+
+@api.post("/admin/users/{user_id}/password-link")
+async def admin_password_link(user_id: str, _=Depends(require_role("admin"))):
+    doc = await db.users.find_one({"_id": oid(user_id)})
+    if not doc:
+        raise HTTPException(404, "User not found")
+    await send_password_link(doc, invite=True)
+    return {"ok": True}
+
+
+class BulkIn(BaseModel):
+    ids: List[str] = Field(min_length=1, max_length=200)
+    status: str
+    note: Optional[str] = Field(None, max_length=500)
+
+
+@api.post("/admin/deals/bulk")
+async def admin_deals_bulk(body: BulkIn, _=Depends(require_role("admin"))):
+    if body.status not in ("approved", "rejected", "pending", "deleted"):
+        raise HTTPException(400, "Invalid status")
+    ids = [oid(i) for i in body.ids]
+    if body.status == "deleted":
+        res = await db.deals.delete_many({"_id": {"$in": ids}})
+        return {"updated": res.deleted_count}
+    changed = await db.deals.find({"_id": {"$in": ids}, "status": {"$ne": body.status}}).to_list(200)
+    await db.deals.update_many({"_id": {"$in": ids}}, {"$set": {"status": body.status}})
+    if body.status in ("approved", "rejected"):
+        for d in changed:
+            asyncio.create_task(send_deal_decision({**d, "status": body.status}, body.note or ""))
+    return {"updated": len(changed)}
+
+
+@api.post("/admin/businesses/bulk")
+async def admin_businesses_bulk(body: BulkIn, _=Depends(require_role("admin"))):
+    done = 0
+    for i in body.ids:
+        try:
+            await set_business_status(i, body.status, body.note)
+            done += 1
+        except HTTPException:
+            pass
+    return {"updated": done}
+
+
+@api.get("/admin/payments")
+async def admin_payments(_=Depends(require_role("admin"))):
+    txns = await db.payment_transactions.find({}, {"_id": 0, "session_id": 1, "email": 1, "kind": 1, "amount": 1, "currency": 1,
+                                                   "payment_status": 1, "created_at": 1, "gift_name": 1, "gift_email": 1}).sort("created_at", -1).to_list(5000)
+    gifts = {g["session_id"]: g for g in await db.gifts.find({}, {"_id": 0}).to_list(5000)}
+    for t in txns:
+        g = gifts.get(t["session_id"])
+        if g:
+            t["gift"] = {"code": g["code"], "status": g.get("status"), "send_on": g.get("send_on"), "email_sent": g.get("email_sent")}
+    return txns
 
 
 @api.get("/admin/users")

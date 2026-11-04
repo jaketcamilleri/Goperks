@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { bp } from "@/lib/site";
+import { bp, ap } from "@/lib/site";
 
 export function startGoogleLogin(next) {
   if (next) sessionStorage.setItem("lp_next", next);
@@ -27,7 +27,7 @@ export function AuthCallback() {
     api.post("/auth/google", { session_id: sessionId })
       .then(({ data }) => {
         setUser(data);
-        const home = data.role === "admin" ? "/admin" : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
+        const home = data.role === "admin" ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
         nav(next || home, { replace: true });
       })
       .catch((e) => {

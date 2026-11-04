@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MaskLines } from "@/components/Reveal";
-import { bp, BizLink, MainLink, EXTERNAL_BIZ } from "@/lib/site";
+import { bp, BizLink, MainLink, EXTERNAL_BIZ, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
 
 const SIDE_IMG = "https://images.unsplash.com/photo-1564327367919-cb377ea6a88f?auto=format&fit=crop&w=1200&q=80";
 
@@ -40,7 +40,8 @@ export default function Auth({ mode, business = false }) {
       if (business && data.role === "member") { await logout(); setWrongArea("member"); return; }
       if (!business && data.role === "business" && EXTERNAL_BIZ) { await logout(); setWrongArea("business"); return; }
       setUser(data);
-      const home = data.role === "admin" ? "/admin" : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
+      if (data.role === "admin" && EXTERNAL_ADMIN && !next) { window.location.href = ADMIN_URL; return; }
+      const home = data.role === "admin" ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
       nav(next || (business && data.role === "admin" ? bp("") : home));
     } catch (e2) {
       setErr(formatErr(e2));

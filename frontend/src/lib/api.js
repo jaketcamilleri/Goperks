@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_ORIGIN = window.location.hostname.startsWith("business.") ? window.location.origin : process.env.REACT_APP_BACKEND_URL;
+const API_ORIGIN = /^(business|admin)\./.test(window.location.hostname) ? window.location.origin : process.env.REACT_APP_BACKEND_URL;
 
 export const api = axios.create({
   baseURL: `${API_ORIGIN}/api`,

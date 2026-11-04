@@ -5,12 +5,11 @@ import { api, formatErr } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MaskLines } from "@/components/Reveal";
-import { bp } from "@/lib/site";
 
 const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 const btn = "w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60";
 
-export function ForgotPassword({ business = false }) {
+export function ForgotPassword({ loginPath = "/login" }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -38,12 +37,12 @@ export function ForgotPassword({ business = false }) {
           <button disabled={busy} className={btn} data-testid="forgot-submit-btn">{busy ? "Sending…" : "Send reset link"}</button>
         </form>
       )}
-      <Link to={business ? bp("/login") : "/login"} className="mt-6 inline-block text-sm font-semibold text-[#9A4024]" data-testid="forgot-back-login">← Back to log in</Link>
+      <Link to={loginPath} className="mt-6 inline-block text-sm font-semibold text-[#9A4024]" data-testid="forgot-back-login">← Back to log in</Link>
     </div>
   );
 }
 
-export function ResetPassword({ business = false }) {
+export function ResetPassword({ loginPath = "/login" }) {
   const [params] = useSearchParams();
   const token = params.get("token") || "";
   const [pw, setPw] = useState("");
@@ -60,7 +59,7 @@ export function ResetPassword({ business = false }) {
     try {
       await api.post("/auth/reset-password", { token, password: pw });
       toast.success("Password updated — please log in");
-      nav(business ? bp("/login") : "/login");
+      nav(loginPath);
     } catch (e2) { setErr(formatErr(e2)); } finally { setBusy(false); }
   };
 

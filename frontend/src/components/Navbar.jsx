@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
-import { BizLink, bp } from "@/lib/site";
+import { BizLink, AdminLink, bp } from "@/lib/site";
 
 const LINKS = [
   { to: "/deals", label: "Deals" },
@@ -20,7 +20,8 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const isBiz = user?.role === "business";
-  const home = user?.role === "admin" ? "/admin" : "/dashboard";
+  const isAdmin = user?.role === "admin";
+  const home = "/dashboard";
 
   const doLogout = async () => {
     await logout();
@@ -45,6 +46,7 @@ export function Navbar() {
           {user ? (
             <>
               {isBiz ? <Link to={bp("")} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>
+                : isAdmin ? <AdminLink data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">Admin</AdminLink>
                 : <Link to={home} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>}
               <button onClick={doLogout} data-testid="nav-logout" className="rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]">Log out</button>
             </>
@@ -69,7 +71,8 @@ export function Navbar() {
               <BizLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-for-businesses">For businesses</BizLink>
               {user ? (
                 <>
-                  <Link to={isBiz ? bp("") : home} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">My account</Link>
+                  {isAdmin ? <AdminLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">Admin</AdminLink>
+                    : <Link to={isBiz ? bp("") : home} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">My account</Link>}
                   <button onClick={doLogout} className="mt-2 rounded-full border border-[#17434C] py-3 font-semibold">Log out</button>
                 </>
               ) : (
