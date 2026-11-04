@@ -24,7 +24,7 @@ export function DealsMap({ deals }) {
           <Marker key={d.id} position={[d.lat, d.lng]} icon={pin(d.discount_label)}>
             <Popup>
               <div className="w-48">
-                <img src={d.image_url} alt="" className="mb-2 h-24 w-full rounded-lg object-cover" />
+                <img src={d.image_url || undefined} alt="" className="mb-2 h-24 w-full rounded-lg object-cover" />
                 <p className="font-display text-base font-semibold leading-tight">{d.title}</p>
                 <p className="mt-1 text-xs text-[#3D5E65]">{d.business_name} · {d.suburb}</p>
                 <Link to={`/deals/${d.id}`} className="mt-2 inline-block text-xs font-bold text-[#9A4024]" data-testid={`map-deal-link-${d.id}`}>View deal →</Link>

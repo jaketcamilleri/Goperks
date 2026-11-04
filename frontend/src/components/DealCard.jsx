@@ -17,7 +17,7 @@ export function DealCard({ deal, index = 0 }) {
       <Link to={`/deals/${deal.id}`} className="group block" data-testid={`deal-card-${deal.id}`}>
         <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-[#D3ECE7]">
           <img
-            src={deal.image_url}
+            src={deal.image_url || undefined}
             alt={deal.title}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.06]"

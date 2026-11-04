@@ -21,7 +21,7 @@ export const RevenueChart = () => {
         <p className="font-display text-3xl font-semibold text-[#B9512E]" data-testid="admin-chart-total">A${Math.round(total)}</p>
       </div>
       <div className="mt-6 h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 288 }}>
           <ComposedChart data={rows} margin={{ top: 8, right: 0, left: -18, bottom: 0 }}>
             <CartesianGrid stroke="#E3F0ED" vertical={false} />
             <XAxis dataKey="label" tick={{ fill: "#3D5E65", fontSize: 12 }} axisLine={false} tickLine={false} />

@@ -1,0 +1,38 @@
+{
+  "summary": "Full regression of Go Perks. Ran 47 pytest cases across auth, public deals, member voucher/favorites, pending/approved business workflow, admin stats/monthly/top-deals/users/deals, admin decision email-link flow (approve + 409 reuse + 400 invalid + 410 expired), cron 401/accepted on all three endpoints, Stripe membership checkout session. All 47 passed. Playwright smoke: landing (1440px), /deals list (cards + filters visible), /admin control room (stats cards, 6-month revenue chart, top-deals present), /admin/decide?token=invalid (friendly 'This link isn\\'t valid.' message), mobile 390px for deals + admin — all render without breaking errors.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin / profile areas", "issues": ["Empty string passed to <img src> (likely avatar/picture placeholder) - cosmetic console warning"]},
+      {"screen": "Admin RevenueChart", "issues": ["Recharts logs 'width(-1) height(-1)' warnings on initial mount; non-blocking but noisy. Consider adding fixed min-height to ResponsiveContainer."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Optional: suppress recharts width(-1)/height(-1) warnings by giving ResponsiveContainer an explicit minHeight.",
+    "Optional: guard <img src=''> renders (use null/undefined instead of empty string) in Navbar/account avatar."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 1316 lines — consider splitting by feature (auth/deals/admin/payments/cron) for maintainability.",
+    "JWT_SECRET and WEBHOOK_CRON_SECRET are checked into backend/.env in repo; acceptable for preview but must be rotated for prod.",
+    "login_attempts lock resets locked_until on every failed attempt (sliding window). Minor — intentional but worth confirming with product."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (47/47)", "frontend": "100% on smoke"},
+  "test_credentials": "Used seed creds from /app/memory/test_credentials.md (admin/member/business). TEST_ users created during register/business flow tests remain in DB (no delete endpoint).",
+  "seed_data_creation": "Created a few TEST_ member and TEST_ business users via /api/auth/register and approved one via /api/admin/decision for the full flow test. Did NOT touch jaketcamileri@gmail.com or any seed accounts.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression file lives at /app/backend/tests/backend_test.py; it loads REACT_APP_BACKEND_URL from frontend/.env fallback. Hardcodes JWT_SECRET and WEBHOOK_CRON_SECRET matching backend/.env — update if rotated. Stripe checkout test only creates a session (does not complete payment), so it leaves initiated payment_transactions rows which is expected.",
+  "rca of the issue": "No issues found."
+}
