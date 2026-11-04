@@ -29,7 +29,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
-from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email, business_rejected_email
+from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email, business_rejected_email, new_applicant_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -394,6 +394,7 @@ async def register(body: RegisterIn, response: Response):
     set_auth_cookies(response, str(res.inserted_id))
     if body.role == "business":
         await db.users.update_one({"_id": res.inserted_id}, {"$set": {"business_status": "pending"}})
+        asyncio.create_task(send_applicant_alert(body.name, body.business_name, email))
     return user_out(await db.users.find_one({"_id": res.inserted_id}))
 
 
@@ -869,6 +870,35 @@ async def admin_business_status(user_id: str, body: StatusIn, _=Depends(require_
         else:
             asyncio.create_task(send_business_rejected(prev, body.note or ""))
     return user_out(await db.users.find_one({"_id": prev["_id"]}))
+
+
+async def send_applicant_alert(name: str, business: str, email: str):
+    try:
+        subject, html = new_applicant_email(name, business, email)
+        await send_email(to=os.environ["SUPER_ADMIN_EMAIL"], subject=subject, html=html)
+    except Exception as e:
+        logger.warning("applicant alert failed for %s: %s", email, e)
+
+
+@api.get("/admin/monthly")
+async def admin_monthly(_=Depends(require_role("admin"))):
+    today = datetime.now(ZoneInfo("Australia/Melbourne")).date().replace(day=1)
+    months = []
+    y, m = today.year, today.month
+    for _i in range(6):
+        months.insert(0, f"{y:04d}-{m:02d}")
+        y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+    rows = {k: {"month": k, "members": 0, "gifts": 0, "revenue": 0.0} for k in months}
+    paid = await db.payment_transactions.find(
+        {"payment_status": "paid"}, {"amount": 1, "kind": 1, "created_at": 1, "updated_at": 1}).to_list(100000)
+    for p in paid:
+        when = datetime.fromisoformat(p.get("updated_at") or p["created_at"]).astimezone(ZoneInfo("Australia/Melbourne"))
+        r = rows.get(when.strftime("%Y-%m"))
+        if not r:
+            continue
+        r["gifts" if p.get("kind") == "gift" else "members"] += 1
+        r["revenue"] = round(r["revenue"] + (p.get("amount") or 0), 2)
+    return [rows[k] for k in months]
 
 
 async def send_business_rejected(u: dict, note: str):

@@ -54,6 +54,7 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Auth: email/password + Emergent Google sign-in (/api/auth/google exchanges session_id, matches by email, issues same JWT cookies). Refresh cookie 30 days.
 - Gifts: optional delivery date (today..+12 months, Melbourne date). Future gifts stored with send_on/email_sent=false; cron gift-deliveries 7am Melbourne -> /api/cron/gift-deliveries.
 - Member card + vouchers show real QR codes (qrcode.react); partner checker has camera Scan button (html5-qrcode) that fills and checks the code.
+- 2026-11-04: New business applicant alert email to SUPER_ADMIN_EMAIL (jaketcamilleri@gmail.com) on business registration. Admin control room has a last-6-months chart (GET /api/admin/monthly: new paid memberships, gifts, revenue per Melbourne month).
 
 ## Backlog
 - P1: Favourites; member-entered actual saving amount

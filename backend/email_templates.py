@@ -102,6 +102,16 @@ def business_rejected_email(name: str, business: str, note: str):
     return f"Your {EMAIL_FROM_NAME} partner application", _layout("About your application", body, "Visit Go Perks", "/")
 
 
+def new_applicant_email(name: str, business: str, email: str):
+    row = lambda k, v: (f'<tr><td style="padding:6px 16px 6px 0;font-family:Arial,sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">{k}</td>'
+                        f'<td style="padding:6px 0;font-family:Arial,sans-serif;font-size:15px;color:#17434C"><b>{escape(v)}</b></td></tr>')
+    body = (_p("A new business has applied to become a Go Perks partner and is waiting for your approval.")
+            + '<table role="presentation" style="background:#FFFFFF;border-radius:14px;padding:12px 16px;margin:16px 0">'
+            + row("Business", business) + row("Contact", name) + row("Email", email) + '</table>'
+            + _p("They can't submit deals until you approve them. Open the control room and go to the Businesses tab."))
+    return f"New partner application: {business}", _layout("New partner application", body, "Review applicants", "/admin")
+
+
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
     first = escape(name.split(" ")[0] if name else "there")
     saved_line = (f"So far you've saved <b>${saved:,.2f}</b> across {used} deal{'s' if used != 1 else ''} — "

@@ -8,6 +8,7 @@ import { PartnerChecker } from "@/components/PartnerChecker";
 import { StatusPill } from "@/pages/Business";
 import { Eyebrow } from "@/components/Reveal";
 import { AdminPeople } from "@/components/AdminPeople";
+import { RevenueChart } from "@/components/RevenueChart";
 
 const SECTIONS = [{ k: "deals", l: "Deals" }, { k: "member", l: "Members" }, { k: "business", l: "Businesses" }];
 
@@ -85,6 +86,7 @@ export default function Admin() {
         <Stat id="vouchers" label="Vouchers claimed" value={stats.vouchers} />
         <Stat id="redeemed" label="Redeemed" value={stats.redeemed} />
       </div>
+      <RevenueChart />
       <div className="mt-10"><PartnerChecker /></div>
       <div className="mt-12 flex flex-wrap gap-2 border-b border-[#C2DEDA] pb-4" data-testid="admin-sections">
         {SECTIONS.map((s) => (
