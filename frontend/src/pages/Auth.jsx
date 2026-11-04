@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api, formatErr } from "@/lib/api";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,8 @@ export default function Auth({ mode }) {
   const next = params.get("next");
   const [role, setRole] = useState(params.get("role") === "business" ? "business" : "member");
   const [f, setF] = useState({ name: "", email: "", password: "", business_name: "" });
+  const [confirm, setConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const { setUser } = useAuth();
@@ -24,6 +27,7 @@ export default function Auth({ mode }) {
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
+    if (!isLogin && f.password !== confirm) { setErr("Passwords don't match"); return; }
     setBusy(true);
     try {
       const body = isLogin ? { email: f.email, password: f.password } : { ...f, role, business_name: role === "business" ? f.business_name : null };
@@ -44,13 +48,17 @@ export default function Auth({ mode }) {
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-12 sm:px-8 lg:grid-cols-2 lg:pt-16" data-testid="auth-modal">
       <div className="max-w-md">
+        <div className="mb-8 grid grid-cols-2 rounded-full border border-[#C2DEDA] bg-white p-1" data-testid="auth-mode-switch">
+          <Link to={`/login${q}`} data-testid="auth-tab-login" className={`rounded-full py-2.5 text-center text-sm font-semibold transition-colors ${isLogin ? "bg-[#17434C] text-[#EAF6F3]" : "text-[#3D5E65] hover:text-[#17434C]"}`}>Log in</Link>
+          <Link to={`/register${q}`} data-testid="auth-tab-register" className={`rounded-full py-2.5 text-center text-sm font-semibold transition-colors ${!isLogin ? "bg-[#17434C] text-[#EAF6F3]" : "text-[#3D5E65] hover:text-[#17434C]"}`}>Create account</Link>
+        </div>
         <MaskLines as="h1" className="font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl"
           lines={isLogin ? [<>Welcome</>, <em key="b" className="font-normal italic text-[#B9512E]">back.</em>] : [<>Join the</>, <em key="c" className="font-normal italic text-[#B9512E]">little club.</em>]} />
         {!isLogin && (
           <div className="mt-8 inline-flex rounded-full border border-[#C2DEDA] bg-white p-1" data-testid="role-toggle">
             {["member", "business"].map((r) => (
               <button key={r} type="button" onClick={() => setRole(r)} data-testid={`role-${r}`}
-                className={`rounded-full px-5 py-2 text-sm font-semibold capitalize transition-colors ${role === r ? "bg-[#17434C] text-[#EAF6F3]" : "text-[#3D5E65]"}`}>
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${role === r ? "bg-[#17434C] text-[#EAF6F3]" : "text-[#3D5E65]"}`}>
                 {r === "member" ? "I'm a member" : "I'm a business"}
               </button>
             ))}
@@ -58,14 +66,34 @@ export default function Auth({ mode }) {
         )}
         <form onSubmit={submit} className="mt-8 space-y-5" data-testid={isLogin ? "login-form" : "register-form"}>
           {!isLogin && (
-            <div><Label>Your name</Label><Input required value={f.name} onChange={set("name")} className={field} data-testid="auth-name-input" /></div>
+            <div><Label htmlFor="auth-name">Your name</Label><Input id="auth-name" required autoComplete="name" value={f.name} onChange={set("name")} className={field} data-testid="auth-name-input" /></div>
           )}
           {!isLogin && role === "business" && (
-            <div><Label>Business name</Label><Input required value={f.business_name} onChange={set("business_name")} className={field} data-testid="auth-business-input" /></div>
+            <div><Label htmlFor="auth-biz">Business name</Label><Input id="auth-biz" required autoComplete="organization" value={f.business_name} onChange={set("business_name")} className={field} data-testid="auth-business-input" /></div>
           )}
-          <div><Label>Email</Label><Input required type="email" value={f.email} onChange={set("email")} className={field} data-testid="auth-email-input" /></div>
-          <div><Label>Password</Label><Input required type="password" minLength={6} value={f.password} onChange={set("password")} className={field} data-testid="auth-password-input" /></div>
-          {isLogin && <Link to="/forgot-password" className="-mt-2 block text-right text-sm font-semibold text-[#9A4024]" data-testid="forgot-password-link">Forgot password?</Link>}
+          <div><Label htmlFor="auth-email">Email</Label><Input id="auth-email" required type="email" inputMode="email" autoComplete="email" autoFocus={isLogin} placeholder="you@example.com" value={f.email} onChange={set("email")} className={field} data-testid="auth-email-input" /></div>
+          <div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="auth-password">Password</Label>
+              {isLogin && <Link to="/forgot-password" className="text-sm font-semibold text-[#9A4024]" data-testid="forgot-password-link">Forgot password?</Link>}
+            </div>
+            <div className="relative">
+              <Input id="auth-password" required type={showPw ? "text" : "password"} minLength={6} autoComplete={isLogin ? "current-password" : "new-password"} value={f.password} onChange={set("password")} className={`${field} pr-12`} data-testid="auth-password-input" />
+              <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Hide password" : "Show password"} data-testid="auth-toggle-password"
+                className="absolute right-2 top-[calc(50%+3px)] grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-[#3D5E65] hover:bg-[#D3ECE7]">
+                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {!isLogin && <p className="mt-1.5 text-xs text-[#3D5E65]">At least 6 characters.</p>}
+          </div>
+          {!isLogin && (
+            <div>
+              <Label htmlFor="auth-confirm">Confirm password</Label>
+              <Input id="auth-confirm" required type={showPw ? "text" : "password"} minLength={6} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={field} data-testid="auth-confirm-password-input" />
+              {confirm && confirm !== f.password && <p className="mt-1.5 text-xs font-semibold text-[#9A4024]" data-testid="auth-confirm-mismatch">Passwords don't match yet</p>}
+              {confirm && confirm === f.password && <p className="mt-1.5 text-xs font-semibold text-[#2F5A3A]" data-testid="auth-confirm-match">Passwords match</p>}
+            </div>
+          )}
           {err && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-error">{err}</p>}
           <button disabled={busy} type="submit" data-testid="auth-submit-btn"
             className="w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">
