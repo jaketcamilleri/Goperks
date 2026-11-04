@@ -1,5 +1,6 @@
 """Partner portal: counter checks, deal submissions, business profile, photos and stats."""
 import asyncio
+import os
 import uuid
 from datetime import datetime, timezone
 
@@ -112,6 +113,13 @@ async def submit_deal(body: DealIn, user=Depends(require_partner)):
     return d.out()
 
 
+@router.post("/deals/image")
+async def upload_deal_image(file: UploadFile = File(...), user=Depends(require_partner)):
+    """Photo for a deal card, used by partners and the admin team; returns the full image link."""
+    path = await store_image(file, user, "deal", 5)
+    return {"url": f"{os.environ['FRONTEND_URL'].rstrip('/')}/api/files/{path}"}
+
+
 @router.get("/business/deals")
 async def my_business_deals(user=Depends(require_partner)):
     docs = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(100)
@@ -220,7 +228,7 @@ async def remove_photo(body: PhotoPathIn, user=Depends(require_approved_business
 
 @router.get("/files/{path:path}")
 async def get_file(path: str):
-    rec = await db.files.find_one({"storage_path": path, "kind": {"$in": ["logo", "photo", "banner"]}, "is_deleted": False})
+    rec = await db.files.find_one({"storage_path": path, "kind": {"$in": ["logo", "photo", "banner", "deal"]}, "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
     try:

@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CATEGORIES } from "@/lib/api";
+import { toast } from "sonner";
+import { SuburbPicker } from "@/components/SuburbPicker";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "", ends_on: "" };
 
@@ -10,7 +13,7 @@ function BusinessField({ partners, lockedBusiness, f, setF, field }) {
   if (partners) {
     const pick = (e) => {
       const p = partners.find((x) => x.id === e.target.value);
-      setF({ ...f, partner_id: e.target.value, business_name: p?.business_name || "", suburb: f.suburb || p?.suburb || "" });
+      setF({ ...f, partner_id: e.target.value, business_name: p?.business_name || "", suburb: f.suburb || p?.suburb || "", postcode: f.suburb ? f.postcode : p?.postcode || "" });
     };
     return (
       <div>
@@ -40,7 +43,12 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
     <form
       className="grid gap-5 sm:grid-cols-2"
       data-testid="deal-form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, partner_id: f.partner_id || null, ends_on: f.ends_on || null, est_saving: Number(f.est_saving) || 0 }); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (f.suburb && !f.postcode && f.suburb !== (initial?.suburb || "")) { toast.error("Pick the suburb from the list"); return; }
+        const { postcode, ...rest } = f;
+        onSubmit({ ...rest, partner_id: f.partner_id || null, ends_on: f.ends_on || null, est_saving: Number(f.est_saving) || 0 });
+      }}
     >
       <div className="sm:col-span-2">
         <Label>Deal headline</Label>
@@ -48,8 +56,10 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
       </div>
       <BusinessField partners={partners} lockedBusiness={lockedBusiness} f={f} setF={setF} field={field} />
       <div>
-        <Label>Suburb</Label>
-        <Input value={f.suburb} onChange={set("suburb")} className={field} data-testid="deal-form-suburb" />
+        <Label htmlFor="deal-suburb">Suburb</Label>
+        <SuburbPicker key={f.partner_id || "own"} id="deal-suburb" suburb={f.suburb} postcode={f.postcode} testid="deal-form-suburb"
+          className={`${field} flex w-full border px-3 text-sm outline-none focus:border-[#17434C]`} placeholder="Suburb or postcode"
+          onChange={({ suburb, postcode }) => setF((cur) => ({ ...cur, suburb, postcode }))} />
       </div>
       <div>
         <Label>Category</Label>
@@ -79,8 +89,9 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
         <p className="mt-1 text-xs text-[#3D5E65]">Leave blank for an ongoing deal. It shows as “Ending soon” in the last 14 days.</p>
       </div>
       <div>
-        <Label>Image URL</Label>
-        <Input value={f.image_url} onChange={set("image_url")} placeholder="https://…" className={field} data-testid="deal-form-image" />
+        <Label>Deal photo</Label>
+        <ImageUpload value={f.image_url} endpoint="/deals/image" testid="deal-form-image" hint="PNG, JPG or WebP under 5 MB. A landscape photo of the food or place works best."
+          onChange={(image_url) => setF((cur) => ({ ...cur, image_url }))} />
       </div>
       {showFeatured && (
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
