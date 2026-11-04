@@ -1,8 +1,23 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Logo } from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
+import { useLiveCard } from "@/lib/liveCard";
 
-export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, status = "preview", className = "" }) {
+function LiveStrip({ now, left }) {
+  const time = new Date(now).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", second: "2-digit" });
+  return (
+    <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-2 bg-[#0F3138]/85 px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-[#EAF6F3] backdrop-blur" data-testid="member-card-live">
+      <span className="flex items-center gap-1.5">
+        <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#7FD1B9]" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#7FD1B9]" /></span>
+        Live card
+      </span>
+      <span data-testid="member-card-clock">{time}</span>
+      <span className="text-[#C2DEDA]" data-testid="member-card-refresh">new code {left}s</span>
+    </div>
+  );
+}
+
+export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, status = "preview", className = "", live = false }) {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const rx = useSpring(useTransform(my, [-0.5, 0.5], [14, -14]), { stiffness: 160, damping: 18 });
@@ -16,6 +31,9 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
   };
   const reset = () => { mx.set(0); my.set(0); };
   const active = status === "active";
+  const validCode = /^(GP|LP|TV)-[A-Z0-9]{6}$/.test(code || "");
+  const liveOn = live && active && validCode;
+  const { token, left, now } = useLiveCard(liveOn);
 
   return (
     <div className={`[perspective:1200px] ${className}`} onPointerMove={onMove} onPointerLeave={reset} data-testid="member-card">
@@ -29,7 +47,8 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
           className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
           style={{ background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.8) 50%, transparent 70%)", backgroundSize: "200% 100%", backgroundPositionX: glareX }}
         />
-        <div className="relative flex h-full flex-col justify-between" style={{ transform: "translateZ(40px)" }}>
+        {liveOn && <div className="live-sheen pointer-events-none absolute inset-0" aria-hidden="true" />}
+        <div className={`relative flex h-full flex-col justify-between ${liveOn ? "pb-6" : ""}`} style={{ transform: "translateZ(40px)" }}>
           <div className="flex items-start justify-between">
             <Logo light className="h-7 w-auto" />
             <span
@@ -48,14 +67,15 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
                 <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Valid until</p>
                 <p className="font-mono text-sm font-bold sm:text-base">{expires || "12 months"}</p>
               </div>
-              {active && /^(GP|LP|TV)-[A-Z0-9]{6}$/.test(code || "") && (
-                <div className="rounded-xl bg-white p-1.5" data-testid="member-card-qr">
-                  <QRCodeSVG value={code} size={84} level="M" fgColor="#17434C" />
+              {active && validCode && (
+                <div className="rounded-xl bg-white p-1.5" data-testid="member-card-qr" data-live={liveOn && token ? "true" : "false"}>
+                  <QRCodeSVG value={liveOn && token ? token : code} size={84} level="M" fgColor="#17434C" />
                 </div>
               )}
             </div>
           </div>
         </div>
+        {liveOn && <LiveStrip now={now} left={left} />}
       </motion.div>
     </div>
   );

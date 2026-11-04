@@ -56,6 +56,17 @@ body {
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 .spin-slow { animation: spin-slow 22s linear infinite; }
 
+/* Live member card: a sweeping holographic sheen that a screenshot can't reproduce */
+@keyframes live-sheen { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
+.live-sheen {
+  background: linear-gradient(115deg, transparent 35%, rgba(127, 209, 185, 0.35) 45%, rgba(238, 138, 99, 0.35) 52%, transparent 62%);
+  background-size: 200% 100%;
+  animation: live-sheen 3.2s linear infinite;
+  mix-blend-mode: screen;
+}
+@media (prefers-reduced-motion: reduce) { .live-sheen { animation-duration: 8s; } }
+
+
 @media (prefers-reduced-motion: reduce) {
     .marquee-track, .spin-slow { animation: none; }
 }

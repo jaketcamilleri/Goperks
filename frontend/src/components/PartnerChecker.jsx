@@ -27,8 +27,21 @@ function CardDeals({ deals, onRedeemCard, busy }) {
   );
 }
 
+const LIVE = {
+  live: ["bg-[#17434C] text-[#EAF6F3]", "Live card verified — not a screenshot"],
+  stale: ["bg-[#9A4024] text-white", "Old code — this looks like a screenshot. Ask them to open their live card in the app and scan again."],
+  typed: ["bg-[#FEF4DC] text-[#7A5310]", "Card number only (typed or from a wallet pass) — for extra certainty, ask to see the moving “Live card” clock in the app."],
+};
+
+function LiveBanner({ state }) {
+  const v = LIVE[state];
+  if (!v) return null;
+  return <p className={`mt-3 rounded-xl px-3 py-2 text-sm font-semibold ${v[0]}`} data-testid={`partner-live-${state}`}>{v[1]}</p>;
+}
+
 function Result({ r, onRedeem, onRedeemCard, busy }) {
   const ok = r.status === "active";
+  const stale = r.type === "member" && r.live === "stale";
   const Icon = ok ? CheckCircle2 : XCircle;
   const title = r.type === "member"
     ? ok ? `${r.member_name}'s membership is active` : `${r.member_name}'s membership is ${r.status}`
@@ -42,7 +55,8 @@ function Result({ r, onRedeem, onRedeemCard, busy }) {
       ) : (
         <p className="mt-2 text-sm text-[#17434C]">Card {r.member_code} · valid until {fmt(r.expires_at)}. {ok ? "Pick the deal they're using:" : ""}</p>
       )}
-      {r.type === "member" && ok && <CardDeals deals={r.deals} onRedeemCard={onRedeemCard} busy={busy} />}
+      {r.type === "member" && <LiveBanner state={r.live} />}
+      {r.type === "member" && ok && !stale && <CardDeals deals={r.deals} onRedeemCard={onRedeemCard} busy={busy} />}
       {r.type === "voucher" && ok && (
         <button onClick={onRedeem} disabled={busy} data-testid="partner-redeem-btn"
           className="mt-4 rounded-full bg-[#17434C] px-6 py-3 text-sm font-semibold text-[#EAF6F3] disabled:opacity-60">Mark as redeemed</button>
@@ -79,7 +93,13 @@ export function PartnerChecker() {
   };
   const redeemCard = async (dealId) => {
     setBusy(true);
-    try { await api.post("/partner/redeem-card", { member_code: code, deal_id: dealId }); toast.success("Deal redeemed on member card"); await check(); }
+    try {
+      await api.post("/partner/redeem-card", { member_code: res?.member_code || code, deal_id: dealId, live_token: code.startsWith("GPL.") && res?.live === "live" ? code : null });
+      toast.success("Deal redeemed on member card");
+      const { data } = await api.post("/partner/check", { code: res?.member_code || code });
+      setRes({ ...data, live: res?.live || data.live });
+      setBusy(false);
+    }
     catch (e2) { toast.error(formatErr(e2)); setBusy(false); }
   };
 
@@ -91,7 +111,7 @@ export function PartnerChecker() {
       <form onSubmit={check} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <ScanLine className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#EE8A63]" />
-          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required minLength={4} placeholder="AB12-CD34"
+          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required minLength={4} maxLength={80} placeholder="AB12-CD34"
             data-testid="partner-code-input"
             className="h-14 w-full rounded-full border border-white/20 bg-white/5 pl-12 pr-4 font-mono text-lg tracking-[0.15em] text-[#EAF6F3] outline-none placeholder:text-[#8FAFAD] focus:border-[#EE8A63]" />
         </div>

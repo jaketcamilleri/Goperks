@@ -52,7 +52,7 @@ export default function Dashboard() {
         lines={[<>Hi, <em className="font-normal italic text-[#B9512E]">{user?.name?.split(" ")[0]}</em>.</>]} />
       <div className="mt-12 grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <MemberCard name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
+          <MemberCard live name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
           {active ? (
             <>
             <p className="mt-5 text-sm text-[#3D5E65]" data-testid="membership-active-note">Show this card at any partner counter. Tilt it — it's alive.</p>

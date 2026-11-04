@@ -7,6 +7,7 @@ load_dotenv(ROOT_DIR / ".env")
 import os
 import asyncio
 import hmac
+import hashlib
 from zoneinfo import ZoneInfo
 import logging
 import secrets
@@ -169,12 +170,38 @@ class ResetIn(BaseModel):
 
 
 class CodeIn(BaseModel):
-    code: str = Field(min_length=4, max_length=20)
+    code: str = Field(min_length=4, max_length=80)
 
 
 class CardRedeemIn(BaseModel):
     member_code: str = Field(min_length=4, max_length=20)
     deal_id: str
+    live_token: Optional[str] = Field(None, max_length=80)
+
+
+LIVE_STEP = 30  # seconds per live card code
+
+
+def _live_sig(code: str, step: int) -> str:
+    return hmac.new(os.environ["JWT_SECRET"].encode(), f"live:{code}:{step}".encode(), hashlib.sha256).hexdigest()[:12].upper()
+
+
+def make_live_token(code: str) -> tuple:
+    now = datetime.now(timezone.utc).timestamp()
+    step = int(now // LIVE_STEP)
+    return f"GPL.{code}.{step}.{_live_sig(code, step)}", LIVE_STEP - int(now % LIVE_STEP)
+
+
+def check_live_token(token: str) -> tuple:
+    """Returns (member_code, state) where state is 'live', 'stale' (old screenshot) or 'invalid'."""
+    parts = token.strip().upper().split(".")
+    if len(parts) != 4 or parts[0] != "GPL" or not parts[2].isdigit():
+        return None, "invalid"
+    code, step = parts[1], int(parts[2])
+    if not hmac.compare_digest(_live_sig(code, step), parts[3]):
+        return code, "invalid"
+    age = int(datetime.now(timezone.utc).timestamp() // LIVE_STEP) - step
+    return code, ("live" if 0 <= age <= 1 else "stale")
 
 
 class GoogleSessionIn(BaseModel):
@@ -564,6 +591,14 @@ async def reset_password(body: ResetIn):
     return {"ok": True}
 
 
+@api.get("/me/live-card")
+async def live_card(user=Depends(current_user)):
+    if user["role"] != "member" or user.get("membership_status") != "active" or not user.get("member_code"):
+        raise HTTPException(400, "No active member card")
+    token, secs = make_live_token(user["member_code"])
+    return {"token": token, "refresh_in": secs, "server_time": now_iso()}
+
+
 @api.get("/auth/me")
 async def me(user=Depends(current_user)):
     return user
@@ -719,7 +754,7 @@ async def my_savings(user=Depends(current_user)):
 # ---------- Partner counter check ----------
 async def find_partner_voucher(code: str, user: dict):
     v = await db.vouchers.find_one({"code": code.strip().upper()})
-    if not v or (user["role"] != "admin" and v.get("partner_id") != user["id"]):
+    if not v or (user["role"] not in ("admin", "staff") and v.get("partner_id") != user["id"]):
         raise HTTPException(404, "No voucher with that code for your business")
     return v
 
@@ -727,19 +762,25 @@ async def find_partner_voucher(code: str, user: dict):
 @api.post("/partner/check")
 async def partner_check(body: CodeIn, user=Depends(require_partner)):
     code = body.code.strip().upper()
+    live = "typed"
+    if code.startswith("GPL."):
+        tcode, live = check_live_token(code)
+        if live == "invalid":
+            raise HTTPException(400, "This QR code isn't a genuine Go Perks card")
+        code = tcode
     if code.startswith(("GP-", "LP-", "TV-")):
         m = await db.users.find_one({"member_code": code})
         if not m:
             raise HTTPException(404, "No member with that card number")
         info = user_out(m)
-        q = {"status": "approved"} if user["role"] == "admin" else {"status": "approved", "submitted_by": user["id"]}
+        q = {"status": "approved"} if user["role"] in ("admin", "staff") else {"status": "approved", "submitted_by": user["id"]}
         deals = await db.deals.find(q).sort("title", 1).to_list(200)
         rows = []
         for d in deals:
             used = await used_this_term(info, str(d["_id"]))
             rows.append({"deal_id": str(d["_id"]), "title": d["title"], "discount_label": d["discount_label"],
                          "used_this_term": bool(used), "used_at": (used or {}).get("redeemed_at")})
-        return {"type": "member", "member_name": info["name"].split(" ")[0], "member_code": code,
+        return {"type": "member", "member_name": info["name"].split(" ")[0], "member_code": code, "live": live,
                 "status": info["membership_status"], "expires_at": info["membership_expires_at"], "deals": rows}
     v = Voucher.from_mongo(await find_partner_voucher(code, user)).out()
     if v["status"] == "active" and v["expires_at"] < now_iso():
@@ -752,6 +793,10 @@ async def partner_check(body: CodeIn, user=Depends(require_partner)):
 
 @api.post("/partner/redeem-card")
 async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_partner)):
+    if body.live_token:
+        tcode, state = check_live_token(body.live_token)
+        if state != "live" or tcode != body.member_code.strip().upper():
+            raise HTTPException(400, "This card code has expired — ask the member to show their live card and scan again")
     m = await db.users.find_one({"member_code": body.member_code.strip().upper()})
     if not m:
         raise HTTPException(404, "No member with that card number")
@@ -759,7 +804,7 @@ async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_partner))
     if member["membership_status"] != "active":
         raise HTTPException(400, "This membership isn't active")
     deal = await db.deals.find_one({"_id": oid(body.deal_id), "status": "approved"})
-    if not deal or (user["role"] != "admin" and deal.get("submitted_by") != user["id"]):
+    if not deal or (user["role"] not in ("admin", "staff") and deal.get("submitted_by") != user["id"]):
         raise HTTPException(404, "Deal not found for your business")
     if await used_this_term(member, body.deal_id):
         raise HTTPException(409, "This member has already used this deal in their current membership year")
