@@ -1,0 +1,587 @@
+[
+ {
+  "business_name": "Cornershop",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://cornershopyarraville.com",
+  "email": "11ballaratst@gmail.com",
+  "phone": "",
+  "source_url": "https://www.cornershopyarraville.com/visit"
+ },
+ {
+  "business_name": "Masak Masak",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://masakmasak.carrd.co",
+  "email": "hello@masakmasak.com.au",
+  "phone": "",
+  "source_url": "https://masakmasak.carrd.co"
+ },
+ {
+  "business_name": "Tailor Made",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://tailormadeyarraville.com",
+  "email": "tailormade.yarraville@gmail.com",
+  "phone": "",
+  "source_url": "https://www.tailormadeyarraville.com"
+ },
+ {
+  "business_name": "Willis & Anderson",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://willisanderson.com.au",
+  "email": "contact@willisanderson.com.au",
+  "phone": "",
+  "source_url": "https://www.willisanderson.com.au/"
+ },
+ {
+  "business_name": "Wembley Coffee & Food",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://wembleycoffeefood.com.au",
+  "email": "info@wembleycoffeefood.com.au",
+  "phone": "",
+  "source_url": "https://www.wembleycoffeefood.com.au/"
+ },
+ {
+  "business_name": "Seddon Deadly Sins",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://seddondeadlysins.com.au",
+  "email": "orders@seddondeadlysins.com.au",
+  "phone": "",
+  "source_url": "https://seddondeadlysins.com.au"
+ },
+ {
+  "business_name": "Miss An'am",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://missanam.com.au",
+  "email": "missanam.seddon@gmail.com",
+  "phone": "",
+  "source_url": "https://missanam.com.au"
+ },
+ {
+  "business_name": "Rudimentary",
+  "category": "cafes",
+  "suburb": "Footscray",
+  "website": "https://rudimentary.com.au",
+  "email": "info@rudimentary.com.au",
+  "phone": "",
+  "source_url": "https://www.rudimentary.com.au/"
+ },
+ {
+  "business_name": "Brother Nancy",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://www.brothernancy.cafe",
+  "email": "cafe@brothernancy.com.au",
+  "phone": "",
+  "source_url": "https://www.brothernancy.cafe"
+ },
+ {
+  "business_name": "Migrant Coffee",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://migrantcoffee.com",
+  "email": "hello@migrantcoffee.com",
+  "phone": "",
+  "source_url": "https://www.migrantcoffee.com/"
+ },
+ {
+  "business_name": "Bar Thyme",
+  "category": "dining",
+  "suburb": "Footscray",
+  "website": "https://www.barthyme.com.au",
+  "email": "hello@barthyme.com.au",
+  "phone": "",
+  "source_url": "https://www.barthyme.com.au"
+ },
+ {
+  "business_name": "Harley & Rose",
+  "category": "dining",
+  "suburb": "West Footscray",
+  "website": "https://www.harleyandrose.net.au",
+  "email": "hello@harleyandrose.net.au",
+  "phone": "",
+  "source_url": "https://www.harleyandrose.net.au"
+ },
+ {
+  "business_name": "Shadowfax Winery",
+  "category": "dining",
+  "suburb": "Werribee",
+  "website": "https://www.shadowfax.com.au",
+  "email": "cellardoor@shadowfax.com.au",
+  "phone": "",
+  "source_url": "https://www.shadowfax.com.au"
+ },
+ {
+  "business_name": "Climb 'n' Play",
+  "category": "kids",
+  "suburb": "Maidstone",
+  "website": "https://climbnplay.com.au",
+  "email": "maidstone@climbnplay.com.au",
+  "phone": "",
+  "source_url": "https://climbnplay.com.au"
+ },
+ {
+  "business_name": "Crocs Playcentre Derrimut",
+  "category": "kids",
+  "suburb": "Derrimut",
+  "website": "https://derrimut.crocsplaycentre.com.au",
+  "email": "bookings@crocsplaycentre.com.au",
+  "phone": "",
+  "source_url": "https://derrimut.crocsplaycentre.com.au"
+ },
+ {
+  "business_name": "Bumble Beez Playcentre",
+  "category": "kids",
+  "suburb": "Werribee",
+  "website": "https://www.bumblebeezpc.com.au",
+  "email": "info@bumblebeezpc.com.au",
+  "phone": "",
+  "source_url": "https://www.bumblebeezpc.com.au"
+ },
+ {
+  "business_name": "BouncyRoos",
+  "category": "kids",
+  "suburb": "Werribee",
+  "website": "https://www.bouncyroos.com.au",
+  "email": "parties@bouncyroos.com.au",
+  "phone": "",
+  "source_url": "https://www.bouncyroos.com.au"
+ },
+ {
+  "business_name": "Assembly Yoga + Pilates",
+  "category": "essentials",
+  "suburb": "West Footscray",
+  "website": "https://assemblystudios.com.au",
+  "email": "hello@assemblystudios.com.au",
+  "phone": "",
+  "source_url": "https://assemblystudios.com.au"
+ },
+ {
+  "business_name": "Crew Studios",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.crewstudios.com.au",
+  "email": "info@crewstudios.com.au",
+  "phone": "",
+  "source_url": "https://www.crewstudios.com.au/contact"
+ },
+ {
+  "business_name": "Movement Culture",
+  "category": "essentials",
+  "suburb": "Altona",
+  "website": "https://www.movementculture.net.au",
+  "email": "hello@movementculture.net.au",
+  "phone": "",
+  "source_url": "https://www.movementculture.net.au"
+ },
+ {
+  "business_name": "Kultured Barbers & Hairdressing",
+  "category": "essentials",
+  "suburb": "Footscray",
+  "website": "https://kulturedbarbers.com.au",
+  "email": "kulturedbarbers@gmail.com",
+  "phone": "",
+  "source_url": "https://kulturedbarbers.com.au"
+ },
+ {
+  "business_name": "The Sun Bookshop",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://sunbookshop.com",
+  "email": "info@sunbookshop.com",
+  "phone": "",
+  "source_url": "https://sunbookshop.com"
+ },
+ {
+  "business_name": "Seddon Book Alley",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://seddonbookalley.com.au",
+  "email": "info@seddonbookalley.com.au",
+  "phone": "",
+  "source_url": "https://seddonbookalley.com.au"
+ },
+ {
+  "business_name": "Book and Paper",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://bookandpaper.com.au",
+  "email": "contact@bookandpaper.com.au",
+  "phone": "",
+  "source_url": "https://bookandpaper.com.au"
+ },
+ {
+  "business_name": "Invite Me",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://inviteme.com.au",
+  "email": "sales@inviteme.com.au",
+  "phone": "",
+  "source_url": "https://inviteme.com.au"
+ },
+ {
+  "business_name": "Village Idiom",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://villageidiom.com.au",
+  "email": "shop@villageidiom.com.au",
+  "phone": "",
+  "source_url": "https://www.villageidiom.com.au/"
+ },
+ {
+  "business_name": "Creative House",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://creativehouseyarraville.com.au",
+  "email": "creative.house@bigpond.com",
+  "phone": "",
+  "source_url": "https://www.creativehouseyarraville.com.au/contact"
+ },
+ {
+  "business_name": "Sedonia",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://sedonia.com.au",
+  "email": "hello@sedonia.com.au",
+  "phone": "",
+  "source_url": "https://www.sedonia.com.au/"
+ },
+ {
+  "business_name": "Far Fetched Designs",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://farfetcheddesigns.com.au",
+  "email": "farfetcheddesigns.popup@gmail.com",
+  "phone": "",
+  "source_url": "https://www.farfetcheddesigns.com.au/policies/contact-information"
+ },
+ {
+  "business_name": "Simple Form",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://simpleform.com.au",
+  "email": "hello@simpleform.com.au",
+  "phone": "",
+  "source_url": "https://simpleform.com.au"
+ },
+ {
+  "business_name": "Offshoot",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://off-shoot.com.au",
+  "email": "hello@off-shoot.com.au",
+  "phone": "",
+  "source_url": "https://www.off-shoot.com.au/"
+ },
+ {
+  "business_name": "Yarraville Blooms",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://yarravilleblooms.com.au",
+  "email": "hello@yarravilleblooms.com.au",
+  "phone": "",
+  "source_url": "https://www.yarravilleblooms.com.au/pages/contact"
+ },
+ {
+  "business_name": "Birchbox Flowers",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://birchboxflowers.com.au",
+  "email": "sales@birchboxflowers.com.au",
+  "phone": "",
+  "source_url": "https://www.birchboxflowers.com.au/"
+ },
+ {
+  "business_name": "The Corner of Altona",
+  "category": "cafes",
+  "suburb": "Altona",
+  "website": "https://www.thecornerofaltona.com.au",
+  "email": "meet@thecornerofaltona.com.au",
+  "phone": "",
+  "source_url": "https://www.thecornerofaltona.com.au"
+ },
+ {
+  "business_name": "Wolf Cafe & Eatery",
+  "category": "cafes",
+  "suburb": "Altona North",
+  "website": "https://www.wolfcafeandeatery.com.au",
+  "email": "info@wolfcafeandeatery.com.au",
+  "phone": "",
+  "source_url": "https://www.wolfcafeandeatery.com.au"
+ },
+ {
+  "business_name": "Inner West Swedish Baker",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://innerwestswedishbaker.com.au",
+  "email": "innerwestswedishbaker@gmail.com",
+  "phone": "",
+  "source_url": "https://innerwestswedishbaker.com.au/contact/"
+ },
+ {
+  "business_name": "Alfa Bakehouse",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://www.alfabakehouse.com.au",
+  "email": "info@alfabakehouse.com.au",
+  "phone": "",
+  "source_url": "https://www.alfabakehouse.com.au/contact"
+ },
+ {
+  "business_name": "Gigi's Gelato",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://gigisgelato.com.au",
+  "email": "sue@gigisgelato.com.au",
+  "phone": "",
+  "source_url": "https://gigisgelato.com.au"
+ },
+ {
+  "business_name": "Biancolatte Gelateria & Cannoleria",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://www.biancolatte.com.au",
+  "email": "info@biancolatte.com.au",
+  "phone": "",
+  "source_url": "https://www.biancolatte.com.au"
+ },
+ {
+  "business_name": "3 Grains",
+  "category": "dining",
+  "suburb": "Yarraville",
+  "website": "https://www.3grains.com.au",
+  "email": "info@3grains.com.au",
+  "phone": "",
+  "source_url": "https://www.3grains.com.au"
+ },
+ {
+  "business_name": "Albright Studios",
+  "category": "kids",
+  "suburb": "Footscray",
+  "website": "https://www.albrightstudios.com.au",
+  "email": "admin@albrightstudios.com.au",
+  "phone": "",
+  "source_url": "https://www.albrightstudios.com.au"
+ },
+ {
+  "business_name": "WestEnd Performing Arts",
+  "category": "kids",
+  "suburb": "Sunshine",
+  "website": "https://westendperformingarts.com.au",
+  "email": "info@westendperformingarts.com.au",
+  "phone": "",
+  "source_url": "https://westendperformingarts.com.au"
+ },
+ {
+  "business_name": "Leaps N Beats Dance",
+  "category": "kids",
+  "suburb": "Yarraville",
+  "website": "http://www.leapsnbeatsdance.com.au",
+  "email": "info@leapsnbeatsdance.com.au",
+  "phone": "",
+  "source_url": "https://www.leapsnbeatsdance.com.au/contact-us/"
+ },
+ {
+  "business_name": "Let's Swim! Swim School",
+  "category": "kids",
+  "suburb": "Williamstown North",
+  "website": "https://www.letsswim.com.au",
+  "email": "newport@letsswim.com.au",
+  "phone": "",
+  "source_url": "https://www.letsswim.com.au"
+ },
+ {
+  "business_name": "The Creative Music Studio",
+  "category": "kids",
+  "suburb": "Newport",
+  "website": "https://www.thecreativemusicstudio.com",
+  "email": "info@thecreativemusicstudio.com",
+  "phone": "",
+  "source_url": "https://www.thecreativemusicstudio.com"
+ },
+ {
+  "business_name": "Pups On Parade",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.pupsonparade.com.au",
+  "email": "hello@pupsonparade.com.au",
+  "phone": "",
+  "source_url": "https://www.pupsonparade.com.au"
+ },
+ {
+  "business_name": "Le Spa De Jour",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://lespadejour.com",
+  "email": "support@lespadejour.com",
+  "phone": "",
+  "source_url": "https://lespadejour.com"
+ },
+ {
+  "business_name": "Uncanny Animals",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://uncannyanimals.com.au",
+  "email": "bookings@uncannyanimals.com.au",
+  "phone": "",
+  "source_url": "https://www.uncannyanimals.com.au/pages/contact"
+ },
+ {
+  "business_name": "Doggy Dooz",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://doggydooz.com.au",
+  "email": "info@doggydooz.com.au",
+  "phone": "",
+  "source_url": "https://www.doggydooz.com.au/"
+ },
+ {
+  "business_name": "Hobsons Bay Pet Care",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.dogsdogsdogs.com.au",
+  "email": "admin@dogsdogsdogs.com.au",
+  "phone": "",
+  "source_url": "https://www.dogsdogsdogs.com.au"
+ },
+ {
+  "business_name": "Augustus Gelatery Werribee",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "https://augustusgelatery.com.au",
+  "email": "scoop@augustusgelatery.com.au",
+  "phone": "03 8763 1486",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/augustus-gelatery-werribee-0"
+ },
+ {
+  "business_name": "Bean Smuggler",
+  "category": "cafes",
+  "suburb": "Point Cook",
+  "website": "https://beansmuggler.com.au",
+  "email": "beansmuggler.pointcook@gmail.com",
+  "phone": "03 9395 1212",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bean-smuggler"
+ },
+ {
+  "business_name": "Bellissima Italian Pantry",
+  "category": "dining",
+  "suburb": "Werribee",
+  "website": "https://www.bellissima.com.au",
+  "email": "ciao@bellissima.com.au",
+  "phone": "03 9742 2260",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/bellissima-italian-pantry"
+ },
+ {
+  "business_name": "Cake Creations by Kate",
+  "category": "cafes",
+  "suburb": "Point Cook",
+  "website": "https://cakecreationsbykate.com.au",
+  "email": "sales@ccbk.com.au",
+  "phone": "03 9395 9656",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/cake-creations-kate"
+ },
+ {
+  "business_name": "Chatterbox Cafe",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "http://www.chatterboxcafe.com.au",
+  "email": "info@chatterboxcafe.com.au",
+  "phone": "03 9741 7495",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/chatterbox-cafe"
+ },
+ {
+  "business_name": "Fusion Ceylon",
+  "category": "dining",
+  "suburb": "Werribee",
+  "website": "https://fusionceylon.com.au",
+  "email": "info@fusionceylon.com.au",
+  "phone": "0433 696 726",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/fusion-ceylon"
+ },
+ {
+  "business_name": "The Garden Feast",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "https://gardenfeast.com.au",
+  "email": "nursery@gardenfeast.com.au",
+  "phone": "03 9741 3100",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/garden-feast"
+ },
+ {
+  "business_name": "Little Espresso",
+  "category": "cafes",
+  "suburb": "Point Cook",
+  "website": "",
+  "email": "littleespresso@outlook.com",
+  "phone": "03 8386 7241",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-espresso"
+ },
+ {
+  "business_name": "Little Growling Cafe",
+  "category": "cafes",
+  "suburb": "Tarneit",
+  "website": "https://littlegrowlingcafe.com.au",
+  "email": "littlegrowlingcafe@gmail.com",
+  "phone": "0404 311 833",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-growling-cafe"
+ },
+ {
+  "business_name": "Little Miss Violet",
+  "category": "cafes",
+  "suburb": "Point Cook",
+  "website": "",
+  "email": "littlemissvioletcafe@gmail.com",
+  "phone": "03 8353 8630",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/little-miss-violet"
+ },
+ {
+  "business_name": "Notorious Espresso",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "https://notoriousespresso.com.au",
+  "email": "hello@notoriousesp.com",
+  "phone": "0432 098 070",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/notorious-espresso"
+ },
+ {
+  "business_name": "Sons of Manor",
+  "category": "cafes",
+  "suburb": "Manor Lakes",
+  "website": "https://sonsofmanor.com.au",
+  "email": "info@sonsofmanor.com.au",
+  "phone": "03 7036 6965",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/sons-manor"
+ },
+ {
+  "business_name": "The South Corner",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "https://www.thesouthcorner.cafe",
+  "email": "info@thesouthcorner.cafe",
+  "phone": "03 9741 5142",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/south-corner"
+ },
+ {
+  "business_name": "Wolf on Watton",
+  "category": "cafes",
+  "suburb": "Werribee",
+  "website": "https://wolfonwatton.com.au",
+  "email": "hello@wolfonwatton.com.au",
+  "phone": "",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/wolf-watton"
+ },
+ {
+  "business_name": "Village Cantina Werribee",
+  "category": "dining",
+  "suburb": "Werribee",
+  "website": "",
+  "email": "hola@villagecantina.com.au",
+  "phone": "03 9974 2959",
+  "source_url": "https://www.visitwerribee.com/food-wine/cafes-street-eats/village-cantina-werribee"
+ }
+]

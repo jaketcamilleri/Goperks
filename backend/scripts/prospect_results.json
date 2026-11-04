@@ -1,0 +1,713 @@
+[
+ {
+  "name": "Cornershop",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://cornershopyarraville.com",
+  "email": "11ballaratst@gmail.com",
+  "source": "https://www.cornershopyarraville.com/visit",
+  "site_ok": true
+ },
+ {
+  "name": "Coracle",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://coracle.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Masak Masak",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://masakmasak.carrd.co",
+  "email": "hello@masakmasak.com.au",
+  "source": "https://masakmasak.carrd.co",
+  "site_ok": true
+ },
+ {
+  "name": "Tailor Made",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://tailormadeyarraville.com",
+  "email": "tailormade.yarraville@gmail.com",
+  "source": "https://www.tailormadeyarraville.com",
+  "site_ok": true
+ },
+ {
+  "name": "Willis & Anderson",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://willisanderson.com.au",
+  "email": "contact@willisanderson.com.au",
+  "source": "https://www.willisanderson.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Wembley Coffee & Food",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://wembleycoffeefood.com.au",
+  "email": "info@wembleycoffeefood.com.au",
+  "source": "https://www.wembleycoffeefood.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Common Galaxia",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://commongalaxia.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Fig & Walnut",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://figandwalnutcafe.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Seddon Deadly Sins",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://seddondeadlysins.com.au",
+  "email": "orders@seddondeadlysins.com.au",
+  "source": "https://seddondeadlysins.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Miss An'am",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://missanam.com.au",
+  "email": "missanam.seddon@gmail.com",
+  "source": "https://missanam.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Rudimentary",
+  "category": "cafes",
+  "suburb": "Footscray",
+  "website": "https://rudimentary.com.au",
+  "email": "info@rudimentary.com.au",
+  "source": "https://www.rudimentary.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Tee & Coffee",
+  "category": "cafes",
+  "suburb": "Footscray",
+  "website": "https://teeandcoffee.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Brother Nancy",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://www.brothernancy.cafe",
+  "email": "cafe@brothernancy.com.au",
+  "source": "https://www.brothernancy.cafe",
+  "site_ok": true
+ },
+ {
+  "name": "Migrant Coffee",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://migrantcoffee.com",
+  "email": "hello@migrantcoffee.com",
+  "source": "https://www.migrantcoffee.com/",
+  "site_ok": true
+ },
+ {
+  "name": "T. Cavallaro & Sons",
+  "category": "cafes",
+  "suburb": "Footscray",
+  "website": "https://www.tcavallaroandsons.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Bar Thyme",
+  "category": "dining",
+  "suburb": "Footscray",
+  "website": "https://www.barthyme.com.au",
+  "email": "hello@barthyme.com.au",
+  "source": "https://www.barthyme.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Harley & Rose",
+  "category": "dining",
+  "suburb": "West Footscray",
+  "website": "https://www.harleyandrose.net.au",
+  "email": "hello@harleyandrose.net.au",
+  "source": "https://www.harleyandrose.net.au",
+  "site_ok": true
+ },
+ {
+  "name": "Aangan",
+  "category": "dining",
+  "suburb": "West Footscray",
+  "website": "https://aangan.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Shadowfax Winery",
+  "category": "dining",
+  "suburb": "Werribee",
+  "website": "https://www.shadowfax.com.au",
+  "email": "cellardoor@shadowfax.com.au",
+  "source": "https://www.shadowfax.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "The Strand Williamstown",
+  "category": "dining",
+  "suburb": "Williamstown",
+  "website": "https://www.thestrandwilliamstown.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Landing Playcentre",
+  "category": "kids",
+  "suburb": "Altona North",
+  "website": "https://www.landingon.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Leo's Kingdom",
+  "category": "kids",
+  "suburb": "Altona North",
+  "website": "http://leosplaykingdom.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Jumpside",
+  "category": "kids",
+  "suburb": "Footscray",
+  "website": "https://jumpside.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Tumbles Playhouse",
+  "category": "kids",
+  "suburb": "Williamstown North",
+  "website": "https://www.tumblesplayhouse.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Climb 'n' Play",
+  "category": "kids",
+  "suburb": "Maidstone",
+  "website": "https://climbnplay.com.au",
+  "email": "maidstone@climbnplay.com.au",
+  "source": "https://climbnplay.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Crocs Playcentre Derrimut",
+  "category": "kids",
+  "suburb": "Derrimut",
+  "website": "https://derrimut.crocsplaycentre.com.au",
+  "email": "bookings@crocsplaycentre.com.au",
+  "source": "https://derrimut.crocsplaycentre.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Bumble Beez Playcentre",
+  "category": "kids",
+  "suburb": "Werribee",
+  "website": "https://www.bumblebeezpc.com.au",
+  "email": "info@bumblebeezpc.com.au",
+  "source": "https://www.bumblebeezpc.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "BouncyRoos",
+  "category": "kids",
+  "suburb": "Werribee",
+  "website": "https://www.bouncyroos.com.au",
+  "email": "parties@bouncyroos.com.au",
+  "source": "https://www.bouncyroos.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "My Mama Said",
+  "category": "essentials",
+  "suburb": "Footscray",
+  "website": "https://www.mymamasaid.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Move&",
+  "category": "essentials",
+  "suburb": "Footscray",
+  "website": "https://www.moveand.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "All for One",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://www.allforone.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Assembly Yoga + Pilates",
+  "category": "essentials",
+  "suburb": "West Footscray",
+  "website": "https://assemblystudios.com.au",
+  "email": "hello@assemblystudios.com.au",
+  "source": "https://assemblystudios.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Wildsoul Wellness",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.wildsoulwellness.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Crew Studios",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.crewstudios.com.au",
+  "email": "info@crewstudios.com.au",
+  "source": "https://www.crewstudios.com.au/contact",
+  "site_ok": true
+ },
+ {
+  "name": "Movement Culture",
+  "category": "essentials",
+  "suburb": "Altona",
+  "website": "https://www.movementculture.net.au",
+  "email": "hello@movementculture.net.au",
+  "source": "https://www.movementculture.net.au",
+  "site_ok": true
+ },
+ {
+  "name": "Kultured Barbers & Hairdressing",
+  "category": "essentials",
+  "suburb": "Footscray",
+  "website": "https://kulturedbarbers.com.au",
+  "email": "kulturedbarbers@gmail.com",
+  "source": "https://kulturedbarbers.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Tait Hair",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://taithair.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "M.L.B Studio",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://mlbstudio.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "The Sun Bookshop",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://sunbookshop.com",
+  "email": "info@sunbookshop.com",
+  "source": "https://sunbookshop.com",
+  "site_ok": true
+ },
+ {
+  "name": "Seddon Book Alley",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://seddonbookalley.com.au",
+  "email": "info@seddonbookalley.com.au",
+  "source": "https://seddonbookalley.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Book and Paper",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://bookandpaper.com.au",
+  "email": "contact@bookandpaper.com.au",
+  "source": "https://bookandpaper.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Invite Me",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://inviteme.com.au",
+  "email": "sales@inviteme.com.au",
+  "source": "https://inviteme.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Village Idiom",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://villageidiom.com.au",
+  "email": "shop@villageidiom.com.au",
+  "source": "https://www.villageidiom.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Creative House",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://creativehouseyarraville.com.au",
+  "email": "creative.house@bigpond.com",
+  "source": "https://www.creativehouseyarraville.com.au/contact",
+  "site_ok": true
+ },
+ {
+  "name": "Sedonia",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://sedonia.com.au",
+  "email": "hello@sedonia.com.au",
+  "source": "https://www.sedonia.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Far Fetched Designs",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://farfetcheddesigns.com.au",
+  "email": "farfetcheddesigns.popup@gmail.com",
+  "source": "https://www.farfetcheddesigns.com.au/policies/contact-information",
+  "site_ok": true
+ },
+ {
+  "name": "Simple Form",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://simpleform.com.au",
+  "email": "hello@simpleform.com.au",
+  "source": "https://simpleform.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Kith & Kin",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://kithandkinstore.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Offshoot",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://off-shoot.com.au",
+  "email": "hello@off-shoot.com.au",
+  "source": "https://www.off-shoot.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Yarraville Blooms",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://yarravilleblooms.com.au",
+  "email": "hello@yarravilleblooms.com.au",
+  "source": "https://www.yarravilleblooms.com.au/pages/contact",
+  "site_ok": true
+ },
+ {
+  "name": "Birchbox Flowers",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://birchboxflowers.com.au",
+  "email": "sales@birchboxflowers.com.au",
+  "source": "https://www.birchboxflowers.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Beautifying Flowers",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://www.yarravilleflowers.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "The Corner of Altona",
+  "category": "cafes",
+  "suburb": "Altona",
+  "website": "https://www.thecornerofaltona.com.au",
+  "email": "meet@thecornerofaltona.com.au",
+  "source": "https://www.thecornerofaltona.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Wolf Cafe & Eatery",
+  "category": "cafes",
+  "suburb": "Altona North",
+  "website": "https://www.wolfcafeandeatery.com.au",
+  "email": "info@wolfcafeandeatery.com.au",
+  "source": "https://www.wolfcafeandeatery.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Inner West Swedish Baker",
+  "category": "cafes",
+  "suburb": "West Footscray",
+  "website": "https://innerwestswedishbaker.com.au",
+  "email": "innerwestswedishbaker@gmail.com",
+  "source": "https://innerwestswedishbaker.com.au/contact/",
+  "site_ok": true
+ },
+ {
+  "name": "Williamstown Pastry Bar",
+  "category": "cafes",
+  "suburb": "Williamstown",
+  "website": "https://www.wtpastrybar.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Alfa Bakehouse",
+  "category": "cafes",
+  "suburb": "Seddon",
+  "website": "https://www.alfabakehouse.com.au",
+  "email": "info@alfabakehouse.com.au",
+  "source": "https://www.alfabakehouse.com.au/contact",
+  "site_ok": true
+ },
+ {
+  "name": "Gigi's Gelato",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://gigisgelato.com.au",
+  "email": "sue@gigisgelato.com.au",
+  "source": "https://gigisgelato.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Augustus Gelatery",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://augustusgelatery.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Biancolatte Gelateria & Cannoleria",
+  "category": "cafes",
+  "suburb": "Yarraville",
+  "website": "https://www.biancolatte.com.au",
+  "email": "info@biancolatte.com.au",
+  "source": "https://www.biancolatte.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Mipasto",
+  "category": "dining",
+  "suburb": "Footscray",
+  "website": "https://www.mipasto.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Pizza d'Asporto",
+  "category": "dining",
+  "suburb": "Yarraville",
+  "website": "https://pizzadasporto.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "3 Grains",
+  "category": "dining",
+  "suburb": "Yarraville",
+  "website": "https://www.3grains.com.au",
+  "email": "info@3grains.com.au",
+  "source": "https://www.3grains.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Pizza Del Sole",
+  "category": "dining",
+  "suburb": "Yarraville",
+  "website": "https://pizzadelsole.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Artz Collective",
+  "category": "kids",
+  "suburb": "Altona North",
+  "website": "https://artzcollective.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Albright Studios",
+  "category": "kids",
+  "suburb": "Footscray",
+  "website": "https://www.albrightstudios.com.au",
+  "email": "admin@albrightstudios.com.au",
+  "source": "https://www.albrightstudios.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Inner West Dance",
+  "category": "kids",
+  "suburb": "Maidstone",
+  "website": "https://www.innerwestdance.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "WestEnd Performing Arts",
+  "category": "kids",
+  "suburb": "Sunshine",
+  "website": "https://westendperformingarts.com.au",
+  "email": "info@westendperformingarts.com.au",
+  "source": "https://westendperformingarts.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Leaps N Beats Dance",
+  "category": "kids",
+  "suburb": "Yarraville",
+  "website": "http://www.leapsnbeatsdance.com.au",
+  "email": "info@leapsnbeatsdance.com.au",
+  "source": "https://www.leapsnbeatsdance.com.au/contact-us/",
+  "site_ok": true
+ },
+ {
+  "name": "Let's Swim! Swim School",
+  "category": "kids",
+  "suburb": "Williamstown North",
+  "website": "https://www.letsswim.com.au",
+  "email": "newport@letsswim.com.au",
+  "source": "https://www.letsswim.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "The Creative Music Studio",
+  "category": "kids",
+  "suburb": "Newport",
+  "website": "https://www.thecreativemusicstudio.com",
+  "email": "info@thecreativemusicstudio.com",
+  "source": "https://www.thecreativemusicstudio.com",
+  "site_ok": true
+ },
+ {
+  "name": "Pups On Parade",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.pupsonparade.com.au",
+  "email": "hello@pupsonparade.com.au",
+  "source": "https://www.pupsonparade.com.au",
+  "site_ok": true
+ },
+ {
+  "name": "Fido Delights Grooming",
+  "category": "essentials",
+  "suburb": "Newport",
+  "website": "https://fidodelightsgrooming.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Williamstown Dog Grooming",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://williamstowndoggrooming.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": true
+ },
+ {
+  "name": "Le Spa De Jour",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://lespadejour.com",
+  "email": "support@lespadejour.com",
+  "source": "https://lespadejour.com",
+  "site_ok": true
+ },
+ {
+  "name": "Reflections Day Spa",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://dayspawilliamstown.com.au",
+  "email": null,
+  "source": null,
+  "site_ok": false
+ },
+ {
+  "name": "Uncanny Animals",
+  "category": "essentials",
+  "suburb": "Yarraville",
+  "website": "https://uncannyanimals.com.au",
+  "email": "bookings@uncannyanimals.com.au",
+  "source": "https://www.uncannyanimals.com.au/pages/contact",
+  "site_ok": true
+ },
+ {
+  "name": "Doggy Dooz",
+  "category": "essentials",
+  "suburb": "Seddon",
+  "website": "https://doggydooz.com.au",
+  "email": "info@doggydooz.com.au",
+  "source": "https://www.doggydooz.com.au/",
+  "site_ok": true
+ },
+ {
+  "name": "Hobsons Bay Pet Care",
+  "category": "essentials",
+  "suburb": "Williamstown",
+  "website": "https://www.dogsdogsdogs.com.au",
+  "email": "admin@dogsdogsdogs.com.au",
+  "source": "https://www.dogsdogsdogs.com.au",
+  "site_ok": true
+ }
+]

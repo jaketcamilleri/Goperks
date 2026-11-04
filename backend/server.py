@@ -9,12 +9,12 @@ from starlette.middleware.cors import CORSMiddleware
 from core import db, client, logger, hash_password, rand_code  # first: loads backend/.env
 import storage
 from models import User, Deal
-from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites
+from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 
 app = FastAPI()
 api = APIRouter(prefix="/api")
-for module in (auth, deals, member, partner, admin, payments, cron, wallet, invites):
+for module in (auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects):
     api.include_router(module.router)
 app.include_router(api)
 
@@ -88,6 +88,7 @@ async def startup():
         logger.error("Storage init failed: %s", e)
     await create_indexes()
     await seed()
+    await prospects.seed_prospects()
 
 
 @app.on_event("shutdown")
