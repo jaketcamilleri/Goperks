@@ -49,9 +49,6 @@ export default function Join() {
           <Eyebrow>Membership</Eyebrow>
           <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
             lines={[<>Your card to</>, <em key="e" className="font-normal italic text-[#B9512E]">the whole club.</em>]} />
-          <p className="mt-6 max-w-lg text-[#3D5E65] md:text-lg">
-            Pay once a year, save all year. Checkout is handled securely by Stripe — Apple Pay and Google Pay appear automatically on supported devices.
-          </p>
           {active && <p className="mt-6 rounded-2xl bg-[#EBF3EC] p-4 text-[#2F5A3A]" data-testid="already-member-note">You're already a member until {new Date(user.membership_expires_at).toLocaleDateString("en-AU")}. Renewing adds another 12 months.</p>}
           <p className="mt-6 text-sm text-[#3D5E65]">Buying for someone else? <Link to="/gift" className="font-semibold text-[#9A4024]" data-testid="join-gift-link">Gift a membership →</Link> · Got a gift code? <Link to="/redeem-gift" className="font-semibold text-[#9A4024]" data-testid="join-redeem-link">Claim it</Link></p>
           <FadeUp delay={0.2} className="mt-12 max-w-md">

@@ -1,0 +1,41 @@
+{
+  "summary": "Tested the Go Perks refresh: hero+search, Browse-by-category tiles with counts, New-this-week row, Deals toolbar (search/clear, near-me, open-now, suburb, sort, list/map), empty state + Show all deals reset, deal detail reviews (logged-out login note + member locked note until redemption), review API 403 without redemption, member voucher-claim->redeem->post review->update review flow updating deal rating_avg/rating_count, hide review recomputes rating, GET /me/to-review auth + exclusion after reviewing, GET /reviews/highlights, GET/admin reviews RBAC (anon/member blocked), ends_on in list (future visible, past hidden, invalid format 422), /deals/{id} returns ended=true for past deal, admin /admin/reviews page renders with Showing/1-2 stars/Hidden/All filters + CSV export, partner portal /business shows 'Member reviews' section, mobile 390px bottom tab bar with Home/Deals/Near me/Join/Log in. Backend pytest regression: 109 passed, 1 skipped (9 new tests in test_reviews_ends_on.py).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_reviews_ends_on.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_business_profile.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_team_staff.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/reviews.xml"
+  ],
+  "action_items": [
+    "Seed business profile (business@tinysvouchers.com.au) was filled by a previous iteration ('1 Test Lane, Melbourne', business name red logo) and was NOT reset at the end of this run - as the review request asked. Main agent should reset the demo business profile fields (address/suburb/phone/website/instagram/opening_hours/about/logo_path/hours/photos) and business_name back to 'Little Grind Espresso' so the portal shows 'Complete my profile' again.",
+    "Admin /admin/reviews currently shows 'Hidden 4' - four historical reviews flagged hidden from prior iterations. Consider a cleanup (or leave as-is to demonstrate the Hidden filter)."
+  ],
+  "critical_code_review_comments": [
+    "server.py now 1870 lines - still monolithic; reviews/ends_on logic adds 100+ lines. Prime candidate for routers/reviews.py and routers/deals.py extraction.",
+    "list_deals filters out past-ended deals with an $and/$or clause for ends_on - correct, but get_deal still returns an ended deal with ended=true (intended). Tests verified both behaviours.",
+    "post_review uses upsert with $setOnInsert created_at; refresh_rating runs AFTER the upsert but before the final find_one - fine because single Mongo client, but if sharded could race.",
+    "review_highlights only returns reviews whose deal is still in db.deals; if a deal is deleted the review is orphaned - consider cascading delete or filtering in a periodic job.",
+    "has_redeemed check is cheap (indexed by user_id+deal_id+status) but not memoised across POST + GET - minor duplicate query per request. Acceptable.",
+    "admin_hide_review returns {ok:True} but does not include the updated review or the new rating snapshot - frontend has to re-fetch the list. Consider returning the fresh review+rating for a snappier UI.",
+    "DealCard flag badge priority (Member favourite > Ending soon > New) is in DealCard.jsx - make sure product agrees: a 'Member favourite' that is also ending soon will hide the 'X days left' flag, which may be confusing for users."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_reviews_ends_on.py (new)"
+  ],
+  "success_rate": {"backend": "100% (109 passed, 1 intentional skip; 9/9 new reviews+ends_on tests)", "frontend": "100% smoke on landing/deals/deal-detail/admin-reviews/business/mobile tab bar"},
+  "test_credentials": "Used seed creds from /app/memory/test_credentials.md as-is. All TEST_ deals created during pytest were deleted by the autouse cleanup fixture (verified by cleanup running admin delete on each TEST_ deal id). No seed user passwords or roles were modified.",
+  "seed_data_creation": "Transient TEST_ deals (TEST Deal REVIEW_LOCK_*/REVIEW_OK_*/BIZ_REVIEW_*/ENDING_SOON_*/ENDED_*/bad ends) created via /api/admin/deals + approved, then deleted at test teardown. The pytest test_review_flow_post_and_update and test_review_business_endpoint do leave the newly-posted TEST reviews HIDDEN (via admin_hide_review) before cleanup, so a few hidden reviews now exist in the DB (reflected as 'Hidden 4' on /admin/reviews). Admin can unhide/delete via Mongo if desired.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Admin Reviews sidebar entry is /admin/reviews (testid 'admin-reviews-page' on the page root). Deal reviews component lives at /app/frontend/src/components/Reviews.jsx with testids deal-reviews, reviews-summary, reviews-average, reviews-count, reviews-list, review-locked-note, review-login-note, review-submission-form, star-input-1..5, review-comment-input, review-submit-btn. Partner portal 'Member reviews' section testid is in /components/PartnerReviews.jsx. Mobile bottom tab bar testids: tab-home, tab-deals, tab-near-me, tab-join, tab-log-in (visitors/members only, hidden for business/admin). Deals sort <select> option values are: recommended, rating, newest, ending (NOT 'top-rated'). Create deals via POST /api/admin/deals with required fields incl. discount_label and category in CATEGORIES=['cafes','kids','dining','family-fun','essentials','travel']. To emulate review-eligible member: POST /api/deals/{id}/voucher then POST /api/me/vouchers/{voucher_id}/redeem (NOT /vouchers/{vid}/use).",
+  "rca of the issue": "No defects found in this iteration. The only two reversible side-effects in the dev environment are (1) 4 hidden TEST reviews sitting in db.reviews from iteration 2+5 test flows, and (2) seed business profile still filled from iteration 3 - both documented in action_items."
+}
