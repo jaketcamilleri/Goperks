@@ -104,7 +104,7 @@ class TestCompleteProfile:
             "phone": "0400000000",
             "website": "testcafe.example.com",
             "instagram": "@tinytest",
-            "opening_hours": "Mon-Fri 8-4",
+            "hours": {d: {"open": "09:00", "close": "17:00"} for d in ("mon", "tue", "wed", "thu", "fri")},
             "about": "A lovely test cafe for regression runs."
         }
         r = biz_s.put(f"{API}/business/profile", json=body, timeout=20)
@@ -120,7 +120,7 @@ class TestCompleteProfile:
     def test_short_about_rejected(self, biz_s):
         r = biz_s.put(f"{API}/business/profile", json={
             "business_name": "x", "address": "1", "suburb": "y",
-            "phone": "1", "opening_hours": "9-5", "about": "short"
+            "phone": "1", "hours": {"mon": {"open": "09:00", "close": "17:00"}}, "about": "short"
         }, timeout=15)
         assert r.status_code == 422
 
@@ -166,7 +166,7 @@ class TestPendingBusiness:
         assert r.json().get("profile_complete") is False
         r2 = s.put(f"{API}/business/profile", json={
             "business_name": "x", "address": "1", "suburb": "x",
-            "phone": "1", "opening_hours": "9-5", "about": "1234567890"
+            "phone": "1", "hours": {"mon": {"open": "09:00", "close": "17:00"}}, "about": "1234567890"
         }, timeout=15)
         assert r2.status_code == 403
 
@@ -182,7 +182,7 @@ class TestPartnerCardOnDeal:
             "phone": "0400000000",
             "website": "https://testcafe.example.com",
             "instagram": "tinytest",
-            "opening_hours": "Mon-Fri 8-4",
+            "hours": {d: {"open": "09:00", "close": "17:00"} for d in ("mon", "tue", "wed", "thu", "fri")},
             "about": "A lovely test cafe for regression runs."
         }, timeout=20)
         payload = {
