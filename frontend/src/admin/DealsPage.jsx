@@ -21,8 +21,15 @@ export default function DealsPage() {
   const [sel, setSel] = useState(new Set());
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [partners, setPartners] = useState([]);
   const load = () => api.get("/admin/deals").then((r) => setRows(Array.isArray(r.data) ? r.data : [])).catch(() => setRows([]));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    api.get("/admin/users", { params: { role: "business" } })
+      .then((r) => setPartners((Array.isArray(r.data) ? r.data : []).filter((u) => u.business_status === "approved")
+        .sort((a, b) => (a.business_name || a.name).localeCompare(b.business_name || b.name))))
+      .catch(() => setPartners([]));
+  }, []);
 
   const bulk = async (status) => {
     if (status === "deleted" && !window.confirm(`Delete ${sel.size} deal(s)? This can't be undone.`)) return;
@@ -48,7 +55,7 @@ export default function DealsPage() {
 
   const columns = [
     { key: "title", label: "Deal", render: (d) => <span className="flex items-center gap-3">{d.image_url ? <img src={d.image_url} alt="" className="h-9 w-12 shrink-0 rounded-md object-cover" /> : <span className="h-9 w-12 shrink-0 rounded-md bg-[#D3ECE7]" />}<span className="font-semibold">{d.title}</span></span> },
-    { key: "business_name", label: "Business" },
+    { key: "business_name", label: "Business", render: (d) => (d.submitted_by && partners.some((p) => p.id === d.submitted_by) ? d.business_name : <span>{d.business_name} <span className="ml-1 rounded bg-[#FEF4DC] px-1.5 py-0.5 text-[11px] font-semibold text-[#7A5310]" data-testid={`deal-unassigned-${d.id}`}>Unassigned</span></span>) },
     { key: "category", label: "Category", value: (d) => catLabel(d.category) },
     { key: "discount_label", label: "Offer" },
     { key: "suburb", label: "Suburb" },
@@ -71,7 +78,7 @@ export default function DealsPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="admin-deal-dialog">
           <DialogHeader><DialogTitle className="font-display text-2xl">{editing === "new" ? "New deal" : "Edit deal"}</DialogTitle></DialogHeader>
-          {editing && <DealForm initial={editing === "new" ? {} : editing} onSubmit={save} busy={busy} submitLabel="Save deal" showFeatured />}
+          {editing && <DealForm initial={editing === "new" ? {} : editing} partners={partners} onSubmit={save} busy={busy} submitLabel="Save deal" showFeatured />}
         </DialogContent>
       </Dialog>
     </div>

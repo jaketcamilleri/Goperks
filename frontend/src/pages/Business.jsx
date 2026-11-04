@@ -113,7 +113,7 @@ export default function Business() {
           <div className="rounded-[32px] border border-[#C2DEDA] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
             <h2 className="font-display text-2xl font-semibold">Submit a new deal</h2>
             <p className="mt-1 text-sm text-[#3D5E65]">Submissions go to our team for approval before going live.</p>
-            <div className="mt-6"><DealForm key={formKey} initial={{ business_name: user.business_name || "", suburb: user.suburb || "" }} onSubmit={submit} busy={busy} /></div>
+            <div className="mt-6"><DealForm key={formKey} initial={{ suburb: user.suburb || "" }} lockedBusiness={user.business_name || user.name} onSubmit={submit} busy={busy} /></div>
           </div>
           <div className="lg:col-span-5">
             <h2 className="font-display text-2xl font-semibold">Your submissions</h2>

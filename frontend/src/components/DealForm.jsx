@@ -4,10 +4,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CATEGORIES } from "@/lib/api";
 
-const EMPTY = { title: "", business_name: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "" };
+const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "" };
 
-export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showFeatured = false, busy = false }) {
-  const [f, setF] = useState({ ...EMPTY, ...(initial || {}) });
+function BusinessField({ partners, lockedBusiness, f, setF, field }) {
+  if (partners) {
+    const pick = (e) => {
+      const p = partners.find((x) => x.id === e.target.value);
+      setF({ ...f, partner_id: e.target.value, business_name: p?.business_name || "", suburb: f.suburb || p?.suburb || "" });
+    };
+    return (
+      <div>
+        <Label>Business</Label>
+        <select required value={f.partner_id} onChange={pick} className={`${field} w-full border px-3`} data-testid="deal-form-partner">
+          <option value="" disabled>Choose a partner business…</option>
+          {partners.map((p) => <option key={p.id} value={p.id}>{p.business_name || p.name}{p.suburb ? ` — ${p.suburb}` : ""}</option>)}
+        </select>
+        {partners.length === 0 && <p className="mt-1 text-xs text-[#9A4024]">No approved businesses yet — add or approve one first.</p>}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <Label>Business</Label>
+      <p className={`${field} flex items-center border bg-[#F3F8F7] px-3 text-sm`} data-testid="deal-form-business-locked">{lockedBusiness}</p>
+    </div>
+  );
+}
+
+export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showFeatured = false, busy = false, partners, lockedBusiness }) {
+  const [f, setF] = useState({ ...EMPTY, ...(initial || {}), partner_id: initial?.submitted_by && partners?.some((p) => p.id === initial.submitted_by) ? initial.submitted_by : "" });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
   const field = "mt-1.5 h-12 rounded-xl border-[#C2DEDA] bg-white";
 
@@ -15,16 +40,13 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
     <form
       className="grid gap-5 sm:grid-cols-2"
       data-testid="deal-form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, est_saving: Number(f.est_saving) || 0 }); }}
+      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, partner_id: f.partner_id || null, est_saving: Number(f.est_saving) || 0 }); }}
     >
       <div className="sm:col-span-2">
         <Label>Deal headline</Label>
         <Input required value={f.title} onChange={set("title")} placeholder="e.g. 2-for-1 coffees before 10am" className={field} data-testid="deal-form-title" />
       </div>
-      <div>
-        <Label>Business name</Label>
-        <Input required value={f.business_name} onChange={set("business_name")} className={field} data-testid="deal-form-business" />
-      </div>
+      <BusinessField partners={partners} lockedBusiness={lockedBusiness} f={f} setF={setF} field={field} />
       <div>
         <Label>Suburb</Label>
         <Input value={f.suburb} onChange={set("suburb")} className={field} data-testid="deal-form-suburb" />

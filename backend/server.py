@@ -142,7 +142,8 @@ class LoginIn(BaseModel):
 
 class DealIn(BaseModel):
     title: str = Field(min_length=3)
-    business_name: str = Field(min_length=2)
+    business_name: str = ""
+    partner_id: Optional[str] = None
     category: str
     discount_label: str = Field(min_length=1)
     description: str = Field(min_length=5)
@@ -790,7 +791,10 @@ async def partner_redeem(body: CodeIn, user=Depends(require_partner)):
 async def submit_deal(body: DealIn, user=Depends(require_partner)):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    data = await with_coords(body.model_dump(exclude={"featured"}))
+    data = body.model_dump(exclude={"featured", "partner_id"})
+    data["business_name"] = user.get("business_name") or user["name"]
+    data["suburb"] = data.get("suburb") or user.get("suburb") or ""
+    data = await with_coords(data)
     d = Deal(**data, status="pending", submitted_by=user["id"])
     res = await db.deals.insert_one(d.to_mongo())
     d.id = str(res.inserted_id)
@@ -827,6 +831,7 @@ async def update_profile(body: ProfileIn, user=Depends(require_approved_business
     if data.get("instagram"):
         data["instagram"] = data["instagram"].lstrip("@").split("instagram.com/")[-1].strip("/")
     await db.users.update_one({"_id": oid(user["id"])}, {"$set": data})
+    await db.deals.update_many({"submitted_by": user["id"]}, {"$set": {"business_name": data["business_name"]}})
     return user_out(await db.users.find_one({"_id": oid(user["id"])}))
 
 
@@ -962,11 +967,26 @@ async def admin_deals(status: Optional[str] = None, _=Depends(require_role("admi
     return [Deal.from_mongo(d).out() for d in docs]
 
 
-@api.post("/admin/deals")
-async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
+async def assign_partner(body: DealIn) -> dict:
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    d = Deal(**(await with_coords(body.model_dump())), status="approved", submitted_by=user["id"])
+    if not body.partner_id:
+        raise HTTPException(400, "Please choose which business this deal belongs to")
+    p = await db.users.find_one({"_id": oid(body.partner_id), "role": "business", "business_status": "approved"})
+    if not p:
+        raise HTTPException(400, "That business isn't an approved partner")
+    data = body.model_dump(exclude={"partner_id"})
+    data["business_name"] = p.get("business_name") or p.get("name")
+    data["submitted_by"] = str(p["_id"])
+    if not data.get("suburb") and p.get("suburb"):
+        data["suburb"] = p["suburb"]
+    return data
+
+
+@api.post("/admin/deals")
+async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
+    data = await assign_partner(body)
+    d = Deal(**(await with_coords(data)), status="approved")
     res = await db.deals.insert_one(d.to_mongo())
     d.id = str(res.inserted_id)
     return d.out()
@@ -974,12 +994,10 @@ async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
 
 @api.put("/admin/deals/{deal_id}")
 async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("admin"))):
-    if body.category not in CATEGORIES:
-        raise HTTPException(400, "Invalid category")
     prev = await db.deals.find_one({"_id": oid(deal_id)})
     if not prev:
         raise HTTPException(404, "Deal not found")
-    data = await with_coords(body.model_dump(), prev)
+    data = await with_coords(await assign_partner(body), prev)
     res = await db.deals.find_one_and_update({"_id": prev["_id"]}, {"$set": data}, return_document=True)
     return Deal.from_mongo(res).out()
 
