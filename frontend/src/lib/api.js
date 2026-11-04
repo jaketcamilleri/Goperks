@@ -1,6 +1,8 @@
 import axios from "axios";
+import { IS_BIZ_HOST, IS_ADMIN_HOST, ON_CUSTOM_DOMAIN } from "@/lib/site";
 
-const API_ORIGIN = /^(business|admin)\./.test(window.location.hostname) ? window.location.origin : process.env.REACT_APP_BACKEND_URL;
+// Each live address (goperks.au, business., admin.) talks to the backend on its own address so sign-in cookies stay first-party.
+const API_ORIGIN = IS_BIZ_HOST || IS_ADMIN_HOST || ON_CUSTOM_DOMAIN ? window.location.origin : process.env.REACT_APP_BACKEND_URL;
 
 export const api = axios.create({
   baseURL: `${API_ORIGIN}/api`,

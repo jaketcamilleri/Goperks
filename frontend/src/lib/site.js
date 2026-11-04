@@ -1,18 +1,22 @@
 import { Link } from "react-router-dom";
 
-const BIZ = (process.env.REACT_APP_BUSINESS_URL || "").replace(/\/$/, "");
-const ADM = (process.env.REACT_APP_ADMIN_URL || "").replace(/\/$/, "");
+const HOST = window.location.hostname;
+/** On the live custom domain (e.g. goperks.au) the business and admin areas live on their own subdomains. */
+export const ROOT_DOMAIN = HOST.replace(/^(www|business|admin)\./, "");
+export const ON_CUSTOM_DOMAIN = !/(^localhost$|emergentagent\.com$|emergent\.host$|emergentcf\.cloud$)/.test(ROOT_DOMAIN);
+const BIZ = ON_CUSTOM_DOMAIN ? `https://business.${ROOT_DOMAIN}` : (process.env.REACT_APP_BUSINESS_URL || "").replace(/\/$/, "");
+const ADM = ON_CUSTOM_DOMAIN ? `https://admin.${ROOT_DOMAIN}` : (process.env.REACT_APP_ADMIN_URL || "").replace(/\/$/, "");
 const originOf = (u) => { try { return u ? new URL(u).origin : ""; } catch { return ""; } };
 const bizOrigin = originOf(BIZ);
 const admOrigin = originOf(ADM);
 
-export const IS_BIZ_HOST = window.location.hostname.startsWith("business.");
-export const IS_ADMIN_HOST = window.location.hostname.startsWith("admin.");
+export const IS_BIZ_HOST = HOST.startsWith("business.");
+export const IS_ADMIN_HOST = HOST.startsWith("admin.");
 export const EXTERNAL_BIZ = !IS_BIZ_HOST && !!bizOrigin && bizOrigin !== window.location.origin;
 export const EXTERNAL_ADMIN = !IS_ADMIN_HOST && !!admOrigin && admOrigin !== window.location.origin;
 export const BIZ_URL = BIZ;
 export const ADMIN_URL = ADM;
-export const MAIN_URL = IS_BIZ_HOST || IS_ADMIN_HOST ? window.location.origin.replace(/\/\/(business|admin)\./, "//") : window.location.origin;
+export const MAIN_URL = ON_CUSTOM_DOMAIN ? `https://${ROOT_DOMAIN}` : IS_BIZ_HOST || IS_ADMIN_HOST ? window.location.origin.replace(/\/\/(business|admin)\./, "//") : window.location.origin;
 
 /** Path of an admin page inside this app host. */
 export const ap = (sub = "") => (IS_ADMIN_HOST ? sub || "/" : `/admin${sub}`);
@@ -38,4 +42,4 @@ export function MainLink({ to = "/", children, ...rest }) {
   return <Link to={to} {...rest}>{children}</Link>;
 }
 
-export const assetUrl = (p) => (p ? `${IS_BIZ_HOST || IS_ADMIN_HOST ? window.location.origin : process.env.REACT_APP_BACKEND_URL}${p}` : undefined);
+export const assetUrl = (p) => (p ? `${IS_BIZ_HOST || IS_ADMIN_HOST || ON_CUSTOM_DOMAIN ? window.location.origin : process.env.REACT_APP_BACKEND_URL}${p}` : undefined);

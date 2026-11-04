@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Wallet } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
+import { assetUrl } from "@/lib/site";
 
-const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 export function WalletButtons() {
   const [status, setStatus] = useState(null);
@@ -16,7 +16,7 @@ export function WalletButtons() {
   const apple = async () => {
     setBusy("apple");
     await api.post("/auth/refresh").catch(() => {});
-    window.location.href = `${BACKEND}/api/wallet/apple`;
+    window.location.href = assetUrl("/api/wallet/apple");
     setTimeout(() => setBusy(""), 3000);
   };
 
