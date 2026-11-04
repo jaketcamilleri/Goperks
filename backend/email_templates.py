@@ -185,8 +185,27 @@ def render(key: str, v: dict, block: str = "", footer: str = "", t: Optional[dic
     return subject, _wrap(t, _fill(t["heading"], v), body, _fill(t["button"], v), url, footer)
 
 
-def _unsub(url: str, lead: str) -> str:
-    return f'<p style="font-family:Arial,sans-serif;font-size:12px;opacity:.75">{lead} <a href="{escape(url)}" style="color:inherit">Unsubscribe</a> and we won\'t email you again.</p>'
+def render_text(key: str, v: dict, note: str = "", sign_off: str = "", t: Optional[dict] = None) -> tuple:
+    """(subject, plain text) of a template, for the owner to send from their own email account."""
+    t = t or template(key)
+    v = {"brand": EMAIL_FROM_NAME, **v}
+
+    def fill(text):
+        return re.sub(r"\*\*(.+?)\*\*", r"\1", re.sub(r"\{(\w+)\}", lambda m: str(v.get(m.group(1), m.group(0))), text or "")).strip()
+    numbered = t["bullet_style"] == "numbers"
+    bullets = "\n".join(f"{f'{i}.' if numbered else '-'} {fill(b)}" for i, b in enumerate(t["bullets"], 1))
+    url = _app_url(fill(t["path"]))
+    parts = [fill(t["intro"]), bullets, note.strip(), fill(t["outro"]), f"{fill(t['button'])}: {url}", sign_off.strip()]
+    return fill(t["subject"]), "\n\n".join(p for p in parts if p)
+
+
+def invite_text(name: str, note: str, sender: str, template_key: str = "invite"):
+    return render_text(template_key, {"first_name": _first(name)}, note, f"Cheers,\n{_first(sender, EMAIL_FROM_NAME)}")
+
+
+def partner_pitch_text(business: str, sender: str, note: str, template_key: str = "pitch"):
+    return render_text(template_key, {"business": business, "sender_first": _first(sender, "the team")}, note,
+                       f"Cheers,\n{_first(sender, EMAIL_FROM_NAME)}")
 
 
 # ---------- Live blocks ----------
@@ -299,15 +318,6 @@ def referral_reward_email(name: str, friend: str, reward_line: str):
     return render("referral_reward", {"first_name": _first(name), "friend": _first(friend, "A friend"), "reward_line": reward_line})
 
 
-def invite_email(name: str, note: str, unsubscribe_url: str, template_key: str = "invite"):
-    return render(template_key, {"first_name": _first(name)}, _note(note), _unsub(unsubscribe_url, "Don't want invites from us?"))
-
-
-def partner_pitch_email(business: str, sender: str, note: str, unsubscribe_url: str, template_key: str = "pitch"):
-    return render(template_key, {"business": business, "sender_first": _first(sender, "the team")}, _note(note),
-                  _unsub(unsubscribe_url, "Rather not hear from us?"))
-
-
 SAMPLE_BLOCKS = {
     "welcome": lambda s: _card("Tony Smith", s["code"], s["expires"]), "renewal": lambda s: _card("Tony Smith", s["code"], s["expires"]),
     "gift": lambda s: _note(s.get("message", "")) + _code_box("Your gift code", s["code"]),
@@ -316,14 +326,18 @@ SAMPLE_BLOCKS = {
                                        (("New reviews", 1), ("Average rating", "4.5 / 5"), ("Used all time", 9))),
     "new_applicant": lambda s: _p("[Applicant details and Approve / Reject buttons]"),
     "weekly_digest": lambda s: _stats((("New members", 4), ("Gifts sold", 1), ("Revenue", "A$196")), (("Sign-ups", 9), ("Deals redeemed", 12), ("Deals to review", 2))),
-    "invite": lambda s: _note(s.get("note", "")), "pitch": lambda s: _note(s.get("note", "")),
+    "invite": lambda s: "", "pitch": lambda s: "",
 }
 
 
 def preview(key: str, t: dict, note: str = ""):
-    """Render a (possibly unsaved) template with sample values, for the editor's live preview."""
+    """Render a (possibly unsaved) template with sample values, for the editor's live preview.
+    Invites and pitches go out as plain text from the owner's own email, so they preview as plain text."""
     base = t.get("base") or key
     sample = {**DEFAULTS[base]["sample"], **({"note": note} if note else {})}
+    if DEFAULTS[base]["kind"] == "pitch":
+        subject, text = render_text(key, sample, note, f"Cheers,\n{sample.get('sender_first', 'Jake')}", t)
+        body = "".join(_p(escape(chunk).replace("\n", "<br>")) for chunk in text.split("\n\n"))
+        return subject, f'<div style="padding:20px;background:#FFFFFF;color:#222">{body}</div>'
     block = SAMPLE_BLOCKS.get(base, lambda s: "")(sample)
-    footer = _unsub("https://example.com/unsubscribe", "Don't want these emails?") if DEFAULTS[base]["kind"] == "pitch" else ""
-    return render(key, sample, block, footer, t)
+    return render(key, sample, block, "", t)

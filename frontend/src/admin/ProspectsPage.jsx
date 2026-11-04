@@ -51,11 +51,6 @@ export default function ProspectsPage() {
     .then((r) => setRows(Array.isArray(r.data) ? r.data.map((x) => ({ ...x, type: catLabel(x.category), state: LABEL[x.status] })) : []))
     .catch(() => setRows([])), []);
   useEffect(() => { load(); }, [load]);
-  useEffect(() => {
-    if (!rows?.some((r) => r.pitch_status === "queued")) return undefined;
-    const t = setTimeout(load, 3000);
-    return () => clearTimeout(t);
-  }, [rows, load]);
 
   const setStatus = async (row, status) => {
     setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, status, state: LABEL[status] } : r)));
@@ -92,7 +87,7 @@ export default function ProspectsPage() {
 
   return (
     <div data-testid="admin-prospects-page">
-      <PageHead title="Prospects" sub="Local businesses in Melbourne's west that could join as partners. Emails are the ones each business lists publicly. Pitches only go out when you choose businesses and press send.">
+      <PageHead title="Prospects" sub="Local businesses in Melbourne's west that could join as partners. Emails are the ones each business lists publicly. Pitches are written for you and sent from your own email when you choose businesses.">
         {toggle}
         <button onClick={() => setOpen(null)} className={btn.primary} data-testid="prospect-add-btn"><Plus className="h-4 w-4" /> Add prospect</button>
       </PageHead>

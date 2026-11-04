@@ -52,9 +52,9 @@ def test_custom_pitch_version_used_when_sending():
     assert admin.post(T, json={"base": "welcome", "name": "x"}).status_code == 400
     v = admin.post(T, json={"base": "pitch", "name": "TEST_ cafes"}).json()
     assert v["custom"] and v["base"] == "pitch" and v["key"].startswith("pitch-")
-    admin.put(f"{T}/{v['key']}", json=body_of(v, name="TEST_ cafes", heading="TEST_ heading for cafes"))
+    admin.put(f"{T}/{v['key']}", json=body_of(v, name="TEST_ cafes", intro="TEST_ intro for cafes, {business}"))
     prev = admin.get(f"{API}/admin/prospects/pitch-preview", params={"template": v["key"]}).json()
-    assert "TEST_ heading for cafes" in prev["html"]
+    assert "TEST_ intro for cafes, [Business name]" in prev["text"]
     assert admin.get(f"{API}/admin/prospects/pitch-preview", params={"template": "invite"}).status_code == 400
     assert admin.post(f"{API}/admin/invites", json={"people": [{"email": "test_x@example.com"}], "template": v["key"]}).status_code == 400
     assert admin.delete(f"{T}/{v['key']}").json() == {"deleted": True}

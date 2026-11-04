@@ -1,18 +1,15 @@
-"""Member invites: the owner emails customers a ready-made 'join Go Perks' message; customers can unsubscribe."""
-import asyncio
+"""Member invites: the owner sends a ready-made 'join Go Perks' message from their own email account; we track who was invited."""
 import os
 import re
-from datetime import timedelta
 from typing import List, Optional
 
 import jwt
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-from core import db, logger, now_iso, make_token, JWT_ALGORITHM
+from core import db, now_iso, JWT_ALGORITHM
 from deps import require_role
-from email_service import send_email
-from email_templates import invite_email, template
+from email_templates import invite_text, template
 from models import BaseDocument
 from services import log_activity
 
@@ -20,7 +17,7 @@ router = APIRouter()
 owner = require_role("admin")
 EMAIL_RX = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$", re.I)
 SKIP_REASONS = {"invalid": "isn't a valid email", "duplicate": "is listed twice", "has_account": "already has an account",
-                "already_invited": "was already invited", "unsubscribed": "unsubscribed"}
+                "already_invited": "was already invited", "unsubscribed": "asked not to be contacted"}
 
 
 class Invite(BaseDocument):
@@ -28,7 +25,7 @@ class Invite(BaseDocument):
     name: str = ""
     note: str = ""
     template: str = "invite"
-    status: str = "queued"
+    status: str = "sent"
     error: Optional[str] = None
     sent_by: Optional[str] = None
     sent_at: Optional[str] = None
@@ -46,39 +43,26 @@ class InvitesIn(BaseModel):
     template: str = Field("invite", max_length=40)
 
 
+class InviteSentIn(Person):
+    note: str = Field("", max_length=300)
+    template: str = Field("invite", max_length=40)
+
+
 class UnsubscribeIn(BaseModel):
     token: str = Field(min_length=10, max_length=600)
 
 
-def unsubscribe_url(email: str) -> str:
-    token = make_token(email, "unsubscribe", timedelta(days=3650))
-    return f"{os.environ['FRONTEND_URL'].rstrip('/')}/unsubscribe?token={token}"
-
-
-async def deliver(invite_ids: list):
-    """Send queued invites one by one so a slow or failing email doesn't hold up the request."""
-    for iid in invite_ids:
-        inv = await db.invites.find_one({"_id": iid, "status": "queued"})
-        if not inv:
-            continue
-        if await db.email_optouts.find_one({"email": inv["email"]}):
-            await db.invites.update_one({"_id": iid}, {"$set": {"status": "failed", "error": "Unsubscribed"}})
-            continue
-        try:
-            subject, html = invite_email(inv.get("name", ""), inv.get("note", ""), unsubscribe_url(inv["email"]), inv.get("template") or "invite")
-            await send_email(to=inv["email"], subject=subject, html=html)
-            await db.invites.update_one({"_id": iid}, {"$set": {"status": "sent", "sent_at": now_iso(), "error": None}})
-        except Exception as e:
-            detail = getattr(e, "detail", None) or str(e)
-            logger.warning("invite to %s failed: %s", inv["email"], detail)
-            await db.invites.update_one({"_id": iid}, {"$set": {"status": "failed", "error": str(detail)[:200]}})
+def invite_key(key: str) -> str:
+    if template(key)["base"] != "invite":
+        raise HTTPException(400, "Pick a member invite template")
+    return key
 
 
 @router.post("/admin/invites")
-async def send_invites(body: InvitesIn, user=Depends(owner)):
-    if template(body.template)["base"] != "invite":
-        raise HTTPException(400, "Pick a member invite template")
-    seen, queued, skipped = set(), [], []
+async def invite_drafts(body: InvitesIn, user=Depends(owner)):
+    """Ready-written invites for the owner to send from their own email account (nothing is sent from here)."""
+    key = invite_key(body.template)
+    seen, drafts, skipped = set(), [], []
     for p in body.people:
         email, name = p.email.strip().lower(), p.name.strip()
         reason = None
@@ -90,34 +74,28 @@ async def send_invites(body: InvitesIn, user=Depends(owner)):
             reason = "has_account"
         elif await db.email_optouts.find_one({"email": email}):
             reason = "unsubscribed"
-        elif await db.invites.find_one({"email": email, "status": {"$in": ["queued", "sent"]}}, {"_id": 1}):
+        elif await db.invites.find_one({"email": email, "status": "sent"}, {"_id": 1}):
             reason = "already_invited"
         seen.add(email)
         if reason:
             skipped.append({"email": email or p.email, "reason": SKIP_REASONS[reason]})
             continue
-        doc = Invite(email=email, name=name, note=body.note.strip(), template=body.template, sent_by=user["id"]).to_mongo()
-        prev = await db.invites.find_one_and_update({"email": email, "status": "failed"}, {"$set": {**doc, "error": None}})
-        queued.append(prev["_id"] if prev else (await db.invites.insert_one(doc)).inserted_id)
-    if queued:
-        await log_activity(user, "invites.sent", "invite", None, f"{len(queued)} member invite{'s' if len(queued) != 1 else ''}",
-                           " · ".join(x for x in (f"{len(skipped)} skipped" if skipped else "", f"Note: {body.note.strip()}" if body.note.strip() else "") if x))
-        asyncio.create_task(deliver(queued))
-    return {"queued": len(queued), "skipped": skipped}
+        subject, text = invite_text(name, body.note.strip(), user.get("name", ""), key)
+        drafts.append({"id": email, "name": name or email, "to": email, "subject": subject, "body": text})
+    return {"drafts": drafts, "skipped": skipped, "template": key}
 
 
-@router.post("/admin/invites/retry")
-async def retry_failed(user=Depends(owner)):
-    rows = await db.invites.find({"status": "failed", "error": {"$ne": "Unsubscribed"}}, {"_id": 1, "email": 1}).to_list(1000)
-    ids = []
-    for r in rows:
-        if not await db.users.find_one({"email": r["email"]}, {"_id": 1}):
-            ids.append(r["_id"])
-    if ids:
-        await db.invites.update_many({"_id": {"$in": ids}}, {"$set": {"status": "queued", "error": None}})
-        await log_activity(user, "invites.retried", "invite", None, f"{len(ids)} member invite{'s' if len(ids) != 1 else ''}", "Retried failed sends")
-        asyncio.create_task(deliver(ids))
-    return {"queued": len(ids)}
+@router.post("/admin/invites/sent")
+async def mark_invite_sent(body: InviteSentIn, user=Depends(owner)):
+    """The owner sent this invite from their own email: record it so they're not invited twice."""
+    key = invite_key(body.template)
+    email = body.email.strip().lower()
+    if not EMAIL_RX.match(email):
+        raise HTTPException(400, "That email isn't valid")
+    doc = Invite(email=email, name=body.name.strip(), note=body.note.strip(), template=key, sent_by=user["id"], sent_at=now_iso()).to_mongo()
+    await db.invites.update_one({"email": email}, {"$set": doc}, upsert=True)
+    await log_activity(user, "invites.sent", "invite", None, email, "Sent from your email")
+    return {"ok": True}
 
 
 @router.get("/admin/invites")

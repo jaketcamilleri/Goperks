@@ -1,7 +1,5 @@
 """Prospects: businesses the owner might sign up as partners, with follow-ups, a map and an optional partner pitch email."""
-import asyncio
 import json
-import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import List, Optional
@@ -9,12 +7,10 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-from core import db, logger, oid, now_iso, find_suburb, geocode_street, CATEGORIES
+from core import db, oid, now_iso, find_suburb, geocode_street, CATEGORIES
 from deps import require_role
-from email_service import send_email
-from email_templates import partner_pitch_email, template as email_template
+from email_templates import partner_pitch_text, template as email_template
 from models import BaseDocument
-from routes.invites import unsubscribe_url
 from services import log_activity
 
 router = APIRouter(prefix="/admin/prospects")
@@ -78,6 +74,10 @@ class ProspectPatch(BaseModel):
 class PitchIn(BaseModel):
     ids: List[str] = Field(min_length=1, max_length=200)
     note: str = Field("", max_length=300)
+    template: str = Field("pitch", max_length=40)
+
+
+class PitchedIn(BaseModel):
     template: str = Field("pitch", max_length=40)
 
 
@@ -182,49 +182,43 @@ async def add_prospect(body: ProspectIn, _=Depends(owner)):
 
 @router.get("/pitch-preview")
 async def pitch_preview(note: str = "", template: str = "pitch", user=Depends(owner)):
-    subject, html = partner_pitch_email("[Business name]", user.get("name", ""), note.strip()[:300], unsubscribe_url("preview@example.com"), pitch_key(template))
-    return {"subject": subject, "html": html}
-
-
-async def deliver_pitches(ids: list, sender: str, note: str, key: str = "pitch"):
-    for pid in ids:
-        p = await db.prospects.find_one({"_id": pid, "pitch_status": "queued"})
-        if not p:
-            continue
-        try:
-            subject, html = partner_pitch_email(p["business_name"], sender, note, unsubscribe_url(p["email"]), key)
-            await send_email(to=p["email"], subject=subject, html=html, reply_to=os.environ["SUPER_ADMIN_EMAIL"])
-            now = now_iso()
-            sets = {"pitch_status": "sent", "pitched_at": now, "pitch_error": None, "updated_at": now}
-            if p.get("status") == "new":
-                sets.update(status="contacted", contacted_at=now)
-            await db.prospects.update_one({"_id": pid}, {"$set": sets})
-        except Exception as e:
-            detail = str(getattr(e, "detail", None) or e)[:200]
-            logger.warning("pitch to %s failed: %s", p["email"], detail)
-            await db.prospects.update_one({"_id": pid}, {"$set": {"pitch_status": "failed", "pitch_error": detail}})
+    subject, text = partner_pitch_text("[Business name]", user.get("name", ""), note.strip()[:300], pitch_key(template))
+    return {"subject": subject, "text": text}
 
 
 @router.post("/pitch")
-async def send_pitch(body: PitchIn, user=Depends(owner)):
+async def pitch_drafts(body: PitchIn, user=Depends(owner)):
+    """Ready-written pitches for the owner to send from their own email account (nothing is sent from here)."""
     key = pitch_key(body.template)
-    queued, skipped = [], []
-    for doc in await db.prospects.find({"_id": {"$in": [oid(i) for i in body.ids]}}).to_list(200):
+    drafts, skipped = [], []
+    for doc in await db.prospects.find({"_id": {"$in": [oid(i) for i in body.ids]}}).sort("business_name", 1).to_list(200):
         email = (doc.get("email") or "").strip().lower()
         reason = ("has no email" if "@" not in email
-                  else "unsubscribed" if await db.email_optouts.find_one({"email": email})
-                  else "was already sent a pitch" if doc.get("pitch_status") in ("queued", "sent") else None)
+                  else "asked not to be contacted" if await db.email_optouts.find_one({"email": email})
+                  else "was already sent a pitch" if doc.get("pitch_status") == "sent" else None)
         if reason:
             skipped.append({"business_name": doc["business_name"], "reason": reason})
             continue
-        await db.prospects.update_one({"_id": doc["_id"]}, {"$set": {"pitch_status": "queued", "pitch_error": None, "pitch_template": key}})
-        queued.append(doc["_id"])
-    if queued:
-        await log_activity(user, "pitch.sent", "prospect", None, f"{len(queued)} partner pitch{'es' if len(queued) != 1 else ''}",
-                           " · ".join(x for x in (f"{len(skipped)} skipped" if skipped else "", f"Note: {body.note.strip()}" if body.note.strip() else "") if x))
-        asyncio.create_task(deliver_pitches(queued, user.get("name", ""), body.note.strip(), key))
-    return {"queued": len(queued), "skipped": skipped}
+        subject, text = partner_pitch_text(doc["business_name"], user.get("name", ""), body.note.strip(), key)
+        drafts.append({"id": str(doc["_id"]), "name": doc["business_name"], "to": email, "subject": subject, "body": text})
+    return {"drafts": drafts, "skipped": skipped, "template": key}
 
+
+@router.post("/{prospect_id}/pitched")
+async def mark_pitched(prospect_id: str, body: PitchedIn, user=Depends(owner)):
+    """The owner sent the pitch from their own email: track it for Pitch results."""
+    key = pitch_key(body.template)
+    p = await db.prospects.find_one({"_id": oid(prospect_id)})
+    if not p:
+        raise HTTPException(404, "Prospect not found")
+    now = now_iso()
+    sets = {"pitch_status": "sent", "pitched_at": now, "pitch_error": None, "pitch_template": key, "updated_at": now}
+    if p.get("status") == "new":
+        sets.update(status="contacted", contacted_at=now)
+    await db.prospects.update_one({"_id": p["_id"]}, {"$set": sets})
+    await log_activity(user, "pitch.sent", "prospect", p["_id"], p["business_name"], "Sent from your email")
+    doc = await db.prospects.find_one({"_id": p["_id"]})
+    return out(doc, await partner_accounts([doc.get("email", "")]))
 
 @router.patch("/{prospect_id}")
 async def update_prospect(prospect_id: str, body: ProspectPatch, _=Depends(owner)):

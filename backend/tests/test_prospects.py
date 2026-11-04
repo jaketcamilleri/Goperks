@@ -1,4 +1,4 @@
-"""Prospects list (owner only, nothing emailed)."""
+"""Prospects list (owner only). Pitches are written here but sent from the owner's own email."""
 import os
 
 import requests
@@ -47,13 +47,19 @@ def test_add_edit_delete():
 def test_pitch_preview_and_skips():
     admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
     prev = admin.get(f"{API}/admin/prospects/pitch-preview", params={"note": "Loved your coffee"}).json()
-    assert "Free to join" in prev["subject"] and "Loved your coffee" in prev["html"] and "Unsubscribe" in prev["html"]
+    assert "Free to join" in prev["subject"] and "Loved your coffee" in prev["text"] and "<" not in prev["text"]
     no_email = admin.post(f"{API}/admin/prospects", json={"business_name": "TEST_ NoEmail", "suburb": "Footscray"}).json()
     ok = admin.post(f"{API}/admin/prospects", json={"business_name": "TEST_ Pitch", "suburb": "Footscray", "email": "test_pitch@example.com"}).json()
-    r = admin.post(f"{API}/admin/prospects/pitch", json={"ids": [no_email["id"], ok["id"]]}).json()
-    assert r["queued"] == 1 and r["skipped"] == [{"business_name": "TEST_ NoEmail", "reason": "has no email"}]
+    r = admin.post(f"{API}/admin/prospects/pitch", json={"ids": [no_email["id"], ok["id"]], "note": "Loved your coffee"}).json()
+    assert r["skipped"] == [{"business_name": "TEST_ NoEmail", "reason": "has no email"}]
+    [d] = r["drafts"]
+    assert d["to"] == "test_pitch@example.com" and "Hi TEST_ Pitch team" in d["body"] and "Loved your coffee" in d["body"] and "/register" in d["body"]
+    # Writing drafts sends nothing and changes nothing
+    assert next(x for x in admin.get(f"{API}/admin/prospects").json() if x["id"] == ok["id"]).get("pitch_status") is None
+    marked = admin.post(f"{API}/admin/prospects/{ok['id']}/pitched", json={"template": "pitch"}).json()
+    assert marked["pitch_status"] == "sent" and marked["status"] == "contacted"
     again = admin.post(f"{API}/admin/prospects/pitch", json={"ids": [ok["id"]]}).json()
-    assert again["queued"] == 1 or again["skipped"][0]["reason"] == "was already sent a pitch"
+    assert again["drafts"] == [] and again["skipped"][0]["reason"] == "was already sent a pitch"
     for x in (no_email, ok):
         admin.delete(f"{API}/admin/prospects/{x['id']}")
 
@@ -69,20 +75,11 @@ def test_business_profile_needs_listed_suburb():
 
 
 def test_pitch_results_count_sign_ups():
-    import time
     import uuid
     admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
     email = f"test_px_{uuid.uuid4().hex[:6]}@example.com"
     p = admin.post(f"{API}/admin/prospects", json={"business_name": "TEST_ Results", "suburb": "Footscray", "email": email}).json()
-    assert admin.post(f"{API}/admin/prospects/pitch", json={"ids": [p["id"]]}).json()["queued"] == 1
-    for _ in range(20):
-        row = next(x for x in admin.get(f"{API}/admin/prospects").json() if x["id"] == p["id"])
-        if row["pitch_status"] != "queued":
-            break
-        time.sleep(1)
-    if row["pitch_status"] != "sent":
-        admin.delete(f"{API}/admin/prospects/{p['id']}")
-        return  # email service rejected the send (rate limit); nothing to count
+    row = admin.post(f"{API}/admin/prospects/{p['id']}/pitched", json={"template": "pitch"}).json()
     assert row["pitch_template"] == "pitch" and row["signed_up"] is False
     before = next(r for r in admin.get(f"{API}/admin/prospects/pitch-results").json() if r["key"] == "pitch")
     reg = requests.post(f"{API}/auth/register", json={"email": email, "password": "Test!2026", "name": "Test Owner", "role": "business", "business_name": "TEST_ Results"})

@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { RotateCw } from "lucide-react";
-import { api, formatErr } from "@/lib/api";
-import { DataTable, fmtDate, btn } from "@/admin/DataTable";
+import { api } from "@/lib/api";
+import { DataTable, fmtDate } from "@/admin/DataTable";
 import { PageHead } from "@/admin/AdminShell";
 import { InviteComposer } from "@/admin/InviteComposer";
 
@@ -34,23 +32,10 @@ export default function InvitesPage() {
   const [rows, setRows] = useState(null);
   const load = useCallback(() => api.get("/admin/invites").then((r) => setRows(Array.isArray(r.data) ? r.data.map((x) => ({ ...x, state: stateOf(x) })) : [])).catch(() => setRows([])), []);
   useEffect(() => { load(); }, [load]);
-  useEffect(() => {
-    if (!rows?.some((r) => r.status === "queued")) return undefined;
-    const t = setTimeout(load, 3000);
-    return () => clearTimeout(t);
-  }, [rows, load]);
-
-  const failed = (rows || []).filter((r) => r.status === "failed" && !r.unsubscribed && !r.joined).length;
-  const retry = async () => {
-    try { const { data } = await api.post("/admin/invites/retry"); toast.success(`Trying ${data?.queued ?? 0} again`); load(); }
-    catch (e) { toast.error(formatErr(e)); }
-  };
 
   return (
     <div data-testid="admin-invites-page">
-      <PageHead title="Member invites" sub="Email customers our ready-made 'join Go Perks' invite. People who already have an account, were already invited or unsubscribed are skipped.">
-        {failed > 0 && <button onClick={retry} className={btn.ghost} data-testid="invite-retry-btn"><RotateCw className="h-4 w-4" /> Retry {failed} not sent</button>}
-      </PageHead>
+      <PageHead title="Member invites" sub="Send customers our ready-made 'join Go Perks' invite from your own email. People who already have an account, were already invited or asked not to be contacted are skipped." />
       <InviteComposer onSent={load} />
       <DataTable id="invites" columns={COLUMNS} rows={rows} filters={FILTERS} searchKeys={["email", "name", "state"]} exportName="go-perks-invites" empty="No invites sent yet." />
     </div>
