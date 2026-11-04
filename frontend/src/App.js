@@ -19,6 +19,7 @@ import Admin from "@/pages/Admin";
 import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
 import { AuthCallback } from "@/components/GoogleAuth";
 import GiftPage from "@/pages/Gift";
+import StickerPage from "@/pages/Sticker";
 import RedeemGift from "@/pages/RedeemGift";
 
 function Layout() {
@@ -50,6 +51,7 @@ function AppRoutes() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/business" element={<Business />} />
+            <Route path="/business/sticker" element={<ProtectedRoute roles={["business", "admin"]}><StickerPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
           </Route>

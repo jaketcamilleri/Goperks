@@ -60,6 +60,15 @@ body {
     .marquee-track, .spin-slow { animation: none; }
 }
 
+@media print {
+    @page { size: A4; margin: 15mm; }
+    header, footer, .print-hide, [data-sonner-toaster] { display: none !important; }
+    body { background: #fff !important; }
+    .sticker-sheet { width: 120mm !important; max-width: 120mm !important; box-shadow: none !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sticker-sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 @layer base {
     :root {
         --background: 166 45% 94%;

@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { LogoMark } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
 
 export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, status = "preview", className = "" }) {
@@ -31,10 +31,7 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
         />
         <div className="relative flex h-full flex-col justify-between" style={{ transform: "translateZ(40px)" }}>
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <LogoMark className="h-7 w-auto" />
-              <span className="font-display text-lg font-extrabold">Go Perks</span>
-            </div>
+            <Logo light className="h-7 w-auto" />
             <span
               data-testid="member-card-status"
               className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest ${active ? "bg-[#EBF3EC] text-[#2F5A3A]" : "bg-[#EAF6F3] text-[#17434C]"}`}

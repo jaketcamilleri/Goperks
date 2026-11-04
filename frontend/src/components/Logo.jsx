@@ -2,13 +2,24 @@ export function LogoMark({ className = "h-8 w-auto" }) {
   return <img src="/brand/go-perks-mark.png" alt="" aria-hidden="true" className={`${className} select-none`} draggable="false" />;
 }
 
-export function Logo({ light = false }) {
+export function Logo({ light = false, className = "h-9 w-auto" }) {
   return (
-    <span className="flex items-center gap-2.5" aria-label="Go Perks">
-      <LogoMark className="h-9 w-auto" />
-      <span className={`font-display text-xl font-extrabold tracking-tight ${light ? "text-[#EAF6F3]" : "text-[#17434C]"}`}>
-        Go <span className="text-[#B9512E]">Perks</span>
-      </span>
-    </span>
+    <img
+      src={light ? "/brand/go-perks-logo-horizontal-light.png" : "/brand/go-perks-logo-horizontal.png"}
+      alt="Go Perks"
+      className={`${className} select-none`}
+      draggable="false"
+    />
+  );
+}
+
+export function LogoStacked({ light = false, className = "h-28 w-auto" }) {
+  return (
+    <img
+      src={light ? "/brand/go-perks-logo-stacked-light.png" : "/brand/go-perks-logo-stacked.png"}
+      alt="Go Perks"
+      className={`${className} select-none`}
+      draggable="false"
+    />
   );
 }

@@ -62,6 +62,11 @@ export default function Business() {
       {!isPartner ? <Pitch /> : (
         <>
         <div className="mt-12"><PartnerChecker /></div>
+        <Link to="/business/sticker" data-testid="sticker-link"
+          className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-5 transition-colors hover:border-[#17434C]">
+          <span><span className="block font-display text-xl font-semibold">Window sticker</span><span className="text-sm text-[#3D5E65]">Print a "Go Perks members save here" sticker for your door or counter.</span></span>
+          <span className="shrink-0 rounded-full bg-[#17434C] px-5 py-2.5 text-sm font-semibold text-[#EAF6F3]">Get sticker</span>
+        </Link>
         <PartnerStats />
         <div className="mt-12 grid gap-12 lg:grid-cols-12">
           <div className="rounded-[32px] border border-[#C2DEDA] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
