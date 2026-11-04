@@ -76,7 +76,7 @@ export default function DealsPage() {
           <button onClick={() => bulk("deleted")} className={btn.danger} data-testid="deals-bulk-delete">Delete</button>
         </>} />
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="admin-deal-dialog">
+        <DialogContent aria-describedby={undefined} className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="admin-deal-dialog">
           <DialogHeader><DialogTitle className="font-display text-2xl">{editing === "new" ? "New deal" : "Edit deal"}</DialogTitle></DialogHeader>
           {editing && <DealForm initial={editing === "new" ? {} : editing} partners={partners} onSubmit={save} busy={busy} submitLabel="Save deal" showFeatured />}
         </DialogContent>

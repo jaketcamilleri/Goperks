@@ -17,12 +17,12 @@ export function DealCard({ deal, index = 0 }) {
       <HeartButton dealId={deal.id} className="absolute right-4 top-4 z-10" />
       <Link to={`/deals/${deal.id}`} className="group block" data-testid={`deal-card-${deal.id}`}>
         <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-[#D3ECE7]">
-          <img
-            src={deal.image_url || undefined}
+          {deal.image_url ? <img
+            src={deal.image_url}
             alt={deal.title}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.06]"
-          />
+          /> : <div className="grid h-full w-full place-items-center bg-[#17434C] p-6 text-center font-display text-2xl font-semibold text-[#EAF6F3]" data-testid={`deal-card-noimg-${deal.id}`}>{deal.business_name}</div>}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F3138]/50 via-transparent to-transparent" />
           <span className="absolute left-4 top-4 rotate-[-4deg] rounded-full bg-[#EE8A63] px-4 py-1.5 font-display text-lg font-semibold text-[#17434C] shadow-lg transition-transform duration-500 group-hover:rotate-0">
             {deal.discount_label}

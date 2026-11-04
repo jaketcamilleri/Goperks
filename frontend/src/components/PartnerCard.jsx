@@ -18,7 +18,7 @@ function Gallery({ photos, name }) {
         ))}
       </div>
       <Dialog open={open !== null} onOpenChange={(v) => !v && setOpen(null)}>
-        <DialogContent className="max-w-3xl border-0 bg-[#0F3138] p-3" data-testid="partner-photo-dialog">
+        <DialogContent aria-describedby={undefined} className="max-w-3xl border-0 bg-[#0F3138] p-3" data-testid="partner-photo-dialog">
           <DialogTitle className="sr-only">{name} photo</DialogTitle>
           {open !== null && <img src={assetUrl(photos[open])} alt={`${name} photo ${open + 1}`} className="max-h-[80vh] w-full rounded-xl object-contain" />}
         </DialogContent>

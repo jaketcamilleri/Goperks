@@ -13,14 +13,14 @@ const NAV = [
   { to: "/businesses", label: "Businesses", icon: Store, badge: "pending_businesses" },
   { to: "/members", label: "Members", icon: Users },
   { to: "/payments", label: "Payments", icon: CreditCard },
-  { to: "/check", label: "Check a code", icon: ScanLine },
+  { to: "/check", label: "Check a code", icon: ScanLine, id: "check" },
 ];
 
 function SideNav({ counts, onNavigate, prefix = "admin-nav" }) {
   return (
     <nav className="flex flex-col gap-1" data-testid="admin-sidenav">
-      {NAV.map(({ to, label, icon: Icon, end, badge }) => (
-        <NavLink key={label} to={ap(to)} end={end} onClick={onNavigate} data-testid={`${prefix}-${label.toLowerCase().replace(/\s+/g, "-")}`}
+      {NAV.map(({ to, label, icon: Icon, end, badge, id }) => (
+        <NavLink key={label} to={ap(to)} end={end} onClick={onNavigate} data-testid={`${prefix}-${id || label.toLowerCase()}`}
           className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive ? "bg-[#EAF6F3] text-[#0F3138]" : "text-[#C2DEDA] hover:bg-white/10 hover:text-white"}`}>
           <Icon className="h-4 w-4" />
           <span className="flex-1">{label}</span>

@@ -27,7 +27,7 @@ export function AddPersonDialog({ role, open, onClose, onCreated }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md bg-[#F3F8F7]" data-testid={`add-${role}-dialog`}>
+      <DialogContent aria-describedby={undefined} className="max-w-md bg-[#F3F8F7]" data-testid={`add-${role}-dialog`}>
         <DialogHeader><DialogTitle className="font-display text-2xl">{isBiz ? "Add a business" : "Add a customer"}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           {isBiz && <label className="block text-sm font-medium">Business name<input required value={f.business_name} onChange={set("business_name")} className={field} data-testid="add-business-name" /></label>}
@@ -66,7 +66,7 @@ export function BusinessDialog({ biz, onClose, onSaved }) {
     ["Website", biz.website], ["Instagram", biz.instagram && `@${biz.instagram}`], ["Hours", biz.opening_hours], ["About", biz.about]];
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="business-dialog">
+      <DialogContent aria-describedby={undefined} className="max-h-[90vh] max-w-lg overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="business-dialog">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 font-display text-2xl">
             {biz.logo_url && <img src={assetUrl(biz.logo_url)} alt="" className="h-10 w-10 rounded-lg object-contain" />}{biz.business_name || biz.name}
@@ -110,7 +110,7 @@ export function MemberDialog({ member, onClose, onSaved }) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md bg-[#F3F8F7]" data-testid="member-dialog">
+      <DialogContent aria-describedby={undefined} className="max-w-md bg-[#F3F8F7]" data-testid="member-dialog">
         <DialogHeader><DialogTitle className="font-display text-2xl">{member.name}</DialogTitle></DialogHeader>
         <p className="-mt-2 text-sm text-[#3D5E65]">{member.email} · {member.member_code || "no card yet"}</p>
         <div className="space-y-4">

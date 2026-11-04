@@ -81,7 +81,8 @@ export default function DealDetail() {
       <div className="mt-8 grid gap-12 lg:grid-cols-12">
         <motion.div initial={{ clipPath: "inset(0 0 100% 0 round 32px)" }} animate={{ clipPath: "inset(0 0 0% 0 round 32px)" }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative aspect-[4/3] overflow-hidden lg:col-span-7">
-          <img src={deal.image_url || undefined} alt={deal.title} className="h-full w-full object-cover" />
+          {deal.image_url ? <img src={deal.image_url} alt={deal.title} className="h-full w-full object-cover" />
+            : <div className="grid h-full w-full place-items-center bg-[#17434C] p-8 text-center font-display text-4xl font-semibold text-[#EAF6F3]">{deal.business_name}</div>}
           <span className="absolute left-5 top-5 rotate-[-4deg] rounded-full bg-[#EE8A63] px-5 py-2 font-display text-2xl font-semibold">{deal.discount_label}</span>
           <HeartButton dealId={deal.id} className="absolute right-5 top-5" />
         </motion.div>
