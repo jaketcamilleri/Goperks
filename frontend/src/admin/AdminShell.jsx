@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X, ShieldCheck, Star } from "lucide-react";
+import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X, ShieldCheck, Star, History } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ap, MainLink } from "@/lib/site";
@@ -16,6 +16,7 @@ const NAV = [
   { to: "/payments", label: "Payments", icon: CreditCard, ownerOnly: true },
   { to: "/check", label: "Check a code", icon: ScanLine, id: "check" },
   { to: "/team", label: "Team", icon: ShieldCheck, ownerOnly: true },
+  { to: "/activity", label: "Activity", icon: History, ownerOnly: true },
 ];
 
 export const TEAM_ROLES = ["admin", "staff"];

@@ -23,3 +23,11 @@ crons:
     method: POST
     # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
     enabled: true
+  - name: partner-reports
+    description: "Runs 9am Melbourne daily; on the 1st emails each partner last month's redemptions and member savings"
+    cron: "0 9 * * *"
+    timezone: "Australia/Melbourne"
+    endpoint: "{{BASE_URL}}/api/cron/partner-reports"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true

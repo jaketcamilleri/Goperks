@@ -126,22 +126,49 @@ def new_applicant_email(name: str, business: str, email: str, token: str):
     return f"New partner application: {business}", _layout("New partner application", body, "Review applicants", "adm:/businesses")
 
 
+def _stat(label: str, value) -> str:
+    return ('<td style="padding:14px;background:#FFFFFF;border-radius:14px;width:33%;vertical-align:top">'
+            f'<p style="margin:0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">{label}</p>'
+            f'<p style="margin:6px 0 0;font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#17434C">{escape(str(value))}</p></td>')
+
+
+def _stats(*rows) -> str:
+    return ('<table role="presentation" cellspacing="8" style="width:100%;max-width:520px;margin:8px -8px 12px">'
+            + "".join("<tr>" + "".join(_stat(k, v) for k, v in r) + "</tr>" for r in rows) + "</table>")
+
+
 def weekly_digest_email(s: dict):
-    stat = lambda label, value: (
-        '<td style="padding:14px;background:#FFFFFF;border-radius:14px;width:33%;vertical-align:top">'
-        f'<p style="margin:0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">{label}</p>'
-        f'<p style="margin:6px 0 0;font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#17434C">{escape(str(value))}</p></td>')
     pending = "".join(f'<li style="margin:0 0 6px">{escape(b)}</li>' for b in s["pending_names"][:10])
     pending_html = (_p(f"<b>{s['pending_businesses']} partner{'s' if s['pending_businesses'] != 1 else ''} waiting for approval:</b>")
                     + f'<ul style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#17434C;margin:0 0 12px">{pending}</ul>') \
         if s["pending_businesses"] else _p("No partners are waiting for approval. You're all caught up.")
     body = (_p(f"Here's how Go Perks went from {escape(s['from'])} to {escape(s['to'])}.")
-            + '<table role="presentation" cellspacing="8" style="width:100%;max-width:520px;margin:8px -8px 12px"><tr>'
-            + stat("New members", s["members"]) + stat("Gifts sold", s["gifts"]) + stat("Revenue", f"A${s['revenue']:,.0f}")
-            + '</tr><tr>' + stat("Sign-ups", s["signups"]) + stat("Deals redeemed", s["redeemed"]) + stat("Deals to review", s["pending_deals"])
-            + '</tr></table>' + pending_html)
+            + _stats((("New members", s["members"]), ("Gifts sold", s["gifts"]), ("Revenue", f"A${s['revenue']:,.0f}")),
+                     (("Sign-ups", s["signups"]), ("Deals redeemed", s["redeemed"]), ("Deals to review", s["pending_deals"])))
+            + pending_html)
     return f"Your Go Perks week: {s['members']} new member{'s' if s['members'] != 1 else ''}, A${s['revenue']:,.0f}", \
         _layout("Your Monday summary", body, "Open the control room", "adm:")
+
+
+def partner_report_email(name: str, business: str, month: str, r: dict):
+    first = escape(name.split(" ")[0] if name else "there")
+    n = r["redeemed"]
+    cell = lambda v, align="left": f'<td style="padding:8px 10px;border-top:1px solid #D7E7E4;text-align:{align}">{v}</td>'
+    deals_html = (
+        '<table role="presentation" style="width:100%;max-width:520px;background:#FFFFFF;border-radius:14px;margin:8px 0 16px;'
+        'font-family:Arial,sans-serif;font-size:14px;color:#17434C;border-collapse:collapse">'
+        '<tr style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">'
+        '<td style="padding:10px">Deal</td><td style="padding:10px;text-align:right">Used</td><td style="padding:10px;text-align:right">Members saved</td></tr>'
+        + "".join("<tr>" + cell(f"<b>{escape(d['title'])}</b>") + cell(d["redeemed"], "right") + cell(f"A${d['saved']:,.2f}", "right") + "</tr>" for d in r["deals"])
+        + "</table>") if r["deals"] else _p(
+        "No members used one of your deals last month. A window sticker by the door and a fresh, easy-to-use offer help members spot you.")
+    body = (_p(f"Hi {first}, here's how {escape(business)} went with {escape(EMAIL_FROM_NAME)} members in <b>{escape(month)}</b>.")
+            + _stats((("Deals used", n), ("Members saved", f"A${r['saved']:,.0f}"), ("Different members", r["members"])),
+                     (("New reviews", r["new_reviews"]), ("Average rating", f"{r['rating']:.1f} / 5" if r["rating"] else "—"), ("Used all time", r["all_redeemed"])))
+            + deals_html
+            + _p("Your partner portal shows these numbers live, plus every review members leave."))
+    return (f"Your {month} {EMAIL_FROM_NAME} report: {n} deal{'s' if n != 1 else ''} used",
+            _layout("Your monthly report", body, "Open my partner portal", "biz:"))
 
 
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):

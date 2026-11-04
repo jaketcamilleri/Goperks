@@ -26,6 +26,7 @@ export function PartnerStats() {
         <h2 className="font-display text-3xl font-semibold">Your deal stats</h2>
         <span className="font-mono text-xs uppercase tracking-widest text-[#9A4024]">{s.month}</span>
       </div>
+      <p className="mt-2 text-sm text-[#3D5E65]" data-testid="partner-report-note">We email you a summary of last month's numbers on the 1st of every month.</p>
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Big id="claimed-month" label="Claimed this month" value={t.claimed_month} />
         <Big id="redeemed-month" label="Redeemed this month" value={t.redeemed_month} />
