@@ -59,6 +59,24 @@ def gift_email(recipient: str, giver: str, message: str, code: str):
     return f"{giver_first} gifted you a year of {EMAIL_FROM_NAME}", _layout("A gift for you!", body, "Claim my membership", f"/redeem-gift?code={code}")
 
 
+def partner_welcome_email(name: str, business: str):
+    first = escape(name.split(" ")[0] if name else "there")
+    step = lambda n, t, d: (
+        '<tr><td style="padding:10px 0;vertical-align:top;width:44px">'
+        f'<span style="display:inline-block;width:32px;height:32px;line-height:32px;text-align:center;border-radius:16px;background:#EE8A63;color:#17434C;font-family:Georgia,serif;font-weight:bold">{n}</span></td>'
+        f'<td style="padding:10px 0;font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#17434C"><b>{t}</b><br>{d}</td></tr>')
+    body = (_p(f"Hi {first}, welcome to {escape(EMAIL_FROM_NAME)}! {escape(business)} is now set up as a partner.")
+            + _p("Here's everything you need to get started:")
+            + '<table role="presentation" style="margin:8px 0 16px">'
+            + step(1, "Submit your first deal", "Open your partner portal and add an offer. We review it and put it live for members.")
+            + step(2, "Print your window sticker", "In your portal, tap \u201cWindow sticker\u201d then \u201cPrint or save as PDF\u201d. Stick it on your door or counter so members know to ask.")
+            + step(3, "Check codes at the counter", "Members show a QR code on their phone. In your portal tap \u201cScan\u201d (or type the code) under \u201cCheck a code\u201d.")
+            + step(4, "Redeem the deal", "For a voucher, tap \u201cMark as redeemed\u201d. For a member card, pick the deal they're using. Each deal is one use per member per year.")
+            + '</table>'
+            + _p("Your portal also shows how many members claimed and redeemed your deals each month."))
+    return f"Welcome to {EMAIL_FROM_NAME} \u2014 your partner kit", _layout("Your partner kit", body, "Get my window sticker", "/business/sticker")
+
+
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
     first = escape(name.split(" ")[0] if name else "there")
     saved_line = (f"So far you've saved <b>${saved:,.2f}</b> across {used} deal{'s' if used != 1 else ''} — "

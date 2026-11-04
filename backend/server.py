@@ -29,7 +29,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
-from email_templates import welcome_email, renewal_email, gift_email
+from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -295,6 +295,15 @@ async def send_welcome(user_id: str):
         logger.warning("welcome email failed for %s: %s", user_id, e)
 
 
+async def send_partner_welcome(email: str, name: str, business: str):
+    try:
+        subject, html = partner_welcome_email(name, business)
+        await send_email(to=email, subject=subject, html=html)
+        await db.users.update_one({"email": email}, {"$set": {"partner_kit_sent": True}})
+    except Exception as e:
+        logger.warning("partner welcome failed for %s: %s", email, e)
+
+
 async def activate_membership(user_id: str):
     doc = await db.users.find_one({"_id": oid(user_id)})
     if not doc:
@@ -370,6 +379,8 @@ async def register(body: RegisterIn, response: Response):
     doc["password_hash"] = hash_password(body.password)
     res = await db.users.insert_one(doc)
     set_auth_cookies(response, str(res.inserted_id))
+    if body.role == "business":
+        asyncio.create_task(send_partner_welcome(email, body.name, body.business_name))
     return user_out(await db.users.find_one({"_id": res.inserted_id}))
 
 
