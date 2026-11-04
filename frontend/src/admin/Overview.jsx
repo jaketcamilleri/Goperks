@@ -5,6 +5,9 @@ import { ap } from "@/lib/site";
 import { RevenueChart } from "@/components/RevenueChart";
 import { TopDeals } from "@/components/TopDeals";
 import { PageHead } from "@/admin/AdminShell";
+import { useOutletContext } from "react-router-dom";
+
+const MONEY = new Set(["revenue", "members", "active_members", "gifts_sold"]);
 
 const CARDS = [
   ["revenue", "Revenue (A$)", (v) => `$${Math.round(v)}`], ["members", "Members"], ["active_members", "Active members"], ["gifts_sold", "Gifts sold"],
@@ -22,6 +25,8 @@ function Todo({ n, label, to, id }) {
 }
 
 export default function Overview() {
+  const { role } = useOutletContext() || {};
+  const owner = role === "admin";
   const [s, setS] = useState({});
   useEffect(() => { api.get("/admin/stats").then((r) => setS(r.data || {})).catch(() => {}); }, []);
   return (
@@ -32,14 +37,14 @@ export default function Overview() {
         <Todo n={s.pending_deals} label="Deals waiting for review" to={ap("/deals")} id="deals" />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {CARDS.map(([k, label, f]) => (
+        {CARDS.filter(([k]) => owner || !MONEY.has(k)).map(([k, label, f]) => (
           <div key={k} className="rounded-xl border border-[#D7E7E4] bg-white p-4" data-testid={`admin-stat-${k}`}>
             <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">{label}</p>
             <p className="mt-1 font-display text-3xl font-semibold">{s[k] == null ? "—" : f ? f(s[k]) : s[k]}</p>
           </div>
         ))}
       </div>
-      <RevenueChart />
+      {owner && <RevenueChart />}
       <TopDeals />
     </div>
   );

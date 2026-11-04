@@ -320,7 +320,7 @@ def require_role(*roles):
 
 
 async def require_partner(user=Depends(current_user)):
-    if user["role"] == "admin":
+    if user["role"] in ("admin", "staff"):
         return user
     if user["role"] != "business":
         raise HTTPException(403, "Not allowed")
@@ -535,7 +535,7 @@ async def send_password_link(doc: dict, invite: bool = False):
     await db.password_reset_tokens.insert_one({
         "token": token, "user_id": str(doc["_id"]), "used": False,
         "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=hours)})
-    base = {"business": os.environ["BUSINESS_URL"], "admin": os.environ["ADMIN_URL"]}.get(doc.get("role"), os.environ["FRONTEND_URL"])
+    base = {"business": os.environ["BUSINESS_URL"], "admin": os.environ["ADMIN_URL"], "staff": os.environ["ADMIN_URL"]}.get(doc.get("role"), os.environ["FRONTEND_URL"])
     link = f"{base.rstrip('/')}/reset-password?token={token}"
     heading = "Your account is ready" if invite else "Reset your password"
     intro = (f"we've set up a {escape(EMAIL_FROM_NAME)} account for you. Choose a password to log in." if invite
@@ -961,7 +961,7 @@ async def my_business_deals(user=Depends(require_partner)):
 
 # ---------- Admin ----------
 @api.get("/admin/deals")
-async def admin_deals(status: Optional[str] = None, _=Depends(require_role("admin"))):
+async def admin_deals(status: Optional[str] = None, _=Depends(require_role("admin", "staff"))):
     query = {"status": status} if status else {}
     docs = await db.deals.find(query).sort("created_at", -1).to_list(500)
     return [Deal.from_mongo(d).out() for d in docs]
@@ -984,7 +984,7 @@ async def assign_partner(body: DealIn) -> dict:
 
 
 @api.post("/admin/deals")
-async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
+async def admin_create_deal(body: DealIn, user=Depends(require_role("admin", "staff"))):
     data = await assign_partner(body)
     d = Deal(**(await with_coords(data)), status="approved")
     res = await db.deals.insert_one(d.to_mongo())
@@ -993,7 +993,7 @@ async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
 
 
 @api.put("/admin/deals/{deal_id}")
-async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("admin"))):
+async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("admin", "staff"))):
     prev = await db.deals.find_one({"_id": oid(deal_id)})
     if not prev:
         raise HTTPException(404, "Deal not found")
@@ -1003,7 +1003,7 @@ async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("
 
 
 @api.post("/admin/deals/{deal_id}/status")
-async def admin_set_status(deal_id: str, body: StatusIn, _=Depends(require_role("admin"))):
+async def admin_set_status(deal_id: str, body: StatusIn, _=Depends(require_role("admin", "staff"))):
     if body.status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "Invalid status")
     prev = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": {"status": body.status}})
@@ -1034,7 +1034,16 @@ async def admin_delete_deal(deal_id: str, _=Depends(require_role("admin"))):
 
 
 @api.get("/admin/stats")
-async def admin_stats(_=Depends(require_role("admin"))):
+async def admin_stats(user=Depends(require_role("admin", "staff"))):
+    if user["role"] == "staff":
+        return {
+            "businesses": await db.users.count_documents({"role": "business", "business_status": "approved"}),
+            "pending_businesses": await db.users.count_documents({"role": "business", "business_status": "pending"}),
+            "pending_deals": await db.deals.count_documents({"status": "pending"}),
+            "live_deals": await db.deals.count_documents({"status": "approved"}),
+            "vouchers": await db.vouchers.count_documents({}),
+            "redeemed": await db.vouchers.count_documents({"status": "redeemed"}),
+        }
     paid = await db.payment_transactions.find({"payment_status": "paid"}, {"amount": 1, "kind": 1}).to_list(100000)
     return {
         "members": await db.users.count_documents({"role": "member"}),
@@ -1082,8 +1091,8 @@ async def comp_membership(doc: dict, expires_on: Optional[str] = None):
 
 @api.post("/admin/users")
 async def admin_create_user(body: AdminCreateIn, _=Depends(require_role("admin"))):
-    if body.role not in ("member", "business"):
-        raise HTTPException(400, "Role must be member or business")
+    if body.role not in ("member", "business", "staff"):
+        raise HTTPException(400, "Role must be member, business or staff")
     if body.role == "business" and not (body.business_name or "").strip():
         raise HTTPException(400, "Business name is required")
     email = body.email.lower()
@@ -1167,7 +1176,9 @@ class BulkIn(BaseModel):
 
 
 @api.post("/admin/deals/bulk")
-async def admin_deals_bulk(body: BulkIn, _=Depends(require_role("admin"))):
+async def admin_deals_bulk(body: BulkIn, user=Depends(require_role("admin", "staff"))):
+    if body.status == "deleted" and user["role"] != "admin":
+        raise HTTPException(403, "Only the owner can delete deals")
     if body.status not in ("approved", "rejected", "pending", "deleted"):
         raise HTTPException(400, "Invalid status")
     ids = [oid(i) for i in body.ids]
@@ -1183,7 +1194,7 @@ async def admin_deals_bulk(body: BulkIn, _=Depends(require_role("admin"))):
 
 
 @api.post("/admin/businesses/bulk")
-async def admin_businesses_bulk(body: BulkIn, _=Depends(require_role("admin"))):
+async def admin_businesses_bulk(body: BulkIn, _=Depends(require_role("admin", "staff"))):
     done = 0
     for i in body.ids:
         try:
@@ -1206,9 +1217,19 @@ async def admin_payments(_=Depends(require_role("admin"))):
     return txns
 
 
+@api.delete("/admin/team/{user_id}")
+async def admin_remove_staff(user_id: str, _=Depends(require_role("admin"))):
+    res = await db.users.delete_one({"_id": oid(user_id), "role": "staff"})
+    if not res.deleted_count:
+        raise HTTPException(404, "Staff member not found")
+    return {"ok": True}
+
+
 @api.get("/admin/users")
-async def admin_users(role: Optional[str] = None, _=Depends(require_role("admin"))):
-    q = {"role": role} if role else {}
+async def admin_users(role: Optional[str] = None, user=Depends(require_role("admin", "staff"))):
+    if user["role"] == "staff" and role != "business":
+        raise HTTPException(403, "Not allowed")
+    q = {"role": {"$in": ["staff", "admin"]}} if role == "team" else {"role": role} if role else {}
     docs = await db.users.find(q).sort("created_at", -1).to_list(2000)
     out = []
     for d in docs:
@@ -1223,7 +1244,7 @@ async def admin_users(role: Optional[str] = None, _=Depends(require_role("admin"
 
 
 @api.post("/admin/businesses/{user_id}/status")
-async def admin_business_status(user_id: str, body: StatusIn, _=Depends(require_role("admin"))):
+async def admin_business_status(user_id: str, body: StatusIn, _=Depends(require_role("admin", "staff"))):
     return await set_business_status(user_id, body.status, body.note)
 
 
@@ -1286,7 +1307,7 @@ async def post_decision(body: DecisionIn):
 
 
 @api.get("/admin/top-deals")
-async def admin_top_deals(month: Optional[str] = None, _=Depends(require_role("admin"))):
+async def admin_top_deals(month: Optional[str] = None, _=Depends(require_role("admin", "staff"))):
     tz = ZoneInfo("Australia/Melbourne")
     try:
         start = datetime.strptime(month, "%Y-%m").replace(tzinfo=tz) if month else datetime.now(tz).replace(day=1, hour=0, minute=0, second=0, microsecond=0)

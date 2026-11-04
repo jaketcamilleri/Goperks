@@ -16,7 +16,7 @@ const FILTERS = [
 ];
 
 export default function DealsPage() {
-  const { refreshCounts } = useOutletContext() || {};
+  const { refreshCounts, role } = useOutletContext() || {};
   const [rows, setRows] = useState(null);
   const [sel, setSel] = useState(new Set());
   const [editing, setEditing] = useState(null);
@@ -73,7 +73,7 @@ export default function DealsPage() {
         bulk={<>
           <button onClick={() => bulk("approved")} className={btn.dark} data-testid="deals-bulk-approve">Approve</button>
           <button onClick={() => bulk("rejected")} className={btn.ghost} data-testid="deals-bulk-reject">Reject</button>
-          <button onClick={() => bulk("deleted")} className={btn.danger} data-testid="deals-bulk-delete">Delete</button>
+          {role === "admin" && <button onClick={() => bulk("deleted")} className={btn.danger} data-testid="deals-bulk-delete">Delete</button>}
         </>} />
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent aria-describedby={undefined} className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="admin-deal-dialog">

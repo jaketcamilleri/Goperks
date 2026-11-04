@@ -40,8 +40,9 @@ export default function Auth({ mode, business = false }) {
       if (business && data.role === "member") { await logout(); setWrongArea("member"); return; }
       if (!business && data.role === "business" && EXTERNAL_BIZ) { await logout(); setWrongArea("business"); return; }
       setUser(data);
-      if (data.role === "admin" && EXTERNAL_ADMIN && !next) { window.location.href = ADMIN_URL; return; }
-      const home = data.role === "admin" ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
+      const team = data.role === "admin" || data.role === "staff";
+      if (team && EXTERNAL_ADMIN && !next) { window.location.href = ADMIN_URL; return; }
+      const home = team ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
       nav(next || (business && data.role === "admin" ? bp("") : home));
     } catch (e2) {
       setErr(formatErr(e2));

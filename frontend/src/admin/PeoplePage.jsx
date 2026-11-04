@@ -44,7 +44,7 @@ const BIZ_COLS = [
 
 export default function PeoplePage({ role }) {
   const isBiz = role === "business";
-  const { refreshCounts } = useOutletContext() || {};
+  const { refreshCounts, role: myRole } = useOutletContext() || {};
   const [rows, setRows] = useState(null);
   const [sel, setSel] = useState(new Set());
   const [adding, setAdding] = useState(false);
@@ -73,7 +73,8 @@ export default function PeoplePage({ role }) {
   return (
     <div data-testid={`admin-${role}-page`}>
       <PageHead title={isBiz ? "Businesses" : "Members"} sub={isBiz ? "Approve applicants, add partners and click a row to see their full profile." : "Click a member to edit, make their membership valid or resend their card."}>
-        <button onClick={() => setAdding(true)} className={btn.primary} data-testid={`add-${role}-btn`}><UserPlus className="h-4 w-4" /> {isBiz ? "Add business" : "Add customer"}</button>
+      {isBiz && myRole === "admin" && <button onClick={() => setAdding(true)} className={btn.primary} data-testid={`add-${role}-btn`}><UserPlus className="h-4 w-4" /> Add business</button>}
+      {!isBiz && <button onClick={() => setAdding(true)} className={btn.primary} data-testid={`add-${role}-btn`}><UserPlus className="h-4 w-4" /> Add customer</button>}
       </PageHead>
       <DataTable id={isBiz ? "businesses" : "members"} columns={isBiz ? BIZ_COLS : MEMBER_COLS} rows={rows} filters={isBiz ? BIZ_FILTERS : MEMBER_FILTERS}
         searchKeys={isBiz ? ["business_name", "name", "email", "suburb"] : ["name", "email", "member_code"]}
@@ -85,7 +86,7 @@ export default function PeoplePage({ role }) {
         </>} />
       <AddPersonDialog role={role} open={adding} onClose={() => setAdding(false)} onCreated={() => { load(); refreshCounts?.(); }} />
       {editing && !isBiz && <MemberDialog key={editing.id + editing.membership_expires_at + editing.membership_status} member={editing} onClose={() => setEditing(null)} onSaved={load} />}
-      {editing && isBiz && <BusinessDialog biz={editing} onClose={() => setEditing(null)} onSaved={() => { load(); refreshCounts?.(); }} />}
+      {editing && isBiz && <BusinessDialog biz={editing} owner={myRole === "admin"} onClose={() => setEditing(null)} onSaved={() => { load(); refreshCounts?.(); }} />}
     </div>
   );
 }

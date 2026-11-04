@@ -1,10 +1,24 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, LayoutGrid, Map as MapIcon } from "lucide-react";
+import { Search, LayoutGrid, Map as MapIcon, LocateFixed, Loader2, X } from "lucide-react";
 import { api, CATEGORIES } from "@/lib/api";
 import { DealCard } from "@/components/DealCard";
 import { DealsMap } from "@/components/DealsMap";
 import { MaskLines, Eyebrow } from "@/components/Reveal";
+import { useMyLocation, sortNearby } from "@/lib/nearby";
+
+const LOC_MSG = { denied: "Location is blocked. Allow it in your browser settings to see deals near you.", error: "Couldn't find your location. Please try again.", unsupported: "Your browser can't share location." };
+
+function NearMeButton({ state, locate, clear }) {
+  const on = state === "on";
+  return (
+    <button onClick={on ? clear : locate} disabled={state === "locating"} data-testid="near-me-btn" aria-pressed={on}
+      className={`flex h-12 shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors disabled:opacity-70 ${on ? "border-[#B9512E] bg-[#B9512E] text-[#EAF6F3]" : "border-[#C2DEDA] bg-white hover:border-[#17434C]"}`}>
+      {state === "locating" ? <Loader2 className="h-4 w-4 animate-spin" /> : on ? <X className="h-4 w-4" /> : <LocateFixed className="h-4 w-4" />}
+      {state === "locating" ? "Finding you…" : "Near me"}
+    </button>
+  );
+}
 
 export default function Deals() {
   const [params, setParams] = useSearchParams();
@@ -14,6 +28,8 @@ export default function Deals() {
   const [deals, setDeals] = useState(null);
   const [suburbs, setSuburbs] = useState([]);
   const [view, setView] = useState("grid");
+  const { me, state: locState, locate, clear } = useMyLocation();
+  const shown = deals && me ? sortNearby(deals, me) : deals;
 
   useEffect(() => {
     api.get("/suburbs").then((r) => setSuburbs(Array.isArray(r.data) ? r.data : [])).catch(() => setSuburbs([]));
@@ -68,11 +84,14 @@ export default function Deals() {
           <option value="">All suburbs</option>
           {suburbs.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <NearMeButton state={locState} locate={locate} clear={clear} />
         <div className="flex w-fit rounded-full border border-[#C2DEDA] bg-white p-1 md:ml-auto">
           {toggleBtn("grid", LayoutGrid, "List")}
           {toggleBtn("map", MapIcon, "Map")}
         </div>
       </div>
+      {LOC_MSG[locState] && <p className="mt-3 text-sm text-[#9A4024]" data-testid="near-me-error">{LOC_MSG[locState]}</p>}
+      {locState === "on" && <p className="mt-3 text-sm text-[#3D5E65]" data-testid="near-me-note">Showing places open now first, then the closest to you.</p>}
 
       {deals === null ? (
         <p className="mt-16 font-mono text-sm text-[#3D5E65]">Loading deals…</p>
@@ -82,7 +101,7 @@ export default function Deals() {
         <p className="mt-16 font-display text-2xl text-[#3D5E65]" data-testid="deals-empty">No deals here yet — check back soon.</p>
       ) : (
         <div className="mt-14 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3" data-testid="deals-grid">
-          {deals.map((d, i) => <DealCard key={d.id} deal={d} index={i} />)}
+          {shown.map((d, i) => <DealCard key={d.id} deal={d} index={i} />)}
         </div>
       )}
     </div>

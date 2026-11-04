@@ -22,7 +22,8 @@ import GiftPage from "@/pages/Gift";
 import StickerPage from "@/pages/Sticker";
 import RedeemGift from "@/pages/RedeemGift";
 import AdminDecide from "@/pages/AdminDecide";
-import AdminShell from "@/admin/AdminShell";
+import AdminShell, { OwnerOnly } from "@/admin/AdminShell";
+import TeamPage from "@/admin/TeamPage";
 import Overview from "@/admin/Overview";
 import DealsPage from "@/admin/DealsPage";
 import PeoplePage from "@/admin/PeoplePage";
@@ -97,8 +98,9 @@ function adminRoutes() {
         <Route path={ap("")} element={<Overview />} />
         <Route path={ap("/deals")} element={<DealsPage />} />
         <Route path={ap("/businesses")} element={<PeoplePage role="business" />} />
-        <Route path={ap("/members")} element={<PeoplePage role="member" />} />
-        <Route path={ap("/payments")} element={<PaymentsPage />} />
+        <Route path={ap("/members")} element={<OwnerOnly><PeoplePage role="member" /></OwnerOnly>} />
+        <Route path={ap("/payments")} element={<OwnerOnly><PaymentsPage /></OwnerOnly>} />
+        <Route path={ap("/team")} element={<OwnerOnly><TeamPage /></OwnerOnly>} />
         <Route path={ap("/check")} element={<CheckPage />} />
       </Route>
     </>

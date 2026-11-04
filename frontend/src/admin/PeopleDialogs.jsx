@@ -9,6 +9,7 @@ const field = "mt-1 h-10 w-full rounded-lg border border-[#D7E7E4] bg-white px-3
 
 export function AddPersonDialog({ role, open, onClose, onCreated }) {
   const isBiz = role === "business";
+  const isStaff = role === "staff";
   const blank = { name: "", email: "", business_name: "", password: "", activate: true, send_invite: true };
   const [f, setF] = useState(blank);
   const [busy, setBusy] = useState(false);
@@ -19,8 +20,8 @@ export function AddPersonDialog({ role, open, onClose, onCreated }) {
     setBusy(true);
     try {
       await api.post("/admin/users", { role, name: f.name, email: f.email, business_name: isBiz ? f.business_name : null,
-        password: f.password || null, activate: !isBiz && f.activate, send_invite: f.send_invite });
-      toast.success(isBiz ? "Business added and approved" : "Customer added");
+        password: f.password || null, activate: !isBiz && !isStaff && f.activate, send_invite: f.send_invite });
+      toast.success(isBiz ? "Business added and approved" : isStaff ? "Staff member added" : "Customer added");
       setF(blank); onCreated(); onClose();
     } catch (err) { toast.error(formatErr(err)); } finally { setBusy(false); }
   };
@@ -28,7 +29,7 @@ export function AddPersonDialog({ role, open, onClose, onCreated }) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent aria-describedby={undefined} className="max-w-md bg-[#F3F8F7]" data-testid={`add-${role}-dialog`}>
-        <DialogHeader><DialogTitle className="font-display text-2xl">{isBiz ? "Add a business" : "Add a customer"}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle className="font-display text-2xl">{isBiz ? "Add a business" : isStaff ? "Add a staff member" : "Add a customer"}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           {isBiz && <label className="block text-sm font-medium">Business name<input required value={f.business_name} onChange={set("business_name")} className={field} data-testid="add-business-name" /></label>}
           <label className="block text-sm font-medium">{isBiz ? "Contact name" : "Full name"}<input required value={f.name} onChange={set("name")} className={field} data-testid="add-person-name" /></label>
@@ -36,21 +37,22 @@ export function AddPersonDialog({ role, open, onClose, onCreated }) {
           <label className="block text-sm font-medium">Password <span className="font-normal text-[#3D5E65]">(optional)</span>
             <input type="text" minLength={6} value={f.password} onChange={set("password")} placeholder="Leave blank and they'll choose one" className={field} data-testid="add-person-password" />
           </label>
-          {!isBiz && (
+          {!isBiz && !isStaff && (
             <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={f.activate} onChange={set("activate")} className="mt-0.5 h-4 w-4 accent-[#17434C]" data-testid="add-person-activate" />
               <span><b>Make membership valid now</b><br /><span className="text-[#3D5E65]">12 months free, member card issued and emailed. No payment taken.</span></span></label>
           )}
           <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={f.send_invite} onChange={set("send_invite")} className="mt-0.5 h-4 w-4 accent-[#17434C]" data-testid="add-person-invite" />
             <span><b>Email them a link to set their password</b><br /><span className="text-[#3D5E65]">Valid for 3 days.</span></span></label>
           {isBiz && <p className="rounded-lg bg-white p-3 text-xs text-[#3D5E65]">Businesses you add are approved straight away and get their partner kit. They'll still fill in their profile before adding deals.</p>}
-          <button disabled={busy} className={`${btn.primary} w-full justify-center`} data-testid="add-person-submit">{busy ? "Adding…" : isBiz ? "Add business" : "Add customer"}</button>
+          {isStaff && <p className="rounded-lg bg-white p-3 text-xs text-[#3D5E65]">Staff can approve deals and businesses, edit deals and check codes. They can't see revenue, payments, members or the team.</p>}
+          <button disabled={busy} className={`${btn.primary} w-full justify-center`} data-testid="add-person-submit">{busy ? "Adding…" : isBiz ? "Add business" : isStaff ? "Add staff member" : "Add customer"}</button>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function BusinessDialog({ biz, onClose, onSaved }) {
+export function BusinessDialog({ biz, owner, onClose, onSaved }) {
   const [busy, setBusy] = useState("");
   if (!biz) return null;
   const run = async (key, fn, msg) => {
@@ -86,7 +88,7 @@ export function BusinessDialog({ biz, onClose, onSaved }) {
         <div className="flex flex-wrap gap-2">
           {biz.business_status !== "approved" && <button disabled={!!busy} onClick={() => decide("approved")} className={btn.dark} data-testid="business-dialog-approve">Approve</button>}
           {biz.business_status !== "rejected" && <button disabled={!!busy} onClick={() => decide("rejected")} className={btn.danger} data-testid="business-dialog-reject">Reject</button>}
-          <button disabled={!!busy} onClick={() => run("pw", () => api.post(`/admin/users/${biz.id}/password-link`), "Password link sent")} className={btn.ghost} data-testid="business-dialog-password-link">Send password link</button>
+          {owner && <button disabled={!!busy} onClick={() => run("pw", () => api.post(`/admin/users/${biz.id}/password-link`), "Password link sent")} className={btn.ghost} data-testid="business-dialog-password-link">Send password link</button>}
         </div>
       </DialogContent>
     </Dialog>

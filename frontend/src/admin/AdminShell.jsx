@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X } from "lucide-react";
+import { LayoutDashboard, Tag, Store, Users, CreditCard, ScanLine, LogOut, ArrowUpRight, Menu, X, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ap, MainLink } from "@/lib/site";
@@ -11,15 +11,24 @@ const NAV = [
   { to: "", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/deals", label: "Deals", icon: Tag, badge: "pending_deals" },
   { to: "/businesses", label: "Businesses", icon: Store, badge: "pending_businesses" },
-  { to: "/members", label: "Members", icon: Users },
-  { to: "/payments", label: "Payments", icon: CreditCard },
+  { to: "/members", label: "Members", icon: Users, ownerOnly: true },
+  { to: "/payments", label: "Payments", icon: CreditCard, ownerOnly: true },
   { to: "/check", label: "Check a code", icon: ScanLine, id: "check" },
+  { to: "/team", label: "Team", icon: ShieldCheck, ownerOnly: true },
 ];
 
-function SideNav({ counts, onNavigate, prefix = "admin-nav" }) {
+export const TEAM_ROLES = ["admin", "staff"];
+
+export function OwnerOnly({ children }) {
+  const { user } = useAuth();
+  if (user?.role === "admin") return children;
+  return <p className="rounded-xl border border-[#D7E7E4] bg-white p-6 text-[#3D5E65]" data-testid="admin-owner-only">Only the owner can see this page.</p>;
+}
+
+function SideNav({ counts, onNavigate, prefix = "admin-nav", role }) {
   return (
     <nav className="flex flex-col gap-1" data-testid="admin-sidenav">
-      {NAV.map(({ to, label, icon: Icon, end, badge, id }) => (
+      {NAV.filter((n) => !n.ownerOnly || role === "admin").map(({ to, label, icon: Icon, end, badge, id }) => (
         <NavLink key={label} to={ap(to)} end={end} onClick={onNavigate} data-testid={`${prefix}-${id || label.toLowerCase()}`}
           className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive ? "bg-[#EAF6F3] text-[#0F3138]" : "text-[#C2DEDA] hover:bg-white/10 hover:text-white"}`}>
           <Icon className="h-4 w-4" />
@@ -40,7 +49,7 @@ function SideFooter({ user, onLogout, prefix = "admin" }) {
       <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[#C2DEDA] hover:bg-white/10 hover:text-white" data-testid={`${prefix}-logout`}>
         <LogOut className="h-4 w-4" /> Log out
       </button>
-      <p className="truncate px-3 pt-1 text-xs text-[#A9C9C6]" data-testid={`${prefix}-current-user`}>{user.email}</p>
+      <p className="truncate px-3 pt-1 text-xs text-[#A9C9C6]" data-testid={`${prefix}-current-user`}>{user.email}{user.role === "staff" && " · staff"}</p>
     </div>
   );
 }
@@ -51,7 +60,7 @@ export default function AdminShell() {
   const [open, setOpen] = useState(false);
   const loc = useLocation();
   const nav = useNavigate();
-  const isAdmin = user && user.role === "admin";
+  const isAdmin = user && TEAM_ROLES.includes(user.role);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -68,7 +77,7 @@ export default function AdminShell() {
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between bg-[#0F3138] p-4 lg:flex">
         <div>
           <div className="mb-6 flex items-center gap-2 px-2"><Logo light /><span className="rounded bg-[#EE8A63] px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-[#0F3138]">Admin</span></div>
-          <SideNav counts={counts} />
+          <SideNav counts={counts} role={user.role} />
         </div>
         <SideFooter user={user} onLogout={doLogout} />
       </aside>
@@ -78,11 +87,11 @@ export default function AdminShell() {
       </header>
       {open && (
         <div className="fixed inset-x-0 top-14 z-40 space-y-4 bg-[#0F3138] p-4 shadow-xl lg:hidden" data-testid="admin-mobile-menu">
-          <SideNav counts={counts} onNavigate={() => setOpen(false)} prefix="admin-mnav" />
+          <SideNav counts={counts} onNavigate={() => setOpen(false)} prefix="admin-mnav" role={user.role} />
           <SideFooter user={user} onLogout={doLogout} prefix="admin-m" />
         </div>
       )}
-      <main className="px-4 py-6 sm:px-6 lg:ml-60 lg:px-10 lg:py-8"><Outlet context={{ refreshCounts: () => api.get("/admin/stats").then((r) => setCounts(r.data || {})).catch(() => {}) }} /></main>
+      <main className="px-4 py-6 sm:px-6 lg:ml-60 lg:px-10 lg:py-8"><Outlet context={{ role: user.role, refreshCounts: () => api.get("/admin/stats").then((r) => setCounts(r.data || {})).catch(() => {}) }} /></main>
     </div>
   );
 }

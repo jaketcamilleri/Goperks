@@ -20,7 +20,7 @@ export default function AdminLogin({ wrongRole }) {
     setErr("");
     try {
       const { data } = await api.post("/auth/login", f);
-      if (data.role !== "admin") { await logout(); setErr("This account doesn't have admin access."); return; }
+      if (!["admin", "staff"].includes(data.role)) { await logout(); setErr("This account doesn't have admin access."); return; }
       setUser(data);
     } catch (e2) { setErr(formatErr(e2)); } finally { setBusy(false); }
   };

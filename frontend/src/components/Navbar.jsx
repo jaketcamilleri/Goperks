@@ -20,7 +20,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const isBiz = user?.role === "business";
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "admin" || user?.role === "staff";
   const home = "/dashboard";
 
   const doLogout = async () => {

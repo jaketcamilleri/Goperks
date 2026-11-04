@@ -4,6 +4,7 @@ import { MapPin, ArrowUpRight } from "lucide-react";
 import { catLabel } from "@/lib/api";
 import { HeartButton } from "@/components/HeartButton";
 import { OpenNowBadge } from "@/components/OpenNowBadge";
+import { fmtKm } from "@/lib/nearby";
 
 export function DealCard({ deal, index = 0 }) {
   return (
@@ -42,6 +43,7 @@ export function DealCard({ deal, index = 0 }) {
             <span aria-hidden="true">·</span>
             <MapPin className="h-3.5 w-3.5" />
             {deal.suburb}
+            {deal.distance != null && <span className="ml-1 rounded-full bg-[#EAF6F3] px-2 py-0.5 font-mono text-[11px] font-bold text-[#17434C]" data-testid={`deal-distance-${deal.id}`}>{fmtKm(deal.distance)}</span>}
           </p>
         </div>
       </Link>
