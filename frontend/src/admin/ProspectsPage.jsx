@@ -8,6 +8,7 @@ import { ProspectDialog, STATUSES } from "@/admin/ProspectDialog";
 import { PitchDialog } from "@/admin/PitchDialog";
 import { ProspectsMap } from "@/admin/ProspectsMap";
 import { FollowUpPanel } from "@/admin/FollowUpPanel";
+import { PitchResults } from "@/admin/PitchResults";
 
 const TONE = { new: "bg-[#E3F0ED] text-[#17434C]", contacted: "bg-[#FEF4DC] text-[#7A5310]", interested: "bg-[#EBF3EC] text-[#2F5A3A]",
   joined: "bg-[#17434C] text-white", not_interested: "bg-[#FDF0EC] text-[#9A4024]" };
@@ -18,6 +19,7 @@ const PITCH = { sent: "Pitch sent", queued: "Pitch sending", failed: "Pitch not 
 const FILTERS = [
   { key: "all", label: "All", test: () => true },
   { key: "chase", label: "Chase up", test: (r) => r.follow_up },
+  { key: "signed", label: "Signed up", test: (r) => r.signed_up },
   ...STATUSES.map(([k, l]) => ({ key: k, label: l, test: (r) => r.status === k })),
 ];
 
@@ -29,6 +31,7 @@ function StatusCell({ row, onChange }) {
         {STATUSES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
       </select>
       {row.pitch_status && <p className={`mt-1 text-[11px] ${row.pitch_status === "failed" ? "text-[#9A4024]" : "text-[#3D5E65]"}`} title={row.pitch_error || ""} data-testid={`prospect-pitch-${row.id}`}>{PITCH[row.pitch_status]}</p>}
+      {row.signed_up && <p className="mt-1 inline-block rounded bg-[#17434C] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" data-testid={`prospect-signed-up-${row.id}`}>Signed up{row.partner_status === "approved" ? " · approved" : ""}</p>}
     </div>
   );
 }
@@ -94,6 +97,7 @@ export default function ProspectsPage() {
         <button onClick={() => setOpen(null)} className={btn.primary} data-testid="prospect-add-btn"><Plus className="h-4 w-4" /> Add prospect</button>
       </PageHead>
       <FollowUpPanel prospects={all} onStatus={setStatus} onOpen={setOpen} />
+      <PitchResults refresh={rows} />
       {view === "map" ? <ProspectsMap prospects={all} labels={LABEL} onOpen={setOpen} /> : (
         <DataTable id="prospects" columns={columns} rows={rows} filters={FILTERS} onRowClick={(r) => setOpen(r)} exportName="go-perks-prospects"
           selectable selected={selected} onSelect={setSelected}

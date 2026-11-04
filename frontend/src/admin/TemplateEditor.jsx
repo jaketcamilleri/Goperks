@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { RotateCcw, Trash2 } from "lucide-react";
+import { ImageUp, RotateCcw, Trash2 } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
 import { btn } from "@/admin/DataTable";
 
@@ -22,6 +22,35 @@ function LayoutPicker({ value, onChange }) {
           <span className={`mb-1.5 block h-12 rounded-md border ${look}`} />{l}
         </button>
       ))}
+    </div>
+  );
+}
+
+function BannerField({ value, onChange }) {
+  const input = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const upload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5 MB"); return; }
+    const fd = new FormData();
+    fd.append("file", file);
+    setBusy(true);
+    try { const { data } = await api.post("/admin/email-templates/banner", fd); onChange(data?.url || ""); toast.success("Photo uploaded. Save to keep it."); }
+    catch (err) { toast.error(formatErr(err)); } finally { setBusy(false); }
+  };
+  return (
+    <div className="text-sm font-medium" data-testid="template-banner">
+      Banner photo
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <img src={value || "/email/banner.jpg"} alt="Banner" className="h-16 w-36 rounded-lg border border-[#D7E7E4] object-cover" data-testid="template-banner-thumb" />
+        <button type="button" onClick={() => input.current?.click()} disabled={busy} className={btn.ghost} data-testid="template-banner-upload-btn">
+          <ImageUp className="h-4 w-4" /> {busy ? "Uploading…" : "Upload photo"}</button>
+        {value && <button type="button" onClick={() => onChange("")} className="text-xs font-semibold text-[#9A4024] hover:underline" data-testid="template-banner-clear-btn">Use the cafe photo</button>}
+        <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} className="hidden" data-testid="template-banner-file" />
+      </div>
+      <p className="mt-1 text-xs font-normal text-[#3D5E65]">PNG, JPG or WebP under 5 MB. A wide photo (about 1200 × 500) looks best.</p>
     </div>
   );
 }
@@ -67,8 +96,7 @@ export function TemplateEditor({ t, onSaved, onRemoved }) {
       <form onSubmit={save} className="space-y-4 rounded-2xl border border-[#D7E7E4] bg-white p-4 sm:p-5">
         {t.custom && <label className="block text-sm font-medium">Version name<input required value={f.name} onChange={set("name")} className={`${field} h-10`} data-testid="template-name-input" /></label>}
         <div><p className="text-sm font-medium">Layout</p><LayoutPicker value={f.layout} onChange={(layout) => setF({ ...f, layout })} /></div>
-        {f.layout === "banner" && <label className="block text-sm font-medium">Banner photo link <span className="font-normal text-[#3D5E65]">(optional, https://)</span>
-          <input value={f.banner_url} onChange={set("banner_url")} placeholder="Leave blank for the cafe photo" className={`${field} h-10`} data-testid="template-banner-input" /></label>}
+        {f.layout === "banner" && <BannerField value={f.banner_url} onChange={(banner_url) => setF({ ...f, banner_url })} />}
         <label className="block text-sm font-medium">Subject line<input required value={f.subject} onChange={set("subject")} maxLength={200} className={`${field} h-10`} data-testid="template-subject-input" /></label>
         <label className="block text-sm font-medium">Heading<input required value={f.heading} onChange={set("heading")} maxLength={200} className={`${field} h-10`} data-testid="template-heading-input" /></label>
         <label className="block text-sm font-medium">Opening text<textarea value={f.intro} onChange={set("intro")} rows={6} maxLength={3000} className={`${field} py-2`} data-testid="template-intro-input" /></label>

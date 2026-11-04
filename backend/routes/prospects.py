@@ -42,6 +42,7 @@ class Prospect(BaseDocument):
     located: str = "none"
     contacted_at: Optional[str] = None
     pitch_status: Optional[str] = None
+    pitch_template: Optional[str] = None
     pitched_at: Optional[str] = None
     pitch_error: Optional[str] = None
     created_at: str = Field(default_factory=now_iso)
@@ -114,11 +115,38 @@ async def locate(data: dict) -> dict:
     return data
 
 
-def out(doc: dict) -> dict:
+def out(doc: dict, partners: Optional[dict] = None) -> dict:
     p = Prospect.from_mongo(doc).out()
     cutoff = (datetime.now(timezone.utc) - timedelta(days=FOLLOW_UP_DAYS)).isoformat()
     p["follow_up"] = p["status"] == "contacted" and bool(p["contacted_at"]) and p["contacted_at"] < cutoff
+    if partners is not None:
+        acct = partners.get((p["email"] or "").lower())
+        p["signed_up"] = bool(acct) or p["status"] == "joined"
+        p["partner_status"] = (acct or {}).get("business_status")
     return p
+
+
+async def partner_accounts(emails: list) -> dict:
+    """Business accounts registered with a prospect's email, keyed by email."""
+    rows = await db.users.find({"role": "business", "email": {"$in": [e.lower() for e in emails if e]}}, {"email": 1, "business_status": 1}).to_list(5000)
+    return {r["email"]: r for r in rows}
+
+
+@router.get("/pitch-results")
+async def pitch_results(_=Depends(owner)):
+    """For each pitch version: businesses pitched, how many signed up (account with that email, or marked Joined) and how many are approved."""
+    rows = await db.prospects.find({"pitch_status": "sent"}).to_list(5000)
+    partners = await partner_accounts([r.get("email", "") for r in rows])
+    stats = {}
+    for r in rows:
+        p = out(r, partners)
+        s = stats.setdefault(r.get("pitch_template") or "pitch", {"sent": 0, "signed_up": 0, "approved": 0})
+        s["sent"] += 1
+        s["signed_up"] += p["signed_up"]
+        s["approved"] += p["partner_status"] == "approved"
+    name = lambda k: email_template(k)["name"] if email_template(k)["base"] == "pitch" else "Deleted version"
+    out_rows = [{"key": k, "name": name(k), **v, "rate": round(100 * v["signed_up"] / v["sent"])} for k, v in stats.items()]
+    return sorted(out_rows, key=lambda x: (-x["sent"], x["name"]))
 
 
 async def seed_prospects():
@@ -137,7 +165,8 @@ async def seed_prospects():
 @router.get("")
 async def list_prospects(_=Depends(owner)):
     rows = await db.prospects.find({}).sort("business_name", 1).to_list(5000)
-    return [out(r) for r in rows]
+    partners = await partner_accounts([r.get("email", "") for r in rows])
+    return [out(r, partners) for r in rows]
 
 
 @router.post("")
@@ -188,7 +217,7 @@ async def send_pitch(body: PitchIn, user=Depends(owner)):
         if reason:
             skipped.append({"business_name": doc["business_name"], "reason": reason})
             continue
-        await db.prospects.update_one({"_id": doc["_id"]}, {"$set": {"pitch_status": "queued", "pitch_error": None}})
+        await db.prospects.update_one({"_id": doc["_id"]}, {"$set": {"pitch_status": "queued", "pitch_error": None, "pitch_template": key}})
         queued.append(doc["_id"])
     if queued:
         await log_activity(user, "pitch.sent", "prospect", None, f"{len(queued)} partner pitch{'es' if len(queued) != 1 else ''}",

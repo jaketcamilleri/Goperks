@@ -220,7 +220,7 @@ async def remove_photo(body: PhotoPathIn, user=Depends(require_approved_business
 
 @router.get("/files/{path:path}")
 async def get_file(path: str):
-    rec = await db.files.find_one({"storage_path": path, "kind": {"$in": ["logo", "photo"]}, "is_deleted": False})
+    rec = await db.files.find_one({"storage_path": path, "kind": {"$in": ["logo", "photo", "banner"]}, "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
     try:

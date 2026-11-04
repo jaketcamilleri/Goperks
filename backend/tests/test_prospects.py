@@ -65,3 +65,41 @@ def test_business_profile_needs_listed_suburb():
     assert biz.put(f"{API}/business/profile", json=body).status_code == 400
     assert biz.put(f"{API}/business/profile", json={**body, "suburb": "Seddon", "postcode": "3011"}).status_code == 200
     assert requests.get(f"{API}/places/vic-suburbs").json()[0].keys() == {"name", "postcode"}
+
+
+
+def test_pitch_results_count_sign_ups():
+    import time
+    import uuid
+    admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
+    email = f"test_px_{uuid.uuid4().hex[:6]}@example.com"
+    p = admin.post(f"{API}/admin/prospects", json={"business_name": "TEST_ Results", "suburb": "Footscray", "email": email}).json()
+    assert admin.post(f"{API}/admin/prospects/pitch", json={"ids": [p["id"]]}).json()["queued"] == 1
+    for _ in range(20):
+        row = next(x for x in admin.get(f"{API}/admin/prospects").json() if x["id"] == p["id"])
+        if row["pitch_status"] != "queued":
+            break
+        time.sleep(1)
+    if row["pitch_status"] != "sent":
+        admin.delete(f"{API}/admin/prospects/{p['id']}")
+        return  # email service rejected the send (rate limit); nothing to count
+    assert row["pitch_template"] == "pitch" and row["signed_up"] is False
+    before = next(r for r in admin.get(f"{API}/admin/prospects/pitch-results").json() if r["key"] == "pitch")
+    reg = requests.post(f"{API}/auth/register", json={"email": email, "password": "Test!2026", "name": "Test Owner", "role": "business", "business_name": "TEST_ Results"})
+    assert reg.status_code == 200
+    after = next(r for r in admin.get(f"{API}/admin/prospects/pitch-results").json() if r["key"] == "pitch")
+    assert after["signed_up"] == before["signed_up"] + 1 and after["sent"] == before["sent"]
+    row = next(x for x in admin.get(f"{API}/admin/prospects").json() if x["id"] == p["id"])
+    assert row["signed_up"] is True and row["partner_status"] == "pending"
+    admin.delete(f"{API}/admin/prospects/{p['id']}")
+
+
+def test_banner_upload():
+    admin = login(ENV["ADMIN_EMAIL"], ENV["ADMIN_PASSWORD"])
+    img = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public", "email", "banner.jpg")
+    with open(img, "rb") as fh:
+        r = admin.post(f"{API}/admin/email-templates/banner", files={"file": ("b.jpg", fh, "image/jpeg")})
+    assert r.status_code == 200 and "/api/files/" in r.json()["url"]
+    assert requests.get(r.json()["url"]).status_code == 200
+    assert admin.post(f"{API}/admin/email-templates/banner", files={"file": ("a.txt", b"hi", "text/plain")}).status_code == 400
+    assert login("member@tinysvouchers.com.au", "Member!2026").post(f"{API}/admin/email-templates/banner", files={"file": ("b.jpg", b"x", "image/jpeg")}).status_code == 403

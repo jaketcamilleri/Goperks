@@ -1,13 +1,15 @@
 """Owner-only editor for every email template, with custom copies of the two pitches."""
 import secrets
+import os
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from pydantic import BaseModel, Field
 
 import email_templates as et
 from core import db, now_iso
 from deps import require_role
+from routes.partner import store_image
 
 router = APIRouter(prefix="/admin/email-templates")
 owner = require_role("admin")
@@ -68,6 +70,13 @@ async def new_template(body: NewTemplateIn, _=Depends(owner)):
                                          "created_at": now_iso(), "updated_at": now_iso()})
     await refresh_templates()
     return public(key)
+
+
+@router.post("/banner")
+async def upload_banner(file: UploadFile = File(...), user=Depends(owner)):
+    """Store a banner photo for the Photo banner layout; returns the full link emails use."""
+    path = await store_image(file, user, "banner", 5)
+    return {"url": f"{os.environ['FRONTEND_URL'].rstrip('/')}/api/files/{path}"}
 
 
 @router.post("/preview")
