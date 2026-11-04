@@ -87,7 +87,7 @@ export function PartnerChecker() {
     <div className="grain relative overflow-hidden rounded-[32px] bg-[#17434C] p-6 text-[#EAF6F3] sm:p-8" data-testid="partner-checker">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">At the counter</p>
       <h2 className="mt-2 font-display text-3xl font-semibold">Check a code</h2>
-      <p className="mt-1 text-sm text-[#BFD9D6]">Scan the QR on their phone, or type a voucher code (e.g. AB12-CD34) or member card number (LP-XXXXXX).</p>
+      <p className="mt-1 text-sm text-[#BFD9D6]">Scan the QR on their phone, or type a voucher code (e.g. AB12-CD34) or member card number (GP-XXXXXX).</p>
       <form onSubmit={check} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <ScanLine className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#EE8A63]" />

@@ -262,7 +262,7 @@ async def geocode(suburb: str):
         async with httpx.AsyncClient(timeout=6) as c:
             r = await c.get("https://nominatim.openstreetmap.org/search",
                             params={"q": f"{suburb}, Australia", "format": "json", "limit": 1, "countrycodes": "au"},
-                            headers={"User-Agent": "LocalPerks/1.0"})
+                            headers={"User-Agent": "GoPerks/1.0"})
         data = r.json()
         if data:
             return float(data[0]["lat"]), float(data[0]["lon"])
@@ -306,7 +306,7 @@ async def activate_membership(user_id: str):
     await db.users.update_one({"_id": doc["_id"]}, {"$set": {
         "membership_status": "active",
         "membership_expires_at": (base + timedelta(days=365)).isoformat(),
-        "member_code": doc.get("member_code") or f"LP-{rand_code(6)}",
+        "member_code": doc.get("member_code") or f"GP-{rand_code(6)}",
     }})
     asyncio.create_task(send_welcome(user_id))
 
@@ -610,7 +610,7 @@ async def find_partner_voucher(code: str, user: dict):
 @api.post("/partner/check")
 async def partner_check(body: CodeIn, user=Depends(require_role("business", "admin"))):
     code = body.code.strip().upper()
-    if code.startswith(("LP-", "TV-")):
+    if code.startswith(("GP-", "LP-", "TV-")):
         m = await db.users.find_one({"member_code": code})
         if not m:
             raise HTTPException(404, "No member with that card number")
@@ -1005,7 +1005,7 @@ async def wallet_apple(user=Depends(current_user)):
         logger.error("pkpass build failed: %s", type(e).__name__)
         raise HTTPException(503, "Apple Wallet card is temporarily unavailable")
     return Response(content=data, media_type="application/vnd.apple.pkpass",
-                    headers={"Content-Disposition": f'attachment; filename="local-perks-card-{member["member_code"]}.pkpass"'})
+                    headers={"Content-Disposition": f'attachment; filename="go-perks-card-{member["member_code"]}.pkpass"'})
 
 
 @api.get("/wallet/google")
@@ -1062,7 +1062,7 @@ async def startup():
             doc = u.to_mongo()
             doc["password_hash"] = hash_password(pw)
             if active:
-                doc.update(membership_status="active", member_code=f"LP-{rand_code(6)}",
+                doc.update(membership_status="active", member_code=f"GP-{rand_code(6)}",
                            membership_expires_at=(datetime.now(timezone.utc) + timedelta(days=365)).isoformat())
             await db.users.insert_one(doc)
     if await db.deals.count_documents({}) == 0:

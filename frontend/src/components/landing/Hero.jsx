@@ -96,7 +96,7 @@ export function Hero() {
           </motion.div>
           <motion.div style={{ y: cardY }} className="relative z-10 mx-auto -mt-28 w-[88%] max-w-[400px] sm:-mt-36">
             <motion.div initial={{ opacity: 0, y: 80, rotate: 8 }} animate={{ opacity: 1, y: 0, rotate: -4 }} transition={{ delay: 0.9, duration: 1.2, ease: EASE }}>
-              <MemberCard name="Alex Morgan" code="LP-8K2Q4M" expires="Nov 2027" status="active" />
+              <MemberCard name="Alex Morgan" code="GP-8K2Q4M" expires="Nov 2027" status="active" />
             </motion.div>
           </motion.div>
         </div>

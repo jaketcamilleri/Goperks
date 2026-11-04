@@ -2,7 +2,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LogoMark } from "@/components/Logo";
 import { QRCodeSVG } from "qrcode.react";
 
-export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, status = "preview", className = "" }) {
+export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, status = "preview", className = "" }) {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const rx = useSpring(useTransform(my, [-0.5, 0.5], [14, -14]), { stiffness: 160, damping: 18 });
@@ -33,7 +33,7 @@ export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, st
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <LogoMark className="h-7 w-auto" />
-              <span className="font-display text-lg font-extrabold">Local Perks</span>
+              <span className="font-display text-lg font-extrabold">Go Perks</span>
             </div>
             <span
               data-testid="member-card-status"
@@ -51,7 +51,7 @@ export function MemberCard({ name = "Your Name", code = "LP-XXXXXX", expires, st
                 <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Valid until</p>
                 <p className="font-mono text-sm font-bold sm:text-base">{expires || "12 months"}</p>
               </div>
-              {active && /^(LP|TV)-[A-Z0-9]{6}$/.test(code || "") && (
+              {active && /^(GP|LP|TV)-[A-Z0-9]{6}$/.test(code || "") && (
                 <div className="rounded-xl bg-white p-1.5" data-testid="member-card-qr">
                   <QRCodeSVG value={code} size={84} level="M" fgColor="#17434C" />
                 </div>

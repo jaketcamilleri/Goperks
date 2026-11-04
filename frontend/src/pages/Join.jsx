@@ -55,7 +55,7 @@ export default function Join() {
           {active && <p className="mt-6 rounded-2xl bg-[#EBF3EC] p-4 text-[#2F5A3A]" data-testid="already-member-note">You're already a member until {new Date(user.membership_expires_at).toLocaleDateString("en-AU")}. Renewing adds another 12 months.</p>}
           <p className="mt-6 text-sm text-[#3D5E65]">Buying for someone else? <Link to="/gift" className="font-semibold text-[#9A4024]" data-testid="join-gift-link">Gift a membership →</Link> · Got a gift code? <Link to="/redeem-gift" className="font-semibold text-[#9A4024]" data-testid="join-redeem-link">Claim it</Link></p>
           <FadeUp delay={0.2} className="mt-12 max-w-md">
-            <MemberCard name={user?.name || "Your Name"} code={user?.member_code || "LP-XXXXXX"} status={active ? "active" : "preview"} />
+            <MemberCard name={user?.name || "Your Name"} code={user?.member_code || "GP-XXXXXX"} status={active ? "active" : "preview"} />
           </FadeUp>
         </div>
         <FadeUp delay={0.1} className="lg:col-span-5 lg:col-start-8">
