@@ -1,0 +1,29 @@
+{
+  "summary": "Full end-to-end verification of the refer-a-friend feature set across landing, member dashboard, register, join, and admin referrals pages. Backend pytest regression (test_admin_referrals.py + test_referrals.py) passes 2/2. All UI testids and flows in the brief check out:\n\n[Landing /] at both 1440 and 390: refer-friend-section visible; refer-friend-step-0/1/2 visible; refer-friend-join-btn visible; pricing-referral-line visible inside the pricing ticket; FAQ item 'How does refer a friend work?' present in MemberVoices.\n\n[Dashboard] member@tinysvouchers.com.au: referral-card visible at 1440 and 390; referral-code = 'REFHF11GI' (large dashed badge); referral-copy-code-btn, referral-link (https://.../join?ref=REFHF11GI), referral-copy-btn, referral-share-btn, referral-whatsapp-btn, referral-email-btn all visible; stats referral-stat-signed/paid/months visible; referral-no-friends shown after the test_ref_ user was cleaned up.\n\n[Register /register] ReferralCodeField visible for members. Typing 'ZZZZZZZZ' -> referral-code-invalid message. Typing 'REFHF11GI' -> referral-code-valid 'Demo invited you. You''ll both get a free month once you pay.' Visiting /register?ref=REFHF11GI pre-fills the input with REFHF11GI. /business/register does NOT render the field (expected).\n\n[Register persistence] Registered TEST_ user via UI with the pre-filled valid code (name 'TEST Ref User', pwd TestPass!123). GET /api/admin/referrals returned the new row {code:'REFFEYGTK', referred_by:'Demo Member', signed_up:0, paid:0, months_earned:0} - referred_by correctly set to the member's display name.\n\n[Join /join] Logged in as the active member, referral-code-field is NOT rendered (only shown for members who aren't active) - matches brief.\n\n[Admin /admin/referrals] admin-referrals-page visible; sidebar nav item 'Referrals' present (a[href='/admin/referrals']); totals cards referral-total-signed=1, referral-total-paid=0, referral-total-months=0 (prefixed by the digit, rendered as separate <p> tags - correct); filter tabs 'All members 3', 'Have referred 1', 'Were referred 1' all visible; search input works (narrows to 1 of 3 when searching the test email); CSV export button present; data-testid row cells referral-code-<id>, referral-signed-<id>, referral-paid-<id>, referral-months-<id> render correctly; 'Referred by' column shows 'Demo Member' for the referred test user.\n\n[Access control] Logged-in member hitting GET /api/admin/referrals returns 403 (verified via page.evaluate fetch).\n\nBackend pytest: 2 passed (tests/test_admin_referrals.py, tests/test_referrals.py).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_referrals.py",
+    "/app/backend/tests/test_referrals.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ReferralCodeField.jsx: 400ms debounce on API lookup is good; sets ref in localStorage only on valid-response (defensive).",
+    "ReferralsPage.jsx: DataTable filter buttons render label with the count suffix; get_by_text(exact=True) with just the label fails - automation should use partial/regex matching or data-testids on filter buttons (minor testability hint, not a bug).",
+    "Admin nav entry for Referrals uses ownerOnly:true but the SideNav filter is `!n.ownerOnly || role === 'admin'` so it shows for admin (correct), hidden for staff/viewer - matches 403 on backend.",
+    "ReferralCard shows 'No friends yet' empty state (referral-no-friends) and switches to referral-friends list when friends.length > 0 - verified toggling via the TEST_ user create+cleanup roundtrip.",
+    "Pricing.jsx pricing-referral-line is inside the ticket, same card as the $49 price - matches the brief 'a line in the pricing box'."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (2/2 pytest, admin 403 verified)", "frontend": "100% - all brief items verified at both 1440 and 390 viewports"},
+  "test_credentials": "admin@tinysvouchers.com.au / TinyAdmin!2026 (at /admin, 'Sign in to the control room'). member@tinysvouchers.com.au / Member!2026 (active).",
+  "seed_data_creation": "Created 1 TEST_ user 'test_ref_kgkjo6@example.com' via /register with the active member's code, used to verify referred_by, then deleted via Mongo users.delete_many({email:/^test_ref_/}) = 1. No other data touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Member referral code is 'REFHF11GI'. Admin referrals testids: admin-referrals-page, referral-totals, referral-total-signed/paid/months, per-row referral-code-<id>, referral-signed-<id>, referral-paid-<id>, referral-months-<id>. DataTable filter buttons don't have exact-matchable labels (they include counts), use get_by_text(name_regex) or role=button. Clean up TEST_ users directly in Mongo - no admin DELETE /api/admin/users endpoint. Admin login is at /admin (NOT /login). /register has no name attributes on inputs; use page.get_by_label('Your name'|'Email'|'Password'|'Confirm password'). Password field uses exact=True to avoid matching 'Confirm password'.",
+  "rca of the issue": "No defects found. Feature works end-to-end: landing refer-a-friend section + pricing line + FAQ item; enlarged member dashboard referral card with code+link+share/WhatsApp/Email+stats+friend list; optional Friend's referral code box on /register (hidden for business and for active members on /join); admin referrals page with totals, filters, search, CSV, and correct referred_by resolution to inviter's display name; member 403 on /api/admin/referrals enforced."
+}
