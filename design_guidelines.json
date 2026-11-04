@@ -1,181 +1,173 @@
 {
-  "brand_identity": {
-    "name": "Tiny's Vouchers",
-    "tagline": "A little local club for everyone — Eat, play & shop for less!",
-    "currency": "AUD",
-    "pricing_tier": "$49 / year",
-    "tone": "Warm Editorial Tactile & High-Energy Local Community",
-    "archetype": "ARCHETYPE 1: Organic & Earthy meets Swiss Editorial (Trust, Community & Daily Joy)",
-    "logo_concept": "Clean inline SVG stamp featuring an iconic ticket stub embedded with a subtle heart & star geometry. Usable as favicon and header emblem."
+  "project_info": {
+    "brand_name": "Go Perks",
+    "tagline": "Exclusive Everyday Deals & Local Discounts Across Australia",
+    "membership_price": "A$49/year",
+    "logo_paths": {
+      "horizontal_logo": "/brand/go-perks-logo-horizontal.png",
+      "horizontal_light_logo": "/brand/go-perks-logo-horizontal-light.png",
+      "horizontal_dark_logo": "/brand/go-perks-logo-horizontal-dark.png",
+      "icon_mark": "/brand/go-perks-mark.png"
+    },
+    "app_type": "hybrid_fullstack",
+    "target_audience": "Everyday Australian consumers, families, foodies, cafe enthusiasts, and parents seeking local savings"
+  },
+  "design_archetype": {
+    "name": "Organic Fresh & Tactile Utility (Archetype 1 + Swiss Clarity)",
+    "description": "Clean, highly approachable, and warm light theme anchored by Deep Teal (#17434C), vibrant Coral (#B9512E) conversion accents, and refreshing Mint (#EAF6F3) surfaces. Replaces generic SaaS gradients with tactile card borders, generous whitespace, high-contrast crisp text, and micro-interactions.",
+    "theme_mode": "Light (with optional subtle dark surfaces for partner/admin dashboard context)"
   },
   "typography": {
-    "font_strategy": "The Editorial Future — Display Serif for Headings + Clean Geometric Sans for UI & Body",
-    "heading_font": "Playfair Display, serif (imported via Google Fonts in index.html)",
-    "body_font": "Plus Jakarta Sans or DM Sans, sans-serif",
-    "accent_mono": "JetBrains Mono, monospace (for Voucher Codes, Barcode numbers, Member ID)",
-    "scale": {
-      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]",
-      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight",
-      "h3_card": "text-xl sm:text-2xl font-semibold",
-      "h4_widget": "text-lg font-medium",
-      "body": "text-base leading-relaxed",
-      "small_label": "text-xs uppercase tracking-[0.2em] font-bold"
+    "font_family_heading": "Fraunces / Bricolage Grotesque, serif/sans-serif",
+    "font_family_body": "Bricolage Grotesque / Inter, sans-serif",
+    "font_family_mono": "JetBrains Mono, monospace",
+    "hierarchy": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]",
+      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#17434C]",
+      "h3_card": "text-lg sm:text-xl font-semibold tracking-normal text-[#0F3138]",
+      "subtitle": "text-base sm:text-lg text-[#475569] leading-relaxed max-w-2xl",
+      "body": "text-sm sm:text-base text-[#1E293B] leading-relaxed",
+      "caption_mono": "text-xs font-mono tracking-wider uppercase text-[#52796F]"
     }
   },
   "colors": {
-    "theme_type": "Light Warm Sand & Cream Base with Vibrant Warm Accents",
     "palette": {
-      "background": "#FBF8F3",
-      "background_alt": "#F3EDE2",
-      "card_bg": "#FFFFFF",
-      "text_primary": "#1E2229",
-      "text_secondary": "#525B68",
-      "text_muted": "#818C9C",
-      "primary": "#D95329",
-      "primary_hover": "#C0421A",
-      "primary_accent_light": "#FDF0EC",
-      "secondary_marigold": "#F3A72E",
-      "secondary_soft_yellow": "#FEF4DC",
-      "sage_badge": "#4E7A58",
-      "sage_badge_light": "#EBF3EC",
-      "slate_dark": "#12161A",
-      "border_subtle": "#E5DEC9",
-      "border_card": "#E0D7C3"
+      "mint_bg": "#EAF6F3",
+      "mint_surface": "#F4FAF8",
+      "mint_border": "#D3ECE7",
+      "deep_teal": "#17434C",
+      "deep_teal_dark": "#0F3138",
+      "deep_teal_light": "#25636E",
+      "coral": "#B9512E",
+      "coral_hover": "#A04223",
+      "coral_soft": "#EE8A63",
+      "coral_light_bg": "#FDF2EF",
+      "sage": "#4E7A58",
+      "sage_light": "#E8F2EA",
+      "neutral_bg": "#FAFCFB",
+      "surface_card": "#FFFFFF",
+      "text_main": "#17434C",
+      "text_muted": "#52796F",
+      "border_subtle": "#E2EFEA"
     },
-    "forbidden_colors": [
-      "#7351B7",
-      "#1B93A4",
-      "pure black #000000 flat backgrounds",
-      "overused Vercel neon blues"
-    ]
+    "contrast_rules": {
+      "text_on_mint": "Minimum contrast ratio 4.5:1 using #17434C or #0F3138 text",
+      "cta_button": "Background #B9512E with white text #FFFFFF (Contrast > 5.5:1)",
+      "badge_contrast": "High contrast dark teal text on mint/sage pills or coral text on soft coral pills"
+    }
   },
   "layout_and_spacing": {
-    "spacing_philosophy": "Generous Spacing (2-3x default padding). Cards with borders must have internal padding p-6 or p-8.",
-    "container_max_width": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "spacing_scale": "p-2, p-4, p-6, p-8, p-12, p-16, p-24",
     "grid_modes": {
-      "marketing_hero_bento": "MODE A: Tetris Grid (grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8)",
-      "deals_directory": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
-      "dashboard_grid": "MODE B: High Density Grid (grid-cols-1 lg:grid-cols-4 gap-6)"
+      "bento_category_grid": "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6",
+      "deals_grid": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8",
+      "dashboard_grid": "grid grid-cols-1 lg:grid-cols-12 gap-6"
+    },
+    "container_padding": "px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+  },
+  "components_specification": {
+    "header_nav": {
+      "type": "Crystal Glass Sticky Header",
+      "styles": "bg-[#EAF6F3]/90 backdrop-blur-md border-b border-[#D3ECE7] z-50 sticky top-0 px-4 lg:px-8 py-3.5 flex items-center justify-between",
+      "elements": [
+        "Horizontal Go Perks brand logo (/brand/go-perks-logo-horizontal.png)",
+        "Nav links: Home, Explore Deals, How It Works, Pricing (A$49/yr), Partner With Us",
+        "Action CTAs: Sign In button, Get Go Perks (Coral pill CTA)",
+        "Mobile viewport: Hamburger trigger + responsive drawer + bottom navigation tab bar for logged in members"
+      ]
+    },
+    "hero_section": {
+      "layout": "2-column dynamic hero (Left text + live stats + quick search bar; Right interactive deal preview card stack or live member digital card)",
+      "cta": "Join for A$49/Year -> Unlock Deals Immediately",
+      "trust_badges": ["Over 350+ Local Aussie Perks", "Instant Digital Card", "Cancel Anytime"]
+    },
+    "category_tiles": {
+      "type": "Visual Image & Icon Tile Grid",
+      "items": [
+        {"id": "cafes", "title": "Cafes & Coffee", "badge": "120+ Perks", "image_url": "https://images.unsplash.com/photo-1575999918061-10774a495539?crop=entropy&cs=srgb&fm=jpg&q=85"},
+        {"id": "dining", "title": "Fine & Casual Dining", "badge": "85+ Perks", "image_url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?crop=entropy&cs=srgb&fm=jpg&q=85"},
+        {"id": "kids", "title": "Kids Activities", "badge": "45+ Perks", "image_url": "https://images.unsplash.com/photo-1762291495465-2cc587c180e2?crop=entropy&cs=srgb&fm=jpg&q=85"},
+        {"id": "takeaway", "title": "Bakeries & Takeaway", "badge": "60+ Perks", "image_url": "https://images.unsplash.com/photo-1660203861072-318f2c468d94?crop=entropy&cs=srgb&fm=jpg&q=85"},
+        {"id": "family", "title": "Family Fun & Parks", "badge": "30+ Perks", "image_url": "https://images.pexels.com/photos/24205720/pexels-photo-24205720.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"},
+        {"id": "wellness", "title": "Health & Beauty", "badge": "25+ Perks", "image_url": "https://images.unsplash.com/photo-1616671285410-2a676a9a433d?crop=entropy&cs=srgb&fm=jpg&q=85"}
+      ]
+    },
+    "deal_card": {
+      "styles": "bg-white rounded-2xl border border-[#D3ECE7] shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group",
+      "image_container": "relative aspect-[16/10] overflow-hidden bg-slate-100",
+      "offer_tag": "absolute top-3 left-3 bg-[#B9512E] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm",
+      "favourite_button": "absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[#17434C] hover:text-[#B9512E]",
+      "card_body": "p-5 flex-1 flex flex-col justify-between",
+      "ratings_row": "flex items-center space-x-2 text-xs font-semibold text-[#17434C] mb-2",
+      "member_favourite_badge": "bg-[#E8F2EA] text-[#4E7A58] border border-[#4E7A58]/20 px-2 py-0.5 rounded text-[11px] font-bold"
+    },
+    "deals_rows": {
+      "new_this_week": "Horizontal scrolling row with 'NEW THIS WEEK' accent header tag",
+      "ending_soon": "Horizontal scrolling row with timer indicator and 'ENDING SOON' alert pill"
+    },
+    "live_member_card": {
+      "description": "Virtual membership pass rendered in the member dashboard and deal redemption view",
+      "styles": "bg-gradient-to-br from-[#17434C] via-[#0F3138] to-[#1E525C] text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden border border-white/10",
+      "features": [
+        "Gold sheen animation on hover/touch",
+        "Dynamic live clock timestamp strip (seconds ticking)",
+        "Rotating unique security QR code / barcode simulation for venue scanning",
+        "Member name, active status badge (ACTIVE MEMBER), expiry date, member ID format #GP-2026-XXXX",
+        "One-click 'Show In-Store Screen' high-visibility popover view"
+      ]
+    },
+    "member_reviews_module": {
+      "average_score_display": "Large star rating breakdown (e.g. 4.8 / 5.0 based on verified member redemptions)",
+      "review_card": "Verified Member avatar, name, suburb, rating stars, date, and short testimonial quote",
+      "review_form": "Modal or inline card allowing logged-in members to pick 1-5 stars, add short experience text, and submit with instant optimistic state update"
+    },
+    "mobile_bottom_tab_bar": {
+      "description": "Sticky bottom bar visible on mobile screen widths (< 768px) for active members",
+      "items": [
+        {"label": "Explore", "icon": "Compass", "path": "/deals"},
+        {"label": "Near Me", "icon": "MapPin", "path": "/deals?filter=near"},
+        {"label": "My Card", "icon": "CreditCard", "path": "/dashboard", "highlight": true},
+        {"label": "Saved", "icon": "Heart", "path": "/dashboard?tab=saved"},
+        {"label": "Account", "icon": "User", "path": "/dashboard?tab=profile"}
+      ]
     }
   },
-  "key_components_and_features": [
-    {
-      "feature": "Hero Section",
-      "description": "Large kinetic hero with line-by-line reveal using framer-motion, live ticker badge showing 'Saved $1.2M+ by Melbourne locals', and a 3D tiltable digital member card preview.",
-      "data_testid": "hero-section"
-    },
-    {
-      "feature": "Header Navigation",
-      "description": "Sticky navigation with backdrop blur (bg-[#FBF8F3]/80 backdrop-blur-md border-b border-[#E5DEC9]/60), inline SVG logo, links (Deals, How It Works, Submit Deal, Pricing), and 'Join for $49/yr' CTA button.",
-      "data_testid": "main-navbar"
-    },
-    {
-      "feature": "Editorial Marquee",
-      "description": "Slow organic drift marquee built with slow translation showing categories ('CAFES & BRUNCH ★ KIDS ACTIVITIES ★ FINE DINING ★ EVERYDAY ESSENTIALS ★ LOCAL ATTRACTIONS').",
-      "data_testid": "editorial-marquee"
-    },
-    {
-      "feature": "Deals Directory & Filter",
-      "description": "Category pills (All, Cafes, Kids, Dining, Essentials, Travel), search input, suburb/location selector, discount badges ('2-for-1', '25% OFF', 'Free Kids Meal'), deal card with image spotlight.",
-      "data_testid": "deals-directory"
-    },
-    {
-      "feature": "Deal Detail Modal / View",
-      "description": "High resolution header image, deal terms, location map badge, business bio, and 'Generate Digital Voucher' button generating unique barcode + QR string with live countdown timer.",
-      "data_testid": "deal-detail-container"
-    },
-    {
-      "feature": "Subscription Checkout (Stripe & Express Pay)",
-      "description": "AUD $49/year checkout form with tabbed payment options: Credit Card (Stripe inputs), Apple Pay mockup button, Google Pay mockup button, discount code input, and instant active membership activation.",
-      "data_testid": "checkout-subscription-form"
-    },
-    {
-      "feature": "Member Dashboard with Digital Card",
-      "description": "Interactive 3D tilting Member Card (Framer Motion tilt effect on hover/touch) displaying Member Name, Member Code, Active Status badge, Expiry Date, plus tabs for 'My Active Vouchers', 'Savings Calculator', and 'Saved Favorites'.",
-      "data_testid": "member-dashboard"
-    },
-    {
-      "feature": "Business Partner Deal Portal",
-      "description": "Form for local business owners to list deals ('Business Name', 'Category', 'Discount Offer', 'Voucher Code Pattern', 'Terms', 'Image URL'). Direct submit to admin queue.",
-      "data_testid": "business-deal-submit-form"
-    },
-    {
-      "feature": "Admin Dashboard",
-      "description": "Admin review panel to approve/reject pending business deals, edit existing deal entries, and view membership stats.",
-      "data_testid": "admin-deal-approval-panel"
-    },
-    {
-      "feature": "Auth Dialog / Page",
-      "description": "Email and Password authentication modal for Member Sign in / Business partner portal sign in.",
-      "data_testid": "auth-modal"
+  "media_assets": {
+    "image_urls": {
+      "hero_cafe": "https://images.unsplash.com/photo-1575999918061-10774a495539?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "barista_working": "https://images.unsplash.com/photo-1787329684173-31a171a1ca27?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "restaurant_dining": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "salmon_dish": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "kids_playground": "https://images.unsplash.com/photo-1762291495465-2cc587c180e2?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "family_fun": "https://images.pexels.com/photos/24205720/pexels-photo-24205720.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "gourmet_dish": "https://images.unsplash.com/photo-1676471926534-d5c9771909fa?crop=entropy&cs=srgb&fm=jpg&q=85"
     }
-  ],
-  "image_urls": {
-    "cafes": [
-      {
-        "url": "https://images.unsplash.com/photo-1534432182912-63863115e106?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Pastries and gourmet coffee spread at local cafe",
-        "category": "deal_card_cafe"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1564327367919-cb377ea6a88f?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Freshly brewed cappuccino cup with art",
-        "category": "deal_card_coffee"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1516213335993-159eca2981af?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Latte art surrounded with breakfast sweets",
-        "category": "deal_hero_brunch"
-      }
-    ],
-    "kids_activities": [
-      {
-        "url": "https://images.unsplash.com/photo-1634608874538-443b84f7b06b?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Vibrant kids outdoor playground and slide",
-        "category": "deal_card_kids"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1593103916129-87e179a70c1f?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Child smiling on playground swing",
-        "category": "deal_card_family"
-      }
-    ],
-    "dining": [
-      {
-        "url": "https://images.unsplash.com/photo-1600628421055-4d30de868b8f?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Gourmet artisanal pizza sharing platter",
-        "category": "deal_card_dining"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1555072956-7758afb20e8f?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Lifting delicious slice of mozzarella pizza",
-        "category": "deal_card_pizza"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1600628421066-f6bda6a7b976?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Fresh woodfired pizza on wooden table",
-        "category": "deal_hero_restaurant"
-      }
+  },
+  "testing_guidelines": {
+    "data_testid_rules": "All interactive components (buttons, deal cards, category tiles, review forms, search inputs, tab triggers) MUST include descriptive data-testid attributes in kebab-case format.",
+    "key_test_ids": [
+      "data-testid='header-brand-logo'",
+      "data-testid='nav-explore-deals-link'",
+      "data-testid='nav-join-button'",
+      "data-testid='hero-join-cta-button'",
+      "data-testid='category-tile-cafes'",
+      "data-testid='deal-card-item'",
+      "data-testid='deal-card-favourite-button'",
+      "data-testid='deals-search-input'",
+      "data-testid='deals-category-filter'",
+      "data-testid='deals-suburb-filter'",
+      "data-testid='deals-view-toggle-map'",
+      "data-testid='live-member-card'",
+      "data-testid='show-card-qr-button'",
+      "data-testid='review-submission-form'",
+      "data-testid='mobile-bottom-tab-bar'"
     ]
   },
-  "motion_and_interactions": {
-    "smooth_scroll": "Lenis smooth scrolling integration or smooth CSS scroll behavior",
-    "hero_reveal": "Staggered line opacity & slide-up animation for main hero heading",
-    "member_card_3d": "Mouse tilt / perspective 3D transform on digital member card using framer-motion (rotateX, rotateY on mouse move)",
-    "micro_interactions": "Hover scale on deal cards (hover:-translate-y-1 transition-transform duration-200), button active press spring effect, voucher code copy toast via sonner",
-    "reduced_motion": "Wrap framer-motion with prefers-reduced-motion check or gentle fallback"
-  },
-  "testing_and_accessibility": {
-    "data_testid_rule": "ALL interactive components, buttons, inputs, filter pills, card titles, status badges MUST have explicit kebab-case data-testid attributes.",
-    "wcag_compliance": "High contrast ratio (>4.5:1) for text over sand/white backgrounds. Hover states must explicitly set text-white when dark bg is applied.",
-    "aria_labels": "Buttons with icons only must include aria-label and data-testid."
-  },
   "instructions_to_main_agent": [
-    "Implement the complete frontend application in React using JavaScript (.js / .jsx) inside /app/frontend/src.",
-    "Replace the placeholder splash screen in App.js with full multi-page router setup (Landing, Deals, Deal Detail, Checkout, Dashboard, Business Portal, Admin, Auth).",
-    "Use Tailwind CSS utility classes aligned with our warm organic palette (#FBF8F3 background, #D95329 primary accent, #F3A72E marigold, #4E7A58 sage).",
-    "Ensure all user flows (filtering deals, claiming vouchers, subscribing via Stripe payment mockup, submitting business deals, admin approvals) work seamlessly in-memory and connect with FastAPI backend endpoints where applicable.",
-    "Include toast notifications using 'sonner' when claiming vouchers or completing checkout.",
-    "Ensure 3D digital member card component features interactive tilt and display of member barcode & QR code."
+    "Use the light theme tokens (#EAF6F3 bg, #17434C text/primary, #B9512E action CTA) across public and member-facing pages.",
+    "Embed the Go Perks logos provided in /brand/go-perks-logo-horizontal.png and /brand/go-perks-mark.png in navigation and hero.",
+    "Implement the 3 requested new features: Category Tiles bento grid, 'New this week' / 'Ending soon' deal carousels, and Member reviews/ratings system.",
+    "Ensure all deal cards display distance chips, open badges, and 1-5 star member ratings.",
+    "Keep mobile views ultra-responsive with a clean bottom tab bar for active members."
   ]
 }

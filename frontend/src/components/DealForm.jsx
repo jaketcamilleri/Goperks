@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CATEGORIES } from "@/lib/api";
 
-const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "" };
+const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "", ends_on: "" };
 
 function BusinessField({ partners, lockedBusiness, f, setF, field }) {
   if (partners) {
@@ -40,7 +40,7 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
     <form
       className="grid gap-5 sm:grid-cols-2"
       data-testid="deal-form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, partner_id: f.partner_id || null, est_saving: Number(f.est_saving) || 0 }); }}
+      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, partner_id: f.partner_id || null, ends_on: f.ends_on || null, est_saving: Number(f.est_saving) || 0 }); }}
     >
       <div className="sm:col-span-2">
         <Label>Deal headline</Label>
@@ -72,6 +72,11 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
       <div>
         <Label>Typical member saving (A$)</Label>
         <Input type="number" min="0" step="0.5" value={f.est_saving} onChange={set("est_saving")} placeholder="e.g. 8" className={field} data-testid="deal-form-saving" />
+      </div>
+      <div>
+        <Label>Offer ends <span className="font-normal text-[#3D5E65]">(optional)</span></Label>
+        <Input type="date" value={f.ends_on || ""} min={new Date().toLocaleDateString("en-CA")} onChange={set("ends_on")} className={field} data-testid="deal-form-ends-on" />
+        <p className="mt-1 text-xs text-[#3D5E65]">Leave blank for an ongoing deal. It shows as “Ending soon” in the last 14 days.</p>
       </div>
       <div>
         <Label>Image URL</Label>

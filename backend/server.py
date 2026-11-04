@@ -5,6 +5,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 import os
+import re
 import asyncio
 import hmac
 import hashlib
@@ -109,6 +110,9 @@ class Deal(BaseDocument):
     est_saving: float = 0.0
     lat: Optional[float] = None
     lng: Optional[float] = None
+    ends_on: Optional[str] = None
+    rating_avg: float = 0.0
+    rating_count: int = 0
     created_at: str = Field(default_factory=lambda: now_iso())
 
 
@@ -153,6 +157,12 @@ class DealIn(BaseModel):
     image_url: str = ""
     featured: bool = False
     est_saving: float = Field(0.0, ge=0, le=10000)
+    ends_on: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+
+class ReviewIn(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    comment: str = Field("", max_length=500)
 
 
 class StatusIn(BaseModel):
@@ -623,13 +633,15 @@ async def refresh(request: Request, response: Response):
 # ---------- Public deals ----------
 @api.get("/deals")
 async def list_deals(category: Optional[str] = None, q: Optional[str] = None, suburb: Optional[str] = None):
-    query = {"status": "approved"}
+    today = datetime.now(MELB).date().isoformat()
+    query = {"status": "approved", "$and": [{"$or": [{"ends_on": None}, {"ends_on": {"$gte": today}}]}]}
     if category and category != "all":
         query["category"] = category
     if suburb:
         query["suburb"] = suburb
     if q:
-        query["$or"] = [{f: {"$regex": q, "$options": "i"}} for f in ("title", "business_name", "suburb", "description")]
+        rx = re.escape(q.strip()[:60])
+        query["$and"].append({"$or": [{f: {"$regex": rx, "$options": "i"}} for f in ("title", "business_name", "suburb", "description")]})
     docs = await db.deals.find(query).sort([("featured", -1), ("created_at", -1)]).to_list(200)
     owner_ids = list({oid(d["submitted_by"]) for d in docs if d.get("submitted_by")})
     owners = {str(o["_id"]): o async for o in db.users.find(
@@ -648,6 +660,7 @@ async def get_deal(deal_id: str):
     if not doc:
         raise HTTPException(404, "Deal not found")
     out = Deal.from_mongo(doc).out()
+    out["ended"] = bool(doc.get("ends_on") and doc["ends_on"] < datetime.now(MELB).date().isoformat())
     owner = await db.users.find_one({"_id": oid(doc["submitted_by"]), "role": "business"}) if doc.get("submitted_by") else None
     if owner and owner.get("business_status") == "approved":
         out["partner"] = {k: owner.get(k) for k in PROFILE_FIELDS} | {
@@ -660,6 +673,112 @@ async def get_deal(deal_id: str):
 async def list_suburbs():
     subs = await db.deals.distinct("suburb", {"status": "approved"})
     return sorted(s for s in subs if s)
+
+
+async def optional_user(request: Request) -> Optional[dict]:
+    try:
+        return await current_user(request)
+    except HTTPException:
+        return None
+
+
+def review_out(r: dict) -> dict:
+    first = (r.get("user_name") or "Member").split(" ")
+    name = first[0] + (f" {first[1][0]}." if len(first) > 1 and first[1] else "")
+    return {"id": str(r["_id"]), "deal_id": r["deal_id"], "rating": r["rating"], "comment": r.get("comment", ""),
+            "name": name, "created_at": r["created_at"], "updated_at": r.get("updated_at"), "hidden": r.get("hidden", False)}
+
+
+async def refresh_rating(deal_id: str):
+    rows = await db.reviews.aggregate([
+        {"$match": {"deal_id": deal_id, "hidden": {"$ne": True}}},
+        {"$group": {"_id": None, "avg": {"$avg": "$rating"}, "n": {"$sum": 1}}}]).to_list(1)
+    avg, n = (round(rows[0]["avg"], 2), rows[0]["n"]) if rows else (0.0, 0)
+    await db.deals.update_one({"_id": oid(deal_id)}, {"$set": {"rating_avg": avg, "rating_count": n}})
+
+
+async def has_redeemed(user_id: str, deal_id: str) -> bool:
+    return bool(await db.vouchers.find_one({"user_id": user_id, "deal_id": deal_id, "status": "redeemed"}, {"_id": 1}))
+
+
+@api.get("/deals/{deal_id}/reviews")
+async def deal_reviews(deal_id: str, request: Request):
+    rows = await db.reviews.find({"deal_id": deal_id, "hidden": {"$ne": True}}).sort("created_at", -1).to_list(200)
+    user = await optional_user(request)
+    mine = None
+    can = False
+    if user and user["role"] == "member":
+        m = await db.reviews.find_one({"deal_id": deal_id, "user_id": user["id"]})
+        mine = review_out(m) if m else None
+        can = await has_redeemed(user["id"], deal_id)
+    return {"reviews": [review_out(r) for r in rows], "mine": mine, "can_review": can}
+
+
+@api.post("/deals/{deal_id}/reviews")
+async def post_review(deal_id: str, body: ReviewIn, user=Depends(current_user)):
+    if user["role"] != "member":
+        raise HTTPException(403, "Only members can leave reviews")
+    if not await db.deals.find_one({"_id": oid(deal_id)}, {"_id": 1}):
+        raise HTTPException(404, "Deal not found")
+    if not await has_redeemed(user["id"], deal_id):
+        raise HTTPException(403, "You can review a deal after you've used it")
+    now = now_iso()
+    await db.reviews.update_one(
+        {"deal_id": deal_id, "user_id": user["id"]},
+        {"$set": {"rating": body.rating, "comment": body.comment.strip(), "user_name": user.get("name", ""), "updated_at": now},
+         "$setOnInsert": {"created_at": now, "hidden": False}}, upsert=True)
+    await refresh_rating(deal_id)
+    return review_out(await db.reviews.find_one({"deal_id": deal_id, "user_id": user["id"]}))
+
+
+@api.get("/me/to-review")
+async def to_review(user=Depends(current_user)):
+    if user["role"] != "member":
+        return []
+    used = await db.vouchers.find({"user_id": user["id"], "status": "redeemed"}, {"deal_id": 1, "deal_title": 1, "business_name": 1, "redeemed_at": 1}).sort("redeemed_at", -1).to_list(200)
+    done = set(await db.reviews.distinct("deal_id", {"user_id": user["id"]}))
+    seen, out = set(), []
+    for v in used:
+        if v["deal_id"] in done or v["deal_id"] in seen:
+            continue
+        seen.add(v["deal_id"])
+        out.append({"deal_id": v["deal_id"], "deal_title": v.get("deal_title"), "business_name": v.get("business_name"), "redeemed_at": v.get("redeemed_at")})
+    return out[:5]
+
+
+@api.get("/reviews/highlights")
+async def review_highlights():
+    rows = await db.reviews.find({"hidden": {"$ne": True}, "rating": {"$gte": 4}, "comment": {"$regex": ".{20,}"}}).sort("created_at", -1).to_list(6)
+    titles = {str(d["_id"]): d for d in await db.deals.find({"_id": {"$in": [oid(r["deal_id"]) for r in rows]}}, {"title": 1, "business_name": 1}).to_list(6)}
+    return [review_out(r) | {"deal_title": titles.get(r["deal_id"], {}).get("title"), "business_name": titles.get(r["deal_id"], {}).get("business_name")}
+            for r in rows if r["deal_id"] in titles]
+
+
+@api.get("/business/reviews")
+async def business_reviews(user=Depends(require_partner)):
+    deals = {str(d["_id"]): d["title"] for d in await db.deals.find({"submitted_by": user["id"]}, {"title": 1}).to_list(500)}
+    rows = await db.reviews.find({"deal_id": {"$in": list(deals)}, "hidden": {"$ne": True}}).sort("created_at", -1).to_list(200)
+    return [review_out(r) | {"deal_title": deals.get(r["deal_id"])} for r in rows]
+
+
+@api.get("/admin/reviews")
+async def admin_reviews(_=Depends(require_role("admin", "staff"))):
+    rows = await db.reviews.find({}).sort("created_at", -1).to_list(2000)
+    titles = {str(d["_id"]): d for d in await db.deals.find({}, {"title": 1, "business_name": 1}).to_list(2000)}
+    return [review_out(r) | {"deal_title": titles.get(r["deal_id"], {}).get("title"), "business_name": titles.get(r["deal_id"], {}).get("business_name")} for r in rows]
+
+
+class HideIn(BaseModel):
+    hidden: bool
+
+
+@api.post("/admin/reviews/{review_id}/hide")
+async def admin_hide_review(review_id: str, body: HideIn, _=Depends(require_role("admin", "staff"))):
+    r = await db.reviews.find_one_and_update({"_id": oid(review_id)}, {"$set": {"hidden": body.hidden}})
+    if not r:
+        raise HTTPException(404, "Review not found")
+    await refresh_rating(r["deal_id"])
+    return {"ok": True}
 
 
 @api.get("/stats")

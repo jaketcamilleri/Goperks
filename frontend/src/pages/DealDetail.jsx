@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { MapPin, ArrowLeft, Copy, Ticket } from "lucide-react";
+import { MapPin, ArrowLeft, Copy, Ticket, Timer } from "lucide-react";
 import { api, catLabel, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { Eyebrow } from "@/components/Reveal";
 import { HeartButton } from "@/components/HeartButton";
 import { QRCodeSVG } from "qrcode.react";
 import { PartnerCard } from "@/components/PartnerCard";
+import { Reviews } from "@/components/Reviews";
+import { RatingChip } from "@/components/Stars";
+import { endsLabel, isFavourite } from "@/lib/deals";
 
 export function VoucherTicket({ v }) {
   const copy = () => { navigator.clipboard?.writeText(v.code); toast.success("Voucher code copied"); };
@@ -43,9 +45,8 @@ export default function DealDetail() {
   const [busy, setBusy] = useState(false);
   const [used, setUsed] = useState(null);
 
-  useEffect(() => {
-    api.get(`/deals/${id}`).then((r) => setDeal(r.data)).catch(() => setDeal(false));
-  }, [id]);
+  const loadDeal = () => api.get(`/deals/${id}`).then((r) => setDeal(r.data)).catch(() => setDeal(false));
+  useEffect(() => { loadDeal(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user) { setUsed(null); return; }
@@ -76,21 +77,26 @@ export default function DealDetail() {
   const label = !user ? "Log in to claim" : user.membership_status === "active" || user.role === "admin" ? "Get my voucher code" : "Join to unlock this deal";
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-28 pt-10 sm:px-8" data-testid="deal-detail-container">
-      <Link to="/deals" className="inline-flex items-center gap-2 text-sm font-semibold" data-testid="deal-back-link"><ArrowLeft className="h-4 w-4" /> All deals</Link>
-      <div className="mt-8 grid gap-12 lg:grid-cols-12">
-        <motion.div initial={{ clipPath: "inset(0 0 100% 0 round 32px)" }} animate={{ clipPath: "inset(0 0 0% 0 round 32px)" }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative aspect-[4/3] overflow-hidden lg:col-span-7">
+    <div className="mx-auto max-w-7xl px-5 pb-28 pt-6 sm:px-8 lg:pt-10" data-testid="deal-detail-container">
+      <Link to="/deals" className="inline-flex items-center gap-2 text-sm font-semibold hover:text-[#9A4024]" data-testid="deal-back-link"><ArrowLeft className="h-4 w-4" /> All deals</Link>
+      <div className="mt-6 grid gap-10 lg:grid-cols-12">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-3xl bg-[#D3ECE7] lg:col-span-7 lg:aspect-[4/3]">
           {deal.image_url ? <img src={deal.image_url} alt={deal.title} className="h-full w-full object-cover" />
             : <div className="grid h-full w-full place-items-center bg-[#17434C] p-8 text-center font-display text-4xl font-semibold text-[#EAF6F3]">{deal.business_name}</div>}
-          <span className="absolute left-5 top-5 rotate-[-4deg] rounded-full bg-[#EE8A63] px-5 py-2 font-display text-2xl font-semibold">{deal.discount_label}</span>
-          <HeartButton dealId={deal.id} className="absolute right-5 top-5" />
-        </motion.div>
+          <span className="absolute left-4 top-4 rounded-full bg-[#B9512E] px-4 py-1.5 text-lg font-bold text-white shadow">{deal.discount_label}</span>
+          <HeartButton dealId={deal.id} className="absolute right-4 top-4" />
+        </div>
         <div className="lg:col-span-5">
-          <Eyebrow>{catLabel(deal.category)}</Eyebrow>
-          <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl" data-testid="deal-title">{deal.title}</h1>
-          <p className="mt-4 flex items-center gap-2 text-[#3D5E65]"><span className="font-semibold text-[#17434C]">{deal.business_name}</span> · <MapPin className="h-4 w-4" /> {deal.suburb}</p>
-          <p className="mt-6 text-base leading-relaxed md:text-lg">{deal.description}</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">{catLabel(deal.category)}</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl" data-testid="deal-title">{deal.title}</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-[#3D5E65]"><span className="font-semibold text-[#17434C]">{deal.business_name}</span>{deal.suburb && <> · <MapPin className="h-4 w-4" /> {deal.suburb}</>}</p>
+          <a href="#reviews" className="mt-3 inline-flex flex-wrap items-center gap-2" data-testid="deal-rating-link">
+            <RatingChip deal={deal} testId="deal-detail-rating" />
+            {isFavourite(deal) && <span className="rounded-md bg-[#E8F2EA] px-2 py-0.5 text-[11px] font-bold text-[#2F5A3A]">Member favourite</span>}
+          </a>
+          {deal.ended ? <p className="mt-4 rounded-xl bg-[#FDF0EC] px-4 py-3 text-sm font-semibold text-[#9A4024]" data-testid="deal-ended">This deal has ended.</p>
+            : endsLabel(deal) && <p className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2 text-sm font-semibold text-[#9A4024]" data-testid="deal-ends"><Timer className="h-4 w-4" /> {endsLabel(deal)}</p>}
+          <p className="mt-5 text-base leading-relaxed md:text-lg">{deal.description}</p>
           {deal.terms && (
             <div className="mt-6 rounded-2xl border border-[#C2DEDA] bg-white p-5">
               <p className="font-mono text-[11px] uppercase tracking-widest text-[#9A4024]">Terms</p>
@@ -98,7 +104,7 @@ export default function DealDetail() {
             </div>
           )}
           <div className="mt-8">
-            {voucher ? <VoucherTicket v={voucher} /> : used ? (
+            {voucher ? <VoucherTicket v={voucher} /> : deal.ended ? null : used ? (
               <div className="rounded-[24px] border border-dashed border-[#C2DEDA] bg-white p-6" data-testid="deal-used-this-term">
                 <p className="font-display text-2xl font-semibold">You've used this deal this year</p>
                 <p className="mt-2 text-sm text-[#3D5E65]">Redeemed on {new Date(used).toLocaleDateString("en-AU")}. Each deal is one use per membership year — it unlocks again when you renew.</p>
@@ -114,6 +120,7 @@ export default function DealDetail() {
           <PartnerCard p={deal.partner} />
         </div>
       </div>
+      <Reviews dealId={deal.id} onChange={loadDeal} />
     </div>
   );
 }

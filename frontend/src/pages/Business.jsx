@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { DealForm } from "@/components/DealForm";
 import { PartnerChecker } from "@/components/PartnerChecker";
 import { PartnerStats } from "@/components/PartnerStats";
+import { PartnerReviews } from "@/components/PartnerReviews";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 import { bp, assetUrl } from "@/lib/site";
 
@@ -109,6 +110,7 @@ export default function Business() {
           <span className="shrink-0 rounded-full bg-[#17434C] px-5 py-2.5 text-sm font-semibold text-[#EAF6F3]">Get sticker</span>
         </Link>
         <PartnerStats />
+        {user.role === "business" && <PartnerReviews />}
         <div className="mt-12 grid gap-12 lg:grid-cols-12">
           <div className="rounded-[32px] border border-[#C2DEDA] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
             <h2 className="font-display text-2xl font-semibold">Submit a new deal</h2>

@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { Eyebrow, FadeUp } from "@/components/Reveal";
 
 export const PERKS = [
   "Every deal in the club, all year",
@@ -13,8 +11,8 @@ export const PERKS = [
 
 export function PricingTicket({ cta }) {
   return (
-    <motion.div whileHover={{ rotate: -1, y: -6 }} transition={{ type: "spring", stiffness: 200, damping: 16 }}
-      className="ticket-edge relative overflow-hidden rounded-[32px] bg-[#EAF6F3] text-[#17434C] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.6)]" data-testid="pricing-ticket">
+    <div
+      className="ticket-edge relative overflow-hidden rounded-[28px] bg-[#EAF6F3] text-[#17434C] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]" data-testid="pricing-ticket">
       <div className="p-8 sm:p-10">
         <div className="flex items-center justify-between">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#9A4024]">Annual membership</span>
@@ -38,30 +36,28 @@ export function PricingTicket({ cta }) {
         </ul>
         {cta}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 export function Pricing() {
   return (
-    <section className="relative overflow-hidden bg-[#B9512E] text-[#EAF6F3]" data-testid="pricing-section">
-      <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-12 lg:py-32">
+    <section className="relative overflow-hidden bg-[#17434C] text-[#EAF6F3]" data-testid="pricing-section">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-12 lg:py-24">
         <div className="lg:col-span-6">
-          <Eyebrow className="!text-[#EAF6F3]">One price. Every deal.</Eyebrow>
-          <FadeUp>
-            <h2 className="mt-5 font-display text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
-              One day out <em className="font-normal italic text-[#17434C]">pays for itself.</em>
-            </h2>
-          </FadeUp>
-          <p className="mt-6 max-w-md text-[#FDF0EC] md:text-lg">Half price at your favourite local, a free kids meal here, 2-for-1 coffees there. It adds up fast.</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-[#EE8A63]">One price. Every deal.</p>
+          <h2 className="mt-2 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            One day out can <span className="text-[#EE8A63]">pay for the year.</span>
+          </h2>
+          <p className="mt-5 max-w-md text-[#C2DEDA] md:text-lg">Half price at your favourite local, a free kids meal here, 2-for-1 coffees there. It adds up fast, and your savings tracker shows exactly how much.</p>
         </div>
-        <FadeUp delay={0.1} className="lg:col-span-5 lg:col-start-8">
+        <div className="lg:col-span-5 lg:col-start-8">
           <PricingTicket cta={
-            <Link to="/join" data-testid="pricing-join-btn" className="mt-8 block rounded-full bg-[#17434C] py-4 text-center font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#B9512E] active:scale-[0.98]">
+            <Link to="/join" data-testid="pricing-join-btn" className="mt-8 block rounded-full bg-[#B9512E] py-4 text-center font-semibold text-white transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98]">
               Become a member
             </Link>
           } />
-        </FadeUp>
+        </div>
       </div>
     </section>
   );

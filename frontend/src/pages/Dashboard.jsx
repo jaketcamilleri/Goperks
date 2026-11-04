@@ -7,7 +7,7 @@ import { MemberCard } from "@/components/MemberCard";
 import { SavingsTracker } from "@/components/SavingsTracker";
 import { SavedDeals } from "@/components/SavedDeals";
 import { WalletButtons } from "@/components/WalletButtons";
-import { MaskLines, Eyebrow } from "@/components/Reveal";
+import { RateVisits } from "@/components/RateVisits";
 
 function VoucherRow({ v, onRedeem }) {
   const live = v.status === "active";
@@ -46,16 +46,15 @@ export default function Dashboard() {
   const exp = user?.membership_expires_at ? new Date(user.membership_expires_at).toLocaleDateString("en-AU", { month: "short", year: "numeric" }) : undefined;
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-28 pt-14 sm:px-8" data-testid="member-dashboard">
-      <Eyebrow>My account</Eyebrow>
-      <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl"
-        lines={[<>Hi, <em className="font-normal italic text-[#B9512E]">{user?.name?.split(" ")[0]}</em>.</>]} />
-      <div className="mt-12 grid gap-12 lg:grid-cols-12">
+    <div className="mx-auto max-w-7xl px-5 pb-28 pt-8 sm:px-8 lg:pt-12" data-testid="member-dashboard">
+      <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">My account</p>
+      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
+      <div className="mt-8 grid gap-10 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <MemberCard live name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
           {active ? (
             <>
-            <p className="mt-5 text-sm text-[#3D5E65]" data-testid="membership-active-note">Show this card at any partner counter. Tilt it — it's alive.</p>
+            <p className="mt-4 text-sm text-[#3D5E65]" data-testid="membership-active-note">Show this card at any partner counter. The moving clock and changing code prove it's live, not a screenshot.</p>
             <WalletButtons />
             </>
           ) : (
@@ -66,10 +65,11 @@ export default function Dashboard() {
             </div>
           )}
           <div className="mt-8"><SavingsTracker refreshKey={tick} /></div>
+          <RateVisits refreshKey={tick} />
         </div>
         <div className="lg:col-span-6 lg:col-start-7">
           <div className="flex items-end justify-between">
-            <h2 className="font-display text-3xl font-semibold">My vouchers</h2>
+            <h2 className="font-display text-2xl font-semibold sm:text-3xl">My vouchers</h2>
             <Link to="/deals" className="text-sm font-semibold text-[#9A4024]" data-testid="dashboard-browse-link">Find more deals →</Link>
           </div>
           {vouchers.length === 0 ? (

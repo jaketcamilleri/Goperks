@@ -1,41 +1,27 @@
-import { motion } from "framer-motion";
-import { Eyebrow, FadeUp } from "@/components/Reveal";
+import { Search, Smartphone, PiggyBank } from "lucide-react";
 
 const STEPS = [
-  { n: "01", t: "Join online", d: "One simple yearly membership — $49 covers your whole household. Pay by card, Apple Pay or Google Pay." },
-  { n: "02", t: "Browse the offers", d: "Cafes, kids activities, restaurants and days out, all near your suburb. New deals added all the time." },
-  { n: "03", t: "Show & save", d: "Flash your digital member card or a one-off voucher code at the counter. That's it — no clunky paper." },
+  { icon: Search, t: "Find a deal", d: "Browse cafes, kids activities, restaurants and days out near you, or tap Near me." },
+  { icon: Smartphone, t: "Show your live card", d: "Open Go Perks at the counter. Staff scan your live card or a one-off voucher code." },
+  { icon: PiggyBank, t: "Save on the spot", d: "The saving comes off straight away, and your savings tracker keeps the tally all year." },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how" className="grain relative bg-[#0F3138] text-[#EAF6F3]" data-testid="how-it-works">
-      <div className="mx-auto grid max-w-7xl gap-14 px-5 py-24 sm:px-8 lg:grid-cols-12 lg:py-36">
-        <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-32">
-            <Eyebrow className="!text-[#EE8A63]">Simple as pie</Eyebrow>
-            <FadeUp>
-              <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-                Three steps <em className="font-normal italic text-[#EE8A63]">to saving</em> every weekend.
-              </h2>
-            </FadeUp>
-            <p className="mt-6 max-w-md text-[#BFD9D6] md:text-lg">Every deal is submitted by a local business and checked by us before it goes live.</p>
-          </div>
-        </div>
-        <ol className="lg:col-span-6 lg:col-start-7">
-          {STEPS.map((s, i) => (
-            <motion.li key={s.n} data-testid={`how-step-${i + 1}`}
-              initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: i * 0.1 }}
-              className="group border-t border-white/15 py-10 last:border-b">
-              <div className="flex gap-6 sm:gap-10">
-                <span className="font-display text-6xl font-semibold italic text-[#B9512E] transition-colors group-hover:text-[#EE8A63] sm:text-7xl">{s.n}</span>
-                <div className="pt-2">
-                  <h3 className="font-display text-2xl font-semibold sm:text-3xl">{s.t}</h3>
-                  <p className="mt-3 max-w-md text-[#BFD9D6]">{s.d}</p>
-                </div>
+    <section id="how" className="bg-white" data-testid="how-it-works">
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">How it works</p>
+        <h2 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">Three steps, no paper vouchers.</h2>
+        <ol className="mt-10 grid gap-4 md:grid-cols-3">
+          {STEPS.map(({ icon: Icon, t, d }, i) => (
+            <li key={t} className="rounded-2xl border border-[#D3ECE7] bg-[#F4FAF8] p-6" data-testid={`how-step-${i + 1}`}>
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#17434C] text-[#EAF6F3]"><Icon className="h-5 w-5" /></span>
+                <span className="font-mono text-xs font-bold text-[#9A4024]">STEP {i + 1}</span>
               </div>
-            </motion.li>
+              <h3 className="mt-5 font-display text-xl font-semibold">{t}</h3>
+              <p className="mt-2 text-[#3D5E65]">{d}</p>
+            </li>
           ))}
         </ol>
       </div>

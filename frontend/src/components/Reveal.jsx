@@ -2,33 +2,32 @@ import { motion } from "framer-motion";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export function MaskLines({ lines, className = "", delay = 0.15, as: Tag = "h1", testId }) {
+export function MaskLines({ lines, className = "", delay = 0.05, as: Tag = "h1", testId }) {
   return (
     <Tag className={className} data-testid={testId}>
       {lines.map((line, i) => (
-        <span key={i} className="block overflow-hidden pb-[0.08em]">
-          <motion.span
-            className="block"
-            initial={{ y: "105%" }}
-            animate={{ y: "0%" }}
-            transition={{ duration: 1.1, ease: EASE, delay: delay + i * 0.12 }}
-          >
-            {line}
-          </motion.span>
-        </span>
+        <motion.span
+          key={i}
+          className="block"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE, delay: delay + i * 0.06 }}
+        >
+          {line}
+        </motion.span>
       ))}
     </Tag>
   );
 }
 
-export function FadeUp({ children, delay = 0, className = "", y = 28 }) {
+export function FadeUp({ children, delay = 0, className = "", y = 16 }) {
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.9, ease: EASE, delay }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration: 0.5, ease: EASE, delay }}
     >
       {children}
     </motion.div>

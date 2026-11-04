@@ -3,7 +3,7 @@ import { BizLink, MainLink } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-[#0F3138] text-[#EAF6F3]" data-testid="site-footer">
+    <footer className="relative overflow-hidden bg-[#0F3138] pb-16 text-[#EAF6F3] md:pb-0" data-testid="site-footer">
       <div className="mx-auto max-w-7xl px-5 pb-10 pt-20 sm:px-8">
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-6">
