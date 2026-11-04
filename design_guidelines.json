@@ -1,0 +1,181 @@
+{
+  "brand_identity": {
+    "name": "Tiny's Vouchers",
+    "tagline": "A little local club for everyone — Eat, play & shop for less!",
+    "currency": "AUD",
+    "pricing_tier": "$49 / year",
+    "tone": "Warm Editorial Tactile & High-Energy Local Community",
+    "archetype": "ARCHETYPE 1: Organic & Earthy meets Swiss Editorial (Trust, Community & Daily Joy)",
+    "logo_concept": "Clean inline SVG stamp featuring an iconic ticket stub embedded with a subtle heart & star geometry. Usable as favicon and header emblem."
+  },
+  "typography": {
+    "font_strategy": "The Editorial Future — Display Serif for Headings + Clean Geometric Sans for UI & Body",
+    "heading_font": "Playfair Display, serif (imported via Google Fonts in index.html)",
+    "body_font": "Plus Jakarta Sans or DM Sans, sans-serif",
+    "accent_mono": "JetBrains Mono, monospace (for Voucher Codes, Barcode numbers, Member ID)",
+    "scale": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]",
+      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight",
+      "h3_card": "text-xl sm:text-2xl font-semibold",
+      "h4_widget": "text-lg font-medium",
+      "body": "text-base leading-relaxed",
+      "small_label": "text-xs uppercase tracking-[0.2em] font-bold"
+    }
+  },
+  "colors": {
+    "theme_type": "Light Warm Sand & Cream Base with Vibrant Warm Accents",
+    "palette": {
+      "background": "#FBF8F3",
+      "background_alt": "#F3EDE2",
+      "card_bg": "#FFFFFF",
+      "text_primary": "#1E2229",
+      "text_secondary": "#525B68",
+      "text_muted": "#818C9C",
+      "primary": "#D95329",
+      "primary_hover": "#C0421A",
+      "primary_accent_light": "#FDF0EC",
+      "secondary_marigold": "#F3A72E",
+      "secondary_soft_yellow": "#FEF4DC",
+      "sage_badge": "#4E7A58",
+      "sage_badge_light": "#EBF3EC",
+      "slate_dark": "#12161A",
+      "border_subtle": "#E5DEC9",
+      "border_card": "#E0D7C3"
+    },
+    "forbidden_colors": [
+      "#7351B7",
+      "#1B93A4",
+      "pure black #000000 flat backgrounds",
+      "overused Vercel neon blues"
+    ]
+  },
+  "layout_and_spacing": {
+    "spacing_philosophy": "Generous Spacing (2-3x default padding). Cards with borders must have internal padding p-6 or p-8.",
+    "container_max_width": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "grid_modes": {
+      "marketing_hero_bento": "MODE A: Tetris Grid (grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8)",
+      "deals_directory": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6",
+      "dashboard_grid": "MODE B: High Density Grid (grid-cols-1 lg:grid-cols-4 gap-6)"
+    }
+  },
+  "key_components_and_features": [
+    {
+      "feature": "Hero Section",
+      "description": "Large kinetic hero with line-by-line reveal using framer-motion, live ticker badge showing 'Saved $1.2M+ by Melbourne locals', and a 3D tiltable digital member card preview.",
+      "data_testid": "hero-section"
+    },
+    {
+      "feature": "Header Navigation",
+      "description": "Sticky navigation with backdrop blur (bg-[#FBF8F3]/80 backdrop-blur-md border-b border-[#E5DEC9]/60), inline SVG logo, links (Deals, How It Works, Submit Deal, Pricing), and 'Join for $49/yr' CTA button.",
+      "data_testid": "main-navbar"
+    },
+    {
+      "feature": "Editorial Marquee",
+      "description": "Slow organic drift marquee built with slow translation showing categories ('CAFES & BRUNCH ★ KIDS ACTIVITIES ★ FINE DINING ★ EVERYDAY ESSENTIALS ★ LOCAL ATTRACTIONS').",
+      "data_testid": "editorial-marquee"
+    },
+    {
+      "feature": "Deals Directory & Filter",
+      "description": "Category pills (All, Cafes, Kids, Dining, Essentials, Travel), search input, suburb/location selector, discount badges ('2-for-1', '25% OFF', 'Free Kids Meal'), deal card with image spotlight.",
+      "data_testid": "deals-directory"
+    },
+    {
+      "feature": "Deal Detail Modal / View",
+      "description": "High resolution header image, deal terms, location map badge, business bio, and 'Generate Digital Voucher' button generating unique barcode + QR string with live countdown timer.",
+      "data_testid": "deal-detail-container"
+    },
+    {
+      "feature": "Subscription Checkout (Stripe & Express Pay)",
+      "description": "AUD $49/year checkout form with tabbed payment options: Credit Card (Stripe inputs), Apple Pay mockup button, Google Pay mockup button, discount code input, and instant active membership activation.",
+      "data_testid": "checkout-subscription-form"
+    },
+    {
+      "feature": "Member Dashboard with Digital Card",
+      "description": "Interactive 3D tilting Member Card (Framer Motion tilt effect on hover/touch) displaying Member Name, Member Code, Active Status badge, Expiry Date, plus tabs for 'My Active Vouchers', 'Savings Calculator', and 'Saved Favorites'.",
+      "data_testid": "member-dashboard"
+    },
+    {
+      "feature": "Business Partner Deal Portal",
+      "description": "Form for local business owners to list deals ('Business Name', 'Category', 'Discount Offer', 'Voucher Code Pattern', 'Terms', 'Image URL'). Direct submit to admin queue.",
+      "data_testid": "business-deal-submit-form"
+    },
+    {
+      "feature": "Admin Dashboard",
+      "description": "Admin review panel to approve/reject pending business deals, edit existing deal entries, and view membership stats.",
+      "data_testid": "admin-deal-approval-panel"
+    },
+    {
+      "feature": "Auth Dialog / Page",
+      "description": "Email and Password authentication modal for Member Sign in / Business partner portal sign in.",
+      "data_testid": "auth-modal"
+    }
+  ],
+  "image_urls": {
+    "cafes": [
+      {
+        "url": "https://images.unsplash.com/photo-1534432182912-63863115e106?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Pastries and gourmet coffee spread at local cafe",
+        "category": "deal_card_cafe"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1564327367919-cb377ea6a88f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Freshly brewed cappuccino cup with art",
+        "category": "deal_card_coffee"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1516213335993-159eca2981af?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Latte art surrounded with breakfast sweets",
+        "category": "deal_hero_brunch"
+      }
+    ],
+    "kids_activities": [
+      {
+        "url": "https://images.unsplash.com/photo-1634608874538-443b84f7b06b?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Vibrant kids outdoor playground and slide",
+        "category": "deal_card_kids"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1593103916129-87e179a70c1f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Child smiling on playground swing",
+        "category": "deal_card_family"
+      }
+    ],
+    "dining": [
+      {
+        "url": "https://images.unsplash.com/photo-1600628421055-4d30de868b8f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Gourmet artisanal pizza sharing platter",
+        "category": "deal_card_dining"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1555072956-7758afb20e8f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Lifting delicious slice of mozzarella pizza",
+        "category": "deal_card_pizza"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600628421066-f6bda6a7b976?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Fresh woodfired pizza on wooden table",
+        "category": "deal_hero_restaurant"
+      }
+    ]
+  },
+  "motion_and_interactions": {
+    "smooth_scroll": "Lenis smooth scrolling integration or smooth CSS scroll behavior",
+    "hero_reveal": "Staggered line opacity & slide-up animation for main hero heading",
+    "member_card_3d": "Mouse tilt / perspective 3D transform on digital member card using framer-motion (rotateX, rotateY on mouse move)",
+    "micro_interactions": "Hover scale on deal cards (hover:-translate-y-1 transition-transform duration-200), button active press spring effect, voucher code copy toast via sonner",
+    "reduced_motion": "Wrap framer-motion with prefers-reduced-motion check or gentle fallback"
+  },
+  "testing_and_accessibility": {
+    "data_testid_rule": "ALL interactive components, buttons, inputs, filter pills, card titles, status badges MUST have explicit kebab-case data-testid attributes.",
+    "wcag_compliance": "High contrast ratio (>4.5:1) for text over sand/white backgrounds. Hover states must explicitly set text-white when dark bg is applied.",
+    "aria_labels": "Buttons with icons only must include aria-label and data-testid."
+  },
+  "instructions_to_main_agent": [
+    "Implement the complete frontend application in React using JavaScript (.js / .jsx) inside /app/frontend/src.",
+    "Replace the placeholder splash screen in App.js with full multi-page router setup (Landing, Deals, Deal Detail, Checkout, Dashboard, Business Portal, Admin, Auth).",
+    "Use Tailwind CSS utility classes aligned with our warm organic palette (#FBF8F3 background, #D95329 primary accent, #F3A72E marigold, #4E7A58 sage).",
+    "Ensure all user flows (filtering deals, claiming vouchers, subscribing via Stripe payment mockup, submitting business deals, admin approvals) work seamlessly in-memory and connect with FastAPI backend endpoints where applicable.",
+    "Include toast notifications using 'sonner' when claiming vouchers or completing checkout.",
+    "Ensure 3D digital member card component features interactive tilt and display of member barcode & QR code."
+  ]
+}
