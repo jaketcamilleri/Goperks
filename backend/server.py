@@ -12,15 +12,18 @@ from datetime import datetime, timezone, timedelta
 from typing import Annotated, Optional, List
 
 import bcrypt
+import httpx
 import jwt
 import stripe
+from html import escape
 from bson import ObjectId
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, BeforeValidator, ConfigDict, EmailStr
 from starlette.middleware.cors import CORSMiddleware
 
-from seed_data import SEED_DEALS
+from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
+from email_service import send_email, EMAIL_FROM_NAME
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -81,6 +84,9 @@ class Deal(BaseDocument):
     status: str = "approved"
     submitted_by: Optional[str] = None
     featured: bool = False
+    est_saving: float = 0.0
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     created_at: str = Field(default_factory=lambda: now_iso())
 
 
@@ -93,6 +99,10 @@ class Voucher(BaseDocument):
     code: str
     status: str = "active"
     expires_at: str
+    partner_id: Optional[str] = None
+    est_saving: float = 0.0
+    amount_saved: Optional[float] = None
+    redeemed_at: Optional[str] = None
     created_at: str = Field(default_factory=lambda: now_iso())
 
 
@@ -119,10 +129,28 @@ class DealIn(BaseModel):
     suburb: str = ""
     image_url: str = ""
     featured: bool = False
+    est_saving: float = Field(0.0, ge=0, le=10000)
 
 
 class StatusIn(BaseModel):
     status: str
+
+
+class ForgotIn(BaseModel):
+    email: EmailStr
+
+
+class ResetIn(BaseModel):
+    token: str
+    password: str = Field(min_length=6)
+
+
+class CodeIn(BaseModel):
+    code: str = Field(min_length=4, max_length=20)
+
+
+class RedeemIn(BaseModel):
+    amount_saved: Optional[float] = Field(None, ge=0, le=10000)
 
 
 class CheckoutIn(BaseModel):
@@ -202,6 +230,30 @@ def require_role(*roles):
     return dep
 
 
+async def geocode(suburb: str):
+    if not suburb or "multiple" in suburb.lower():
+        return None, None
+    try:
+        async with httpx.AsyncClient(timeout=6) as c:
+            r = await c.get("https://nominatim.openstreetmap.org/search",
+                            params={"q": f"{suburb}, Australia", "format": "json", "limit": 1, "countrycodes": "au"},
+                            headers={"User-Agent": "TinysVouchers/1.0"})
+        data = r.json()
+        if data:
+            return float(data[0]["lat"]), float(data[0]["lon"])
+    except Exception as e:
+        logger.warning("geocode failed for %s: %s", suburb, e)
+    return None, None
+
+
+async def with_coords(data: dict, previous: Optional[dict] = None) -> dict:
+    if previous and previous.get("suburb") == data.get("suburb") and previous.get("lat") is not None:
+        data["lat"], data["lng"] = previous["lat"], previous["lng"]
+    else:
+        data["lat"], data["lng"] = await geocode(data.get("suburb", ""))
+    return data
+
+
 async def activate_membership(user_id: str):
     doc = await db.users.find_one({"_id": oid(user_id)})
     if not doc:
@@ -269,6 +321,47 @@ async def logout(response: Response):
     return {"ok": True}
 
 
+@api.post("/auth/forgot-password")
+async def forgot_password(body: ForgotIn):
+    email = body.email.lower()
+    doc = await db.users.find_one({"email": email})
+    generic = {"ok": True, "message": "If that email has an account, a reset link is on its way."}
+    if not doc:
+        return generic
+    recent = await db.password_reset_tokens.find_one(
+        {"user_id": str(doc["_id"]), "created_at": {"$gt": datetime.now(timezone.utc) - timedelta(minutes=2)}})
+    if recent:
+        return generic
+    token = secrets.token_urlsafe(32)
+    await db.password_reset_tokens.insert_one({
+        "token": token, "user_id": str(doc["_id"]), "used": False,
+        "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=1)})
+    link = f"{os.environ['FRONTEND_URL'].rstrip('/')}/reset-password?token={token}"
+    html = (
+        '<table role="presentation" width="100%" style="background:#FBF8F3"><tr><td style="padding:32px;font-family:Georgia,serif;color:#1E2229">'
+        f'<h1 style="font-size:26px;margin:0 0 16px">Reset your password</h1>'
+        f'<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">Hi {escape(doc.get("name", "there"))}, we received a request to reset the password for your {escape(EMAIL_FROM_NAME)} account.</p>'
+        f'<p style="margin:28px 0"><a href="{escape(link)}" style="background:#D95329;color:#FBF8F3;padding:14px 26px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold">Choose a new password</a></p>'
+        '<p style="font-family:Arial,sans-serif;font-size:13px;color:#525B68">This link expires in 1 hour and can only be used once. If you didn\'t ask for this, you can ignore this email.</p>'
+        f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#818C9C">Sent by {escape(EMAIL_FROM_NAME)}. We never ask for your password or card details by email.</p>'
+        '</td></tr></table>')
+    await send_email(to=email, subject=f"Reset your {EMAIL_FROM_NAME} password", html=html)
+    return generic
+
+
+@api.post("/auth/reset-password")
+async def reset_password(body: ResetIn):
+    rec = await db.password_reset_tokens.find_one({"token": body.token, "used": False})
+    exp = rec.get("expires_at") if rec else None
+    if exp and exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if not rec or exp < datetime.now(timezone.utc):
+        raise HTTPException(400, "This reset link is invalid or has expired")
+    await db.users.update_one({"_id": oid(rec["user_id"])}, {"$set": {"password_hash": hash_password(body.password)}})
+    await db.password_reset_tokens.update_one({"_id": rec["_id"]}, {"$set": {"used": True}})
+    return {"ok": True}
+
+
 @api.get("/auth/me")
 async def me(user=Depends(current_user)):
     return user
@@ -292,10 +385,12 @@ async def refresh(request: Request, response: Response):
 
 # ---------- Public deals ----------
 @api.get("/deals")
-async def list_deals(category: Optional[str] = None, q: Optional[str] = None):
+async def list_deals(category: Optional[str] = None, q: Optional[str] = None, suburb: Optional[str] = None):
     query = {"status": "approved"}
     if category and category != "all":
         query["category"] = category
+    if suburb:
+        query["suburb"] = suburb
     if q:
         query["$or"] = [{f: {"$regex": q, "$options": "i"}} for f in ("title", "business_name", "suburb", "description")]
     docs = await db.deals.find(query).sort([("featured", -1), ("created_at", -1)]).to_list(200)
@@ -308,6 +403,12 @@ async def get_deal(deal_id: str):
     if not doc:
         raise HTTPException(404, "Deal not found")
     return Deal.from_mongo(doc).out()
+
+
+@api.get("/suburbs")
+async def list_suburbs():
+    subs = await db.deals.distinct("suburb", {"status": "approved"})
+    return sorted(s for s in subs if s)
 
 
 @api.get("/stats")
@@ -331,6 +432,7 @@ async def claim_voucher(deal_id: str, user=Depends(current_user)):
         return Voucher.from_mongo(existing).out()
     v = Voucher(user_id=user["id"], deal_id=deal_id, deal_title=deal["title"], business_name=deal["business_name"],
                 discount_label=deal["discount_label"], code=f"{rand_code(4)}-{rand_code(4)}",
+                partner_id=deal.get("submitted_by"), est_saving=deal.get("est_saving", 0),
                 expires_at=(datetime.now(timezone.utc) + timedelta(days=7)).isoformat())
     res = await db.vouchers.insert_one(v.to_mongo())
     v.id = str(res.inserted_id)
@@ -350,11 +452,60 @@ async def my_vouchers(user=Depends(current_user)):
 
 
 @api.post("/me/vouchers/{voucher_id}/redeem")
-async def redeem_voucher(voucher_id: str, user=Depends(current_user)):
-    res = await db.vouchers.update_one({"_id": oid(voucher_id), "user_id": user["id"], "status": "active"},
-                                       {"$set": {"status": "redeemed", "redeemed_at": now_iso()}})
-    if not res.matched_count:
+async def redeem_voucher(voucher_id: str, body: RedeemIn = RedeemIn(), user=Depends(current_user)):
+    v = await db.vouchers.find_one({"_id": oid(voucher_id), "user_id": user["id"], "status": "active"})
+    if not v:
         raise HTTPException(404, "Voucher not found or already used")
+    saved = body.amount_saved if body.amount_saved is not None else v.get("est_saving", 0)
+    await db.vouchers.update_one({"_id": v["_id"]}, {"$set": {"status": "redeemed", "redeemed_at": now_iso(), "amount_saved": saved}})
+    return {"ok": True}
+
+
+@api.get("/me/savings")
+async def my_savings(user=Depends(current_user)):
+    docs = await db.vouchers.find({"user_id": user["id"], "status": "redeemed"}).to_list(1000)
+    total = round(sum(d.get("amount_saved") or 0 for d in docs), 2)
+    by_business = {}
+    for d in docs:
+        by_business[d["business_name"]] = round(by_business.get(d["business_name"], 0) + (d.get("amount_saved") or 0), 2)
+    return {"total_saved": total, "redeemed_count": len(docs), "membership_price": 49.0,
+            "net": round(total - 49.0, 2), "by_business": [{"business_name": k, "saved": v} for k, v in by_business.items()]}
+
+
+# ---------- Partner counter check ----------
+async def find_partner_voucher(code: str, user: dict):
+    v = await db.vouchers.find_one({"code": code.strip().upper()})
+    if not v or (user["role"] != "admin" and v.get("partner_id") != user["id"]):
+        raise HTTPException(404, "No voucher with that code for your business")
+    return v
+
+
+@api.post("/partner/check")
+async def partner_check(body: CodeIn, user=Depends(require_role("business", "admin"))):
+    code = body.code.strip().upper()
+    if code.startswith("TV-"):
+        m = await db.users.find_one({"member_code": code})
+        if not m:
+            raise HTTPException(404, "No member with that card number")
+        info = user_out(m)
+        return {"type": "member", "member_name": info["name"].split(" ")[0], "member_code": code,
+                "status": info["membership_status"], "expires_at": info["membership_expires_at"]}
+    v = Voucher.from_mongo(await find_partner_voucher(code, user)).out()
+    if v["status"] == "active" and v["expires_at"] < now_iso():
+        v["status"] = "expired"
+    member = await db.users.find_one({"_id": oid(v["user_id"])})
+    return {"type": "voucher", "code": v["code"], "status": v["status"], "deal_title": v["deal_title"],
+            "discount_label": v["discount_label"], "expires_at": v["expires_at"], "redeemed_at": v.get("redeemed_at"),
+            "member_name": (member or {}).get("name", "Member").split(" ")[0]}
+
+
+@api.post("/partner/redeem")
+async def partner_redeem(body: CodeIn, user=Depends(require_role("business", "admin"))):
+    v = await find_partner_voucher(body.code, user)
+    if v["status"] != "active" or v["expires_at"] < now_iso():
+        raise HTTPException(400, "This voucher has already been used or has expired")
+    await db.vouchers.update_one({"_id": v["_id"]}, {"$set": {
+        "status": "redeemed", "redeemed_at": now_iso(), "amount_saved": v.get("est_saving", 0), "redeemed_by": user["id"]}})
     return {"ok": True}
 
 
@@ -363,7 +514,8 @@ async def redeem_voucher(voucher_id: str, user=Depends(current_user)):
 async def submit_deal(body: DealIn, user=Depends(require_role("business", "admin"))):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    d = Deal(**body.model_dump(exclude={"featured"}), status="pending", submitted_by=user["id"])
+    data = await with_coords(body.model_dump(exclude={"featured"}))
+    d = Deal(**data, status="pending", submitted_by=user["id"])
     res = await db.deals.insert_one(d.to_mongo())
     d.id = str(res.inserted_id)
     return d.out()
@@ -387,7 +539,7 @@ async def admin_deals(status: Optional[str] = None, _=Depends(require_role("admi
 async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    d = Deal(**body.model_dump(), status="approved", submitted_by=user["id"])
+    d = Deal(**(await with_coords(body.model_dump())), status="approved", submitted_by=user["id"])
     res = await db.deals.insert_one(d.to_mongo())
     d.id = str(res.inserted_id)
     return d.out()
@@ -397,9 +549,11 @@ async def admin_create_deal(body: DealIn, user=Depends(require_role("admin"))):
 async def admin_update_deal(deal_id: str, body: DealIn, _=Depends(require_role("admin"))):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    res = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": body.model_dump()}, return_document=True)
-    if not res:
+    prev = await db.deals.find_one({"_id": oid(deal_id)})
+    if not prev:
         raise HTTPException(404, "Deal not found")
+    data = await with_coords(body.model_dump(), prev)
+    res = await db.deals.find_one_and_update({"_id": prev["_id"]}, {"$set": data}, return_document=True)
     return Deal.from_mongo(res).out()
 
 
@@ -521,6 +675,10 @@ async def startup():
     await db.deals.create_index([("status", 1), ("category", 1)])
     await db.vouchers.create_index([("user_id", 1), ("deal_id", 1)])
     await db.payment_transactions.create_index("session_id", unique=True)
+    await db.password_reset_tokens.create_index("expires_at", expireAfterSeconds=0)
+    await db.password_reset_tokens.create_index("token")
+    await db.vouchers.create_index("code")
+    await db.users.create_index("member_code")
     seeds = [
         (os.environ["ADMIN_EMAIL"], os.environ["ADMIN_PASSWORD"], "Admin", "admin", None, False),
         ("member@tinysvouchers.com.au", "Member!2026", "Demo Member", "member", None, True),
@@ -537,6 +695,13 @@ async def startup():
             await db.users.insert_one(doc)
     if await db.deals.count_documents({}) == 0:
         await db.deals.insert_many([Deal(**d).to_mongo() for d in SEED_DEALS])
+    for d in SEED_DEALS:
+        await db.deals.update_one({"title": d["title"], "lat": {"$exists": False}},
+                                  {"$set": {"lat": d["lat"], "lng": d["lng"], "est_saving": d["est_saving"]}})
+    demo_biz = await db.users.find_one({"email": "business@tinysvouchers.com.au"})
+    if demo_biz:
+        await db.deals.update_many({"business_name": {"$in": DEMO_BUSINESS_DEALS}, "submitted_by": None},
+                                   {"$set": {"submitted_by": str(demo_biz["_id"])}})
 
 
 @app.on_event("shutdown")

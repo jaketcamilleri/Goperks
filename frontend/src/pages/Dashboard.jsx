@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { api, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { MemberCard } from "@/components/MemberCard";
+import { SavingsTracker } from "@/components/SavingsTracker";
 import { MaskLines, Eyebrow } from "@/components/Reveal";
 
 function VoucherRow({ v, onRedeem }) {
@@ -29,13 +30,14 @@ function VoucherRow({ v, onRedeem }) {
 export default function Dashboard() {
   const { user } = useAuth();
   const [vouchers, setVouchers] = useState([]);
+  const [tick, setTick] = useState(0);
   const active = user?.membership_status === "active";
 
   const load = () => api.get("/me/vouchers").then((r) => setVouchers(Array.isArray(r.data) ? r.data : [])).catch(() => setVouchers([]));
   useEffect(() => { load(); }, []);
 
   const redeem = async (id) => {
-    try { await api.post(`/me/vouchers/${id}/redeem`); toast.success("Enjoy your saving!"); load(); }
+    try { await api.post(`/me/vouchers/${id}/redeem`); toast.success("Enjoy your saving!"); load(); setTick((t) => t + 1); }
     catch (e) { toast.error(formatErr(e)); }
   };
 
@@ -58,6 +60,7 @@ export default function Dashboard() {
               <Link to="/join" data-testid="dashboard-join-btn" className="mt-5 inline-flex rounded-full bg-[#D95329] px-6 py-3 font-semibold text-[#FBF8F3]">Activate membership</Link>
             </div>
           )}
+          <div className="mt-8"><SavingsTracker refreshKey={tick} /></div>
         </div>
         <div className="lg:col-span-6 lg:col-start-7">
           <div className="flex items-end justify-between">

@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CATEGORIES } from "@/lib/api";
 
-const EMPTY = { title: "", business_name: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false };
+const EMPTY = { title: "", business_name: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "" };
 
 export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showFeatured = false, busy = false }) {
   const [f, setF] = useState({ ...EMPTY, ...(initial || {}) });
@@ -15,7 +15,7 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
     <form
       className="grid gap-5 sm:grid-cols-2"
       data-testid="deal-form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit(f); }}
+      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...f, est_saving: Number(f.est_saving) || 0 }); }}
     >
       <div className="sm:col-span-2">
         <Label>Deal headline</Label>
@@ -47,7 +47,11 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
         <Label>Terms & conditions</Label>
         <Textarea value={f.terms} onChange={set("terms")} className="mt-1.5 min-h-[72px] rounded-xl border-[#E0D7C3] bg-white" data-testid="deal-form-terms" />
       </div>
-      <div className="sm:col-span-2">
+      <div>
+        <Label>Typical member saving (A$)</Label>
+        <Input type="number" min="0" step="0.5" value={f.est_saving} onChange={set("est_saving")} placeholder="e.g. 8" className={field} data-testid="deal-form-saving" />
+      </div>
+      <div>
         <Label>Image URL</Label>
         <Input value={f.image_url} onChange={set("image_url")} placeholder="https://…" className={field} data-testid="deal-form-image" />
       </div>

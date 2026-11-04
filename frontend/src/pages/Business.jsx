@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { api, catLabel, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { DealForm } from "@/components/DealForm";
+import { PartnerChecker } from "@/components/PartnerChecker";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 
 const STATUS_STYLE = { pending: "bg-[#FEF4DC] text-[#7A5310]", approved: "bg-[#EBF3EC] text-[#2F5A3A]", rejected: "bg-[#FDF0EC] text-[#B63F18]" };
@@ -58,6 +59,8 @@ export default function Business() {
       <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
         lines={[<>Share a deal,</>, <em key="x" className="font-normal italic text-[#D95329]">fill your tables.</em>]} />
       {!isPartner ? <Pitch /> : (
+        <>
+        <div className="mt-12"><PartnerChecker /></div>
         <div className="mt-12 grid gap-12 lg:grid-cols-12">
           <div className="rounded-[32px] border border-[#E0D7C3] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
             <h2 className="font-display text-2xl font-semibold">Submit a new deal</h2>
@@ -78,6 +81,7 @@ export default function Business() {
             )}
           </div>
         </div>
+        </>
       )}
     </div>
   );

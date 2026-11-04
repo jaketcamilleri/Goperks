@@ -65,6 +65,7 @@ export default function Auth({ mode }) {
           )}
           <div><Label>Email</Label><Input required type="email" value={f.email} onChange={set("email")} className={field} data-testid="auth-email-input" /></div>
           <div><Label>Password</Label><Input required type="password" minLength={6} value={f.password} onChange={set("password")} className={field} data-testid="auth-password-input" /></div>
+          {isLogin && <Link to="/forgot-password" className="-mt-2 block text-right text-sm font-semibold text-[#B63F18]" data-testid="forgot-password-link">Forgot password?</Link>}
           {err && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#B63F18]" data-testid="auth-error">{err}</p>}
           <button disabled={busy} type="submit" data-testid="auth-submit-btn"
             className="w-full rounded-full bg-[#D95329] py-4 font-semibold text-[#FBF8F3] transition-[background-color,transform] hover:bg-[#B63F18] active:scale-[0.98] disabled:opacity-60">

@@ -21,9 +21,15 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Business portal (register as business, submit deals, see status)
 - Admin control room (stats, approve/reject, create/edit/delete deals)
 
+## Implemented (2026-11-04, iteration 2)
+- Partner code checker (business portal + admin): verify voucher codes (own deals only) or member card numbers, mark vouchers redeemed
+- Password reset by email (Emergent managed Resend, 1-hour single-use link, 2-min resend throttle)
+- Suburb filter + list/map toggle on deals (Leaflet/OpenStreetMap; deals auto-geocoded from suburb via Nominatim)
+- Savings tracker on member dashboard (each deal has a typical member saving; progress towards $49)
+
 ## Backlog
-- P1: Forgot/reset password email; partner-side voucher verification screen; favourites
-- P2: Suburb/location filter + map; savings tracker; email receipts/renewal reminders; image upload for deals
+- P1: Favourites; member-entered actual saving amount
+- P2: Map marker clustering; email receipts/renewal reminders; image upload for deals
 
 ## Next tasks
 Claim Stripe sandbox before going live; replace placeholder seed deals with real partners.

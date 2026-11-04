@@ -15,6 +15,7 @@ import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Business from "@/pages/Business";
 import Admin from "@/pages/Admin";
+import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
 
 function Layout() {
   return (
@@ -42,6 +43,8 @@ function App() {
             <Route path="/payment/cancel" element={<PaymentCancel />} />
             <Route path="/login" element={<Auth mode="login" />} />
             <Route path="/register" element={<Auth mode="register" />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/business" element={<Business />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />

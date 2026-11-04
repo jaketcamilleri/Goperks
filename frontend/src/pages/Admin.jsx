@@ -4,6 +4,7 @@ import { Check, X, Pencil, Trash2, Plus } from "lucide-react";
 import { api, catLabel, formatErr } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DealForm } from "@/components/DealForm";
+import { PartnerChecker } from "@/components/PartnerChecker";
 import { StatusPill } from "@/pages/Business";
 import { Eyebrow } from "@/components/Reveal";
 
@@ -70,6 +71,7 @@ export default function Admin() {
         <Stat id="live" label="Live deals" value={stats.live_deals} />
         <Stat id="vouchers" label="Vouchers" value={stats.vouchers} />
       </div>
+      <div className="mt-10"><PartnerChecker /></div>
       <div className="mt-12 flex gap-2">
         {TABS.map((t) => (
           <button key={t} onClick={() => setTab(t)} data-testid={`admin-tab-${t}`}
