@@ -9,6 +9,7 @@ import { StatusPill } from "@/pages/Business";
 import { Eyebrow } from "@/components/Reveal";
 import { AdminPeople } from "@/components/AdminPeople";
 import { RevenueChart } from "@/components/RevenueChart";
+import { TopDeals } from "@/components/TopDeals";
 
 const SECTIONS = [{ k: "deals", l: "Deals" }, { k: "member", l: "Members" }, { k: "business", l: "Businesses" }];
 
@@ -87,6 +88,7 @@ export default function Admin() {
         <Stat id="redeemed" label="Redeemed" value={stats.redeemed} />
       </div>
       <RevenueChart />
+      <TopDeals />
       <div className="mt-10"><PartnerChecker /></div>
       <div className="mt-12 flex flex-wrap gap-2 border-b border-[#C2DEDA] pb-4" data-testid="admin-sections">
         {SECTIONS.map((s) => (

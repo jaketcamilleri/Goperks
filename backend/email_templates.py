@@ -102,14 +102,41 @@ def business_rejected_email(name: str, business: str, note: str):
     return f"Your {EMAIL_FROM_NAME} partner application", _layout("About your application", body, "Visit Go Perks", "/")
 
 
-def new_applicant_email(name: str, business: str, email: str):
+def _btn(label: str, url: str, bg: str, fg: str) -> str:
+    return (f'<a href="{escape(url)}" style="display:inline-block;background:{bg};color:{fg};padding:14px 26px;border-radius:999px;'
+            f'text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;margin:0 8px 8px 0">{escape(label)}</a>')
+
+
+def new_applicant_email(name: str, business: str, email: str, token: str):
     row = lambda k, v: (f'<tr><td style="padding:6px 16px 6px 0;font-family:Arial,sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">{k}</td>'
                         f'<td style="padding:6px 0;font-family:Arial,sans-serif;font-size:15px;color:#17434C"><b>{escape(v)}</b></td></tr>')
     body = (_p("A new business has applied to become a Go Perks partner and is waiting for your approval.")
             + '<table role="presentation" style="background:#FFFFFF;border-radius:14px;padding:12px 16px;margin:16px 0">'
             + row("Business", business) + row("Contact", name) + row("Email", email) + '</table>'
-            + _p("They can't submit deals until you approve them. Open the control room and go to the Businesses tab."))
+            + _p("They can't submit deals until you approve them. Decide straight from here (you'll confirm on the next screen):")
+            + '<p style="margin:18px 0 6px">'
+            + _btn("Approve", _app_url(f"/admin/decide?token={token}&action=approve"), "#4E7A58", "#FFFFFF")
+            + _btn("Reject", _app_url(f"/admin/decide?token={token}&action=reject"), "#FDF0EC", "#9A4024")
+            + '</p>' + _p("These buttons work once and expire after 14 days."))
     return f"New partner application: {business}", _layout("New partner application", body, "Review applicants", "/admin")
+
+
+def weekly_digest_email(s: dict):
+    stat = lambda label, value: (
+        '<td style="padding:14px;background:#FFFFFF;border-radius:14px;width:33%;vertical-align:top">'
+        f'<p style="margin:0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#5E7F84">{label}</p>'
+        f'<p style="margin:6px 0 0;font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#17434C">{escape(str(value))}</p></td>')
+    pending = "".join(f'<li style="margin:0 0 6px">{escape(b)}</li>' for b in s["pending_names"][:10])
+    pending_html = (_p(f"<b>{s['pending_businesses']} partner{'s' if s['pending_businesses'] != 1 else ''} waiting for approval:</b>")
+                    + f'<ul style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#17434C;margin:0 0 12px">{pending}</ul>') \
+        if s["pending_businesses"] else _p("No partners are waiting for approval. You're all caught up.")
+    body = (_p(f"Here's how Go Perks went from {escape(s['from'])} to {escape(s['to'])}.")
+            + '<table role="presentation" cellspacing="8" style="width:100%;max-width:520px;margin:8px -8px 12px"><tr>'
+            + stat("New members", s["members"]) + stat("Gifts sold", s["gifts"]) + stat("Revenue", f"A${s['revenue']:,.0f}")
+            + '</tr><tr>' + stat("Sign-ups", s["signups"]) + stat("Deals redeemed", s["redeemed"]) + stat("Deals to review", s["pending_deals"])
+            + '</tr></table>' + pending_html)
+    return f"Your Go Perks week: {s['members']} new member{'s' if s['members'] != 1 else ''}, A${s['revenue']:,.0f}", \
+        _layout("Your Monday summary", body, "Open the control room", "/admin")
 
 
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):

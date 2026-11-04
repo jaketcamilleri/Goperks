@@ -55,6 +55,7 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Gifts: optional delivery date (today..+12 months, Melbourne date). Future gifts stored with send_on/email_sent=false; cron gift-deliveries 7am Melbourne -> /api/cron/gift-deliveries.
 - Member card + vouchers show real QR codes (qrcode.react); partner checker has camera Scan button (html5-qrcode) that fills and checks the code.
 - 2026-11-04: New business applicant alert email to SUPER_ADMIN_EMAIL (jaketcamilleri@gmail.com) on business registration. Admin control room has a last-6-months chart (GET /api/admin/monthly: new paid memberships, gifts, revenue per Melbourne month).
+- 2026-11-04: Applicant email has Approve/Reject buttons -> /admin/decide?token (signed 14-day biz_decision JWT, confirm step, one-time: only works while pending; GET/POST /api/admin/decision). Top 5 most-redeemed deals leaderboard per month (GET /api/admin/top-deals?month=YYYY-MM). Weekly owner digest email Mondays 8am Melbourne (cron weekly-digest -> /api/cron/weekly-digest): new members, gifts, revenue, sign-ups, redemptions, deals to review, pending partners.
 
 ## Backlog
 - P1: Favourites; member-entered actual saving amount

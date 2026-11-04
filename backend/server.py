@@ -29,7 +29,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
-from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email, business_rejected_email, new_applicant_email
+from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email, business_rejected_email, new_applicant_email, weekly_digest_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -394,7 +394,7 @@ async def register(body: RegisterIn, response: Response):
     set_auth_cookies(response, str(res.inserted_id))
     if body.role == "business":
         await db.users.update_one({"_id": res.inserted_id}, {"$set": {"business_status": "pending"}})
-        asyncio.create_task(send_applicant_alert(body.name, body.business_name, email))
+        asyncio.create_task(send_applicant_alert(str(res.inserted_id), body.name, body.business_name, email))
     return user_out(await db.users.find_one({"_id": res.inserted_id}))
 
 
@@ -859,22 +859,90 @@ async def admin_users(role: Optional[str] = None, _=Depends(require_role("admin"
 
 @api.post("/admin/businesses/{user_id}/status")
 async def admin_business_status(user_id: str, body: StatusIn, _=Depends(require_role("admin"))):
-    if body.status not in ("approved", "rejected"):
+    return await set_business_status(user_id, body.status, body.note)
+
+
+async def set_business_status(user_id: str, status: str, note: Optional[str], only_pending: bool = False):
+    if status not in ("approved", "rejected"):
         raise HTTPException(400, "Invalid status")
-    prev = await db.users.find_one_and_update({"_id": oid(user_id), "role": "business"}, {"$set": {"business_status": body.status}})
+    q = {"_id": oid(user_id), "role": "business", **({"business_status": "pending"} if only_pending else {})}
+    prev = await db.users.find_one_and_update(q, {"$set": {"business_status": status}})
     if not prev:
-        raise HTTPException(404, "Business not found")
-    if prev.get("business_status") != body.status:
-        if body.status == "approved":
+        raise HTTPException(409 if only_pending else 404, "This link has already been used." if only_pending else "Business not found")
+    if prev.get("business_status") != status:
+        if status == "approved":
             asyncio.create_task(send_partner_welcome(prev["email"], prev.get("name", ""), prev.get("business_name") or "Your business"))
         else:
-            asyncio.create_task(send_business_rejected(prev, body.note or ""))
+            asyncio.create_task(send_business_rejected(prev, note or ""))
     return user_out(await db.users.find_one({"_id": prev["_id"]}))
 
 
-async def send_applicant_alert(name: str, business: str, email: str):
+class DecisionIn(BaseModel):
+    token: str
+    action: str
+    note: Optional[str] = Field(None, max_length=500)
+
+
+async def decision_business(token: str) -> dict:
     try:
-        subject, html = new_applicant_email(name, business, email)
+        payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(410, "This link has expired. Please decide from the control room instead.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(400, "This link isn't valid.")
+    if payload.get("type") != "biz_decision":
+        raise HTTPException(400, "This link isn't valid.")
+    doc = await db.users.find_one({"_id": oid(payload["sub"]), "role": "business"})
+    if not doc:
+        raise HTTPException(404, "This business no longer exists.")
+    return doc
+
+
+def decision_out(doc: dict) -> dict:
+    return {"name": doc.get("name"), "email": doc["email"], "business_name": doc.get("business_name"),
+            "business_status": doc.get("business_status"), "applied_at": doc.get("created_at")}
+
+
+@api.get("/admin/decision")
+async def get_decision(token: str):
+    return decision_out(await decision_business(token))
+
+
+@api.post("/admin/decision")
+async def post_decision(body: DecisionIn):
+    doc = await decision_business(body.token)
+    if doc.get("business_status") != "pending":
+        raise HTTPException(409, f"Already {doc.get('business_status')} — this link has been used.")
+    status = {"approve": "approved", "reject": "rejected"}.get(body.action)
+    if not status:
+        raise HTTPException(400, "Invalid action")
+    await set_business_status(str(doc["_id"]), status, body.note, only_pending=True)
+    return decision_out(await db.users.find_one({"_id": doc["_id"]}))
+
+
+@api.get("/admin/top-deals")
+async def admin_top_deals(month: Optional[str] = None, _=Depends(require_role("admin"))):
+    tz = ZoneInfo("Australia/Melbourne")
+    try:
+        start = datetime.strptime(month, "%Y-%m").replace(tzinfo=tz) if month else datetime.now(tz).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    except ValueError:
+        raise HTTPException(400, "Month must look like 2026-11")
+    end = (start + timedelta(days=32)).replace(day=1)
+    rng = {"$gte": start.astimezone(timezone.utc).isoformat(), "$lt": end.astimezone(timezone.utc).isoformat()}
+    rows = await db.vouchers.aggregate([
+        {"$match": {"status": "redeemed", "redeemed_at": rng}},
+        {"$group": {"_id": "$deal_id", "redeemed": {"$sum": 1}, "saved": {"$sum": {"$ifNull": ["$amount_saved", 0]}},
+                    "title": {"$first": "$deal_title"}, "business": {"$first": "$business_name"}}},
+        {"$sort": {"redeemed": -1, "saved": -1}}, {"$limit": 5}]).to_list(5)
+    return {"month": start.strftime("%Y-%m"), "deals": [
+        {"deal_id": r["_id"], "title": r.get("title"), "business_name": r.get("business"),
+         "redeemed": r["redeemed"], "saved": round(r["saved"], 2)} for r in rows]}
+
+
+async def send_applicant_alert(user_id: str, name: str, business: str, email: str):
+    try:
+        token = make_token(user_id, "biz_decision", timedelta(days=14))
+        subject, html = new_applicant_email(name, business, email, token)
         await send_email(to=os.environ["SUPER_ADMIN_EMAIL"], subject=subject, html=html)
     except Exception as e:
         logger.warning("applicant alert failed for %s: %s", email, e)
@@ -1052,6 +1120,51 @@ def verify_cron(request: Request):
     secret = os.environ.get("WEBHOOK_CRON_SECRET", "")
     if not secret or not auth.startswith("Bearer ") or not hmac.compare_digest(auth[7:], secret):
         raise HTTPException(401, "Unauthorized")
+
+
+async def run_weekly_digest():
+    tz = ZoneInfo("Australia/Melbourne")
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=7)
+    rng = {"$gte": start.isoformat(), "$lt": end.isoformat()}
+    paid = await db.payment_transactions.find({"payment_status": "paid", "updated_at": rng}, {"amount": 1, "kind": 1}).to_list(100000)
+    pending = await db.users.find({"role": "business", "business_status": "pending"}, {"business_name": 1, "name": 1}).to_list(500)
+    s = {
+        "from": start.astimezone(tz).strftime("%a %-d %b"), "to": end.astimezone(tz).strftime("%a %-d %b"),
+        "members": sum(1 for p in paid if p.get("kind") != "gift"),
+        "gifts": sum(1 for p in paid if p.get("kind") == "gift"),
+        "revenue": round(sum(p.get("amount") or 0 for p in paid), 2),
+        "signups": await db.users.count_documents({"created_at": rng}),
+        "redeemed": await db.vouchers.count_documents({"status": "redeemed", "redeemed_at": rng}),
+        "pending_deals": await db.deals.count_documents({"status": "pending"}),
+        "pending_businesses": len(pending),
+        "pending_names": [p.get("business_name") or p.get("name") or "Unnamed business" for p in pending],
+    }
+    subject, html = weekly_digest_email(s)
+    try:
+        await send_email(to=os.environ["SUPER_ADMIN_EMAIL"], subject=subject, html=html)
+        logger.info("weekly digest sent")
+    except Exception as e:
+        logger.warning("weekly digest failed: %s", e)
+
+
+@api.post("/cron/weekly-digest")
+async def cron_weekly_digest(request: Request):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    verify_cron(request)
+    try:
+        envelope = await request.json()
+    except Exception:
+        envelope = None
+    if envelope is not None and not isinstance(envelope, dict):
+        raise HTTPException(400, "Invalid body")
+    run_id = request.headers.get("X-Webhook-Id") or (envelope or {}).get("run_id") or now_iso()
+    try:
+        await db.cron_runs.insert_one({"_id": f"digest:{run_id}", "created_at": now_iso()})
+    except Exception:
+        return {"status": "duplicate"}
+    asyncio.create_task(run_weekly_digest())
+    return {"status": "accepted"}
 
 
 @api.post("/cron/gift-deliveries")

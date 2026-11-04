@@ -15,3 +15,11 @@ crons:
     method: POST
     # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
     enabled: true
+  - name: weekly-digest
+    description: "Emails the owner a Monday 8am summary of new members, revenue and partners awaiting approval"
+    cron: "0 8 * * 1"
+    timezone: "Australia/Melbourne"
+    endpoint: "{{BASE_URL}}/api/cron/weekly-digest"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true

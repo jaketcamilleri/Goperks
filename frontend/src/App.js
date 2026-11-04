@@ -21,6 +21,7 @@ import { AuthCallback } from "@/components/GoogleAuth";
 import GiftPage from "@/pages/Gift";
 import StickerPage from "@/pages/Sticker";
 import RedeemGift from "@/pages/RedeemGift";
+import AdminDecide from "@/pages/AdminDecide";
 
 function Layout() {
   return (
@@ -53,6 +54,7 @@ function AppRoutes() {
             <Route path="/business" element={<Business />} />
             <Route path="/business/sticker" element={<ProtectedRoute roles={["business", "admin"]}><StickerPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin/decide" element={<AdminDecide />} />
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
           </Route>
         </Routes>
