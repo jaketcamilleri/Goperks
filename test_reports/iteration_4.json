@@ -1,0 +1,34 @@
+{
+  "summary": "Tested Deals Near Me + Admin Team Roles (staff) features. Backend: new /app/backend/tests/test_team_staff.py (16 tests) covers staff creation via POST /api/admin/users, team listing, staff 403 on members/payments/monthly/create-user/patch-user/bulk-delete/remove-staff, staff 200 on stats (no revenue/members/active_members/gifts_sold keys), deals, businesses, top-deals, status changes, and staff session revocation after removal. Full regression: 100 passed, 1 skipped. Frontend (desktop 1920 + mobile 390): Deals page near-me-btn grants geolocation via Playwright permissions (Melbourne CBD), shows near-me-note, renders deal-distance-{id} chips (10/13 seed deals have lat/lng), toggles cleanly to clear state, shows near-me-error on permission denial, and works at 390px. Admin shell: owner sees Members/Payments/Team nav + revenue cards; staff login succeeds via /admin, sidebar shows exactly Overview/Deals/Businesses/Check-a-code (no members/payments/team), Overview hides all four money cards (revenue/members/active_members/gifts_sold) while Top deals widget renders, direct URLs /admin/members, /admin/payments, /admin/team all render admin-owner-only block for staff, Deals page has no deals-bulk-delete button, Businesses page has no add-business-btn. Main-site navbar shows 'Admin' link for staff (verified by screenshot). Created staff and removed via API cleanup.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_team_staff.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_business_profile.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/team_staff.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 1706 lines — still worth splitting into routers (admin_users, admin_deals, admin_businesses, team, payments). Prior iterations already flagged this.",
+    "admin_remove_staff uses db.users.delete_one directly; on removal the staff's active refresh cookie is invalidated only because /auth/me returns 401 when the user record is gone — explicit session/token revocation would be safer if sessions are ever persisted.",
+    "AdminShell NAV filtering by ownerOnly is correct, but the route guards for /admin/members, /admin/payments, /admin/team rely on the OwnerOnly wrapper rendered inside the page component rather than route-level gates — fine today but easy to forget on a new owner-only page.",
+    "sortNearby uses a numeric subtract of booleans (b.open_now === true) - (a.open_now === true) which is clean, but deals.map mutates source objects via spread each render; harmless but worth memoising if the deals list grows."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_team_staff.py (new)"
+  ],
+  "success_rate": {"backend": "100% (100 passed, 1 intentional skip; 16/16 new staff tests)", "frontend": "100% on near-me + staff admin smoke"},
+  "test_credentials": "Seed creds from /app/memory/test_credentials.md. Created TEST staff test_staff_ui_dd111d@example.com (removed via API) and transient test_staff_*/test_staff_rm_* staff users via pytest. Seed admin/member/business accounts untouched; jaketcamilleri@gmail.com business untouched.",
+  "seed_data_creation": "A couple of 'TEST_ staff toggle ...' deals created and immediately deleted in bulk by the staff-status test. Transient test_staff_* users are deleted by the fixture + cleanup. No seed data mutated.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Near-me geolocation is tested via Playwright context.grant_permissions(['geolocation']) + set_geolocation on origin https://localperks-club--6v3ynbnl.preview.emergentagent.com. Staff tests live in /app/backend/tests/test_team_staff.py; sidebar testid for Check-a-code is admin-nav-check (note: NAV entry specifies id:'check'). AddPersonDialog testids: add-person-name/email/password/submit; staff dialog uses role='staff'. Owner-only sections guarded via OwnerOnly component rendering [data-testid='admin-owner-only'].",
+  "rca of the issue": "No defects found."
+}
