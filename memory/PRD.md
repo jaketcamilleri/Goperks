@@ -42,7 +42,8 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Gift a membership: /gift form (recipient name, email, note) -> Stripe one-time A$49 (lookup membership_gift_aud) -> gift code emailed to recipient + shown to buyer; /redeem-gift claims it and activates 12 months
 
 ## Business rules
-- Each deal can be redeemed once per member per membership year (term = membership_expires_at - 365 days). Enforced on claim, member self-redeem and partner redeem; deal page shows "used this year" state.
+- Each deal can be redeemed once per member per membership year (term = membership_expires_at - 365 days). Enforced on claim, member self-redeem, partner voucher redeem and partner card redeem (/api/partner/redeem-card); deal page shows "used this year" state.
+- Auth: email/password + Emergent Google sign-in (/api/auth/google exchanges session_id, matches by email, issues same JWT cookies). Refresh cookie 30 days.
 
 ## Backlog
 - P1: Favourites; member-entered actual saving amount

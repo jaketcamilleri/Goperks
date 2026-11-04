@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
@@ -17,6 +17,7 @@ import Dashboard from "@/pages/Dashboard";
 import Business from "@/pages/Business";
 import Admin from "@/pages/Admin";
 import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
+import { AuthCallback } from "@/components/GoogleAuth";
 import GiftPage from "@/pages/Gift";
 import RedeemGift from "@/pages/RedeemGift";
 
@@ -30,13 +31,10 @@ function Layout() {
   );
 }
 
-function App() {
+function AppRoutes() {
+  const location = useLocation();
+  if (location.hash?.includes("session_id=")) return <AuthCallback />;
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <FavoritesProvider>
-        <SmoothScroll />
-        <Toaster position="top-center" richColors />
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Landing />} />
@@ -56,6 +54,17 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
           </Route>
         </Routes>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <FavoritesProvider>
+        <SmoothScroll />
+        <Toaster position="top-center" richColors />
+        <AppRoutes />
         </FavoritesProvider>
       </AuthProvider>
     </BrowserRouter>

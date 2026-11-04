@@ -155,6 +155,15 @@ class CodeIn(BaseModel):
     code: str = Field(min_length=4, max_length=20)
 
 
+class CardRedeemIn(BaseModel):
+    member_code: str = Field(min_length=4, max_length=20)
+    deal_id: str
+
+
+class GoogleSessionIn(BaseModel):
+    session_id: str = Field(min_length=4, max_length=500)
+
+
 class RedeemIn(BaseModel):
     amount_saved: Optional[float] = Field(None, ge=0, le=10000)
 
@@ -192,8 +201,8 @@ def make_token(user_id, kind, delta):
 def set_auth_cookies(response: Response, user_id: str):
     response.set_cookie("access_token", make_token(user_id, "access", timedelta(minutes=15)),
                         httponly=True, secure=True, samesite="none", max_age=900, path="/")
-    response.set_cookie("refresh_token", make_token(user_id, "refresh", timedelta(days=7)),
-                        httponly=True, secure=True, samesite="none", max_age=604800, path="/")
+    response.set_cookie("refresh_token", make_token(user_id, "refresh", timedelta(days=30)),
+                        httponly=True, secure=True, samesite="none", max_age=2592000, path="/")
 
 
 def rand_code(n=8):
@@ -352,7 +361,7 @@ async def login(body: LoginIn, request: Request, response: Response):
     if attempt and attempt.get("count", 0) >= 5 and attempt.get("locked_until", "") > now_iso():
         raise HTTPException(429, "Too many attempts. Try again in 15 minutes.")
     doc = await db.users.find_one({"email": email})
-    if not doc or not verify_password(body.password, doc["password_hash"]):
+    if not doc or not doc.get("password_hash") or not verify_password(body.password, doc["password_hash"]):
         count = (attempt or {}).get("count", 0) + 1
         await db.login_attempts.update_one({"identifier": ident}, {"$set": {
             "count": count, "locked_until": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()}}, upsert=True)
@@ -367,6 +376,28 @@ async def logout(response: Response):
     response.delete_cookie("access_token", path="/", secure=True, samesite="none")
     response.delete_cookie("refresh_token", path="/", secure=True, samesite="none")
     return {"ok": True}
+
+
+@api.post("/auth/google")
+async def google_login(body: GoogleSessionIn, response: Response):
+    async with httpx.AsyncClient(timeout=15) as c:
+        r = await c.get("https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                        headers={"X-Session-ID": body.session_id})
+    if r.status_code != 200:
+        raise HTTPException(401, "Google sign-in failed, please try again")
+    data = r.json()
+    email = (data.get("email") or "").lower()
+    if not email:
+        raise HTTPException(401, "Google sign-in failed, please try again")
+    doc = await db.users.find_one({"email": email})
+    if not doc:
+        u = User(email=email, name=data.get("name") or email.split("@")[0], role="member")
+        res = await db.users.insert_one({**u.to_mongo(), "picture": data.get("picture"), "auth_provider": "google"})
+        doc = await db.users.find_one({"_id": res.inserted_id})
+    elif data.get("picture") and not doc.get("picture"):
+        await db.users.update_one({"_id": doc["_id"]}, {"$set": {"picture": data["picture"]}})
+    set_auth_cookies(response, str(doc["_id"]))
+    return user_out(doc)
 
 
 @api.post("/auth/forgot-password")
@@ -564,8 +595,15 @@ async def partner_check(body: CodeIn, user=Depends(require_role("business", "adm
         if not m:
             raise HTTPException(404, "No member with that card number")
         info = user_out(m)
+        q = {"status": "approved"} if user["role"] == "admin" else {"status": "approved", "submitted_by": user["id"]}
+        deals = await db.deals.find(q).sort("title", 1).to_list(200)
+        rows = []
+        for d in deals:
+            used = await used_this_term(info, str(d["_id"]))
+            rows.append({"deal_id": str(d["_id"]), "title": d["title"], "discount_label": d["discount_label"],
+                         "used_this_term": bool(used), "used_at": (used or {}).get("redeemed_at")})
         return {"type": "member", "member_name": info["name"].split(" ")[0], "member_code": code,
-                "status": info["membership_status"], "expires_at": info["membership_expires_at"]}
+                "status": info["membership_status"], "expires_at": info["membership_expires_at"], "deals": rows}
     v = Voucher.from_mongo(await find_partner_voucher(code, user)).out()
     if v["status"] == "active" and v["expires_at"] < now_iso():
         v["status"] = "expired"
@@ -573,6 +611,29 @@ async def partner_check(body: CodeIn, user=Depends(require_role("business", "adm
     return {"type": "voucher", "code": v["code"], "status": v["status"], "deal_title": v["deal_title"],
             "discount_label": v["discount_label"], "expires_at": v["expires_at"], "redeemed_at": v.get("redeemed_at"),
             "member_name": (member or {}).get("name", "Member").split(" ")[0]}
+
+
+@api.post("/partner/redeem-card")
+async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_role("business", "admin"))):
+    m = await db.users.find_one({"member_code": body.member_code.strip().upper()})
+    if not m:
+        raise HTTPException(404, "No member with that card number")
+    member = user_out(m)
+    if member["membership_status"] != "active":
+        raise HTTPException(400, "This membership isn't active")
+    deal = await db.deals.find_one({"_id": oid(body.deal_id), "status": "approved"})
+    if not deal or (user["role"] != "admin" and deal.get("submitted_by") != user["id"]):
+        raise HTTPException(404, "Deal not found for your business")
+    if await used_this_term(member, body.deal_id):
+        raise HTTPException(409, "This member has already used this deal in their current membership year")
+    v = Voucher(user_id=member["id"], deal_id=body.deal_id, deal_title=deal["title"], business_name=deal["business_name"],
+                discount_label=deal["discount_label"], code=f"CARD-{rand_code(6)}", status="redeemed",
+                partner_id=deal.get("submitted_by"), est_saving=deal.get("est_saving", 0),
+                amount_saved=deal.get("est_saving", 0), redeemed_at=now_iso(), expires_at=now_iso())
+    await db.vouchers.insert_one({**v.to_mongo(), "redeemed_by": user["id"], "via": "card"})
+    await db.vouchers.update_many({"user_id": member["id"], "deal_id": body.deal_id, "status": "active"},
+                                  {"$set": {"status": "expired"}})
+    return {"ok": True}
 
 
 @api.post("/partner/redeem")

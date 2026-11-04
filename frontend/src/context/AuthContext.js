@@ -25,6 +25,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Returning from Google sign-in: AuthCallback exchanges the session first.
+    if (window.location.hash?.includes("session_id=")) return;
     refresh();
   }, [refresh]);
 
