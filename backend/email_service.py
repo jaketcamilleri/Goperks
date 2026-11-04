@@ -15,6 +15,10 @@ EMAIL_BASE_URL = "https://integrations.emergentagent.com"
 EMAIL_KEY = os.environ["EMERGENT_EMAIL_KEY"]
 EMAIL_FROM_NAME = os.environ["EMAIL_FROM_NAME"]
 EMAIL_REPLY_TO = os.environ.get("EMAIL_REPLY_TO")
+# Owner's own Resend account on their verified domain (goperks.au). When set, emails come from EMAIL_FROM_ADDRESS.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+EMAIL_FROM_ADDRESS = os.environ.get("EMAIL_FROM_ADDRESS")
+RESEND_URL = "https://api.resend.com/emails"
 
 _SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "goo.gl", "rebrand.ly")
 _CRED_ASK = ("reply with your password", "reply with the code", "send your password", "cvv",
@@ -89,8 +93,29 @@ def _assert_safe_email(subject: str, html: str) -> None:
                 raise ValueError(f"Anchor text {m.group(1)!r} != real link host {real!r} (G3)")
 
 
+async def _send_via_resend(to: str, subject: str, html: str, reply_to: Optional[str]):
+    payload = {"from": f"{EMAIL_FROM_NAME} <{EMAIL_FROM_ADDRESS}>", "to": [to], "subject": subject, "html": html}
+    if reply_to or EMAIL_REPLY_TO:
+        payload["reply_to"] = reply_to or EMAIL_REPLY_TO
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(RESEND_URL, headers={"Authorization": f"Bearer {RESEND_API_KEY}"}, json=payload)
+        resp.raise_for_status()
+        return resp.json().get("id")
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Resend send failed: {e.response.status_code} {e.response.text}")
+        if e.response.status_code == 422:
+            raise HTTPException(400, "We couldn't send email to that address. Please check it or contact us.")
+        raise HTTPException(503, "Failed to send email, please try again shortly")
+    except Exception as e:
+        logger.error(f"Resend send error: {e}")
+        raise HTTPException(500, "Failed to send email")
+
+
 async def send_email(*, to: str, subject: str, html: str, reply_to: Optional[str] = None):
     _assert_safe_email(subject, html)
+    if RESEND_API_KEY and EMAIL_FROM_ADDRESS:
+        return await _send_via_resend(to, subject, html, reply_to)
     payload = {"to": [to], "subject": subject, "html": html, "from_name": EMAIL_FROM_NAME}
     if reply_to or EMAIL_REPLY_TO:
         payload["contact_email"] = reply_to or EMAIL_REPLY_TO
