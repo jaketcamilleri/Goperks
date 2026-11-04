@@ -66,6 +66,12 @@ export function AdminPeople({ role, onChange }) {
                   {role === "business" ? ` · ${u.deal_count ?? 0} deals` : ` · ${u.member_code || "no card"} · ${u.redeemed_count ?? 0} used`}
                   {role !== "business" && u.membership_expires_at ? ` · until ${fmt(u.membership_expires_at)}` : ""}
                 </p>
+                {role === "business" && u.business_status === "approved" && (
+                  <p className="truncate text-sm text-[#3D5E65]" data-testid={`admin-biz-profile-${u.id}`}>
+                    {u.profile_complete ? [u.address && `${u.address}, ${u.suburb}`, u.phone, u.website?.replace(/^https?:\/\//, ""), u.instagram && `@${u.instagram}`].filter(Boolean).join(" · ")
+                      : <span className="font-semibold text-[#7A5310]">Profile not completed yet</span>}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Pill s={status(u)} />

@@ -4,20 +4,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
+import { BizLink, bp } from "@/lib/site";
 
 const LINKS = [
   { to: "/deals", label: "Deals" },
   { to: "/#how", label: "How it works" },
   { to: "/join", label: "Membership" },
   { to: "/gift", label: "Gift" },
-  { to: "/business", label: "For businesses" },
 ];
+const linkCls = "group relative text-[15px] font-medium text-[#17434C]";
+const underline = <span className="absolute -bottom-1 left-0 h-[2px] w-full origin-left scale-x-0 bg-[#B9512E] transition-transform duration-300 group-hover:scale-x-100" />;
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
-  const home = user?.role === "admin" ? "/admin" : user?.role === "business" ? "/business" : "/dashboard";
+  const isBiz = user?.role === "business";
+  const home = user?.role === "admin" ? "/admin" : "/dashboard";
 
   const doLogout = async () => {
     await logout();
@@ -31,17 +34,18 @@ export function Navbar() {
         <Link to="/" data-testid="nav-logo"><Logo /></Link>
         <nav className="hidden items-center gap-8 lg:flex">
           {LINKS.map((l) => (
-            <NavLink key={l.to} to={l.to} data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
-              className="group relative text-[15px] font-medium text-[#17434C]">
+            <NavLink key={l.to} to={l.to} data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`} className={linkCls}>
               {l.label}
-              <span className="absolute -bottom-1 left-0 h-[2px] w-full origin-left scale-x-0 bg-[#B9512E] transition-transform duration-300 group-hover:scale-x-100" />
+              {underline}
             </NavLink>
           ))}
+          <BizLink data-testid="nav-for-businesses" className={linkCls}>For businesses{underline}</BizLink>
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (
             <>
-              <Link to={home} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>
+              {isBiz ? <Link to={bp("")} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>
+                : <Link to={home} data-testid="nav-account" className="text-[15px] font-medium hover:text-[#9A4024]">My account</Link>}
               <button onClick={doLogout} data-testid="nav-logout" className="rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]">Log out</button>
             </>
           ) : (
@@ -62,9 +66,10 @@ export function Navbar() {
               {LINKS.map((l) => (
                 <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="py-2 font-display text-2xl">{l.label}</Link>
               ))}
+              <BizLink onClick={() => setOpen(false)} className="py-2 font-display text-2xl" data-testid="nav-mobile-for-businesses">For businesses</BizLink>
               {user ? (
                 <>
-                  <Link to={home} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">My account</Link>
+                  <Link to={isBiz ? bp("") : home} onClick={() => setOpen(false)} className="py-2 font-display text-2xl text-[#9A4024]">My account</Link>
                   <button onClick={doLogout} className="mt-2 rounded-full border border-[#17434C] py-3 font-semibold">Log out</button>
                 </>
               ) : (

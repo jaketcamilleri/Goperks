@@ -7,6 +7,7 @@ import { DealForm } from "@/components/DealForm";
 import { PartnerChecker } from "@/components/PartnerChecker";
 import { PartnerStats } from "@/components/PartnerStats";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
+import { bp, assetUrl } from "@/lib/site";
 
 const STATUS_STYLE = { pending: "bg-[#FEF4DC] text-[#7A5310]", approved: "bg-[#EBF3EC] text-[#2F5A3A]", rejected: "bg-[#FDF0EC] text-[#9A4024]" };
 
@@ -25,12 +26,35 @@ function Pitch() {
           ))}
         </ul>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <Link to="/register?role=business&next=/business" data-testid="business-register-btn" className="rounded-full bg-[#B9512E] px-7 py-4 text-center font-semibold text-[#EAF6F3]">Create partner account</Link>
-          <Link to="/login?next=/business" data-testid="business-login-btn" className="rounded-full border border-[#17434C] px-7 py-4 text-center font-semibold">Partner log in</Link>
+          <Link to={bp("/register")} data-testid="business-register-btn" className="rounded-full bg-[#B9512E] px-7 py-4 text-center font-semibold text-[#EAF6F3]">Create partner account</Link>
+          <Link to={bp("/login")} data-testid="business-login-btn" className="rounded-full border border-[#17434C] px-7 py-4 text-center font-semibold">Partner log in</Link>
         </div>
       </FadeUp>
       <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" alt="Local shop interior" className="aspect-[4/3] w-full rounded-[32px] object-cover" />
     </div>
+  );
+}
+
+function ProfilePrompt({ user }) {
+  return (
+    <div className="mt-12 max-w-2xl rounded-[28px] border border-[#C2DEDA] bg-white p-8" data-testid="business-profile-required">
+      <p className="font-display text-3xl font-semibold">You're approved — welcome!</p>
+      <p className="mt-3 text-[#3D5E65]">Before you add deals, tell members about {user.business_name || "your business"}: your address, phone, opening hours, logo and a short description. It takes about two minutes.</p>
+      <Link to={bp("/profile")} data-testid="business-complete-profile-btn" className="mt-6 inline-flex rounded-full bg-[#B9512E] px-7 py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-95">Complete my profile</Link>
+    </div>
+  );
+}
+
+function ProfileCard({ user }) {
+  return (
+    <Link to={bp("/profile")} data-testid="business-profile-link"
+      className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-5 transition-colors hover:border-[#17434C]">
+      <span className="flex min-w-0 items-center gap-4">
+        {user.logo_url && <img src={assetUrl(user.logo_url)} alt="" className="h-12 w-12 shrink-0 rounded-xl object-contain" />}
+        <span className="min-w-0"><span className="block font-display text-xl font-semibold">Business profile</span><span className="block truncate text-sm text-[#3D5E65]">{[user.address, user.suburb].filter(Boolean).join(", ")}</span></span>
+      </span>
+      <span className="shrink-0 rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold">Edit</span>
+    </Link>
   );
 }
 
@@ -39,8 +63,9 @@ export default function Business() {
   const [mine, setMine] = useState([]);
   const [busy, setBusy] = useState(false);
   const [formKey, setFormKey] = useState(0);
-  const isPartner = user && (user.role === "admin" || (user.role === "business" && user.business_status === "approved"));
+  const isPartner = user && (user.role === "admin" || (user.role === "business" && user.business_status === "approved" && user.profile_complete));
   const awaiting = user && user.role === "business" && user.business_status !== "approved";
+  const needsProfile = user && user.role === "business" && user.business_status === "approved" && !user.profile_complete;
 
   const load = () => api.get("/business/deals").then((r) => setMine(Array.isArray(r.data) ? r.data : [])).catch(() => setMine([]));
   useEffect(() => { if (isPartner) load(); }, [isPartner]);
@@ -74,10 +99,11 @@ export default function Business() {
             </>
           )}
         </div>
-      ) : !isPartner ? <Pitch /> : (
+      ) : needsProfile ? <ProfilePrompt user={user} /> : !isPartner ? <Pitch /> : (
         <>
         <div className="mt-12"><PartnerChecker /></div>
-        <Link to="/business/sticker" data-testid="sticker-link"
+        {user.role === "business" && <ProfileCard user={user} />}
+        <Link to={bp("/sticker")} data-testid="sticker-link"
           className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-5 transition-colors hover:border-[#17434C]">
           <span><span className="block font-display text-xl font-semibold">Window sticker</span><span className="text-sm text-[#3D5E65]">Print a "Go Perks members save here" sticker for your door or counter.</span></span>
           <span className="shrink-0 rounded-full bg-[#17434C] px-5 py-2.5 text-sm font-semibold text-[#EAF6F3]">Get sticker</span>
@@ -87,7 +113,7 @@ export default function Business() {
           <div className="rounded-[32px] border border-[#C2DEDA] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
             <h2 className="font-display text-2xl font-semibold">Submit a new deal</h2>
             <p className="mt-1 text-sm text-[#3D5E65]">Submissions go to our team for approval before going live.</p>
-            <div className="mt-6"><DealForm key={formKey} initial={{ business_name: user.business_name || "" }} onSubmit={submit} busy={busy} /></div>
+            <div className="mt-6"><DealForm key={formKey} initial={{ business_name: user.business_name || "", suburb: user.suburb || "" }} onSubmit={submit} busy={busy} /></div>
           </div>
           <div className="lg:col-span-5">
             <h2 className="font-display text-2xl font-semibold">Your submissions</h2>

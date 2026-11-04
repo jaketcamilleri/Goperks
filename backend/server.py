@@ -20,7 +20,9 @@ import jwt
 import stripe
 from html import escape
 from bson import ObjectId
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, UploadFile, File
+import uuid
+import storage
 from fastapi.responses import FileResponse
 import wallet
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -78,6 +80,14 @@ class User(BaseDocument):
     member_code: Optional[str] = None
     business_status: Optional[str] = None
     super_admin: bool = False
+    address: Optional[str] = None
+    suburb: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    opening_hours: Optional[str] = None
+    about: Optional[str] = None
+    logo_path: Optional[str] = None
     created_at: str = Field(default_factory=lambda: now_iso())
 
 
@@ -220,9 +230,20 @@ def oid(value):
     return ObjectId(value)
 
 
+PROFILE_REQUIRED = ("address", "suburb", "phone", "opening_hours", "about")
+PROFILE_FIELDS = PROFILE_REQUIRED + ("website", "instagram")
+
+
+def logo_url(path: Optional[str]) -> Optional[str]:
+    return f"/api/files/{path}" if path else None
+
+
 def user_out(doc):
     u = User.from_mongo(doc)
     data = u.out()
+    data["logo_url"] = logo_url(data.pop("logo_path", None))
+    if data["role"] == "business":
+        data["profile_complete"] = all((data.get(k) or "").strip() for k in PROFILE_REQUIRED)
     exp = data.get("membership_expires_at")
     if data["membership_status"] == "active" and exp and exp < now_iso():
         data["membership_status"] = "expired"
@@ -265,6 +286,14 @@ async def require_partner(user=Depends(current_user)):
         raise HTTPException(403, "Not allowed")
     if user.get("business_status") != "approved":
         raise HTTPException(403, "Your business account is waiting for approval")
+    if not user.get("profile_complete"):
+        raise HTTPException(403, "Please complete your business profile first")
+    return user
+
+
+async def require_approved_business(user=Depends(current_user)):
+    if user["role"] != "business" or user.get("business_status") != "approved":
+        raise HTTPException(403, "Only approved partners can edit a business profile")
     return user
 
 
@@ -460,7 +489,8 @@ async def forgot_password(body: ForgotIn):
     await db.password_reset_tokens.insert_one({
         "token": token, "user_id": str(doc["_id"]), "used": False,
         "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=1)})
-    link = f"{os.environ['FRONTEND_URL'].rstrip('/')}/reset-password?token={token}"
+    base = os.environ["BUSINESS_URL"] if doc.get("role") == "business" else os.environ["FRONTEND_URL"]
+    link = f"{base.rstrip('/')}/reset-password?token={token}"
     html = (
         '<table role="presentation" width="100%" style="background:#EAF6F3"><tr><td style="padding:32px;font-family:Georgia,serif;color:#17434C">'
         f'<h1 style="font-size:26px;margin:0 0 16px">Reset your password</h1>'
@@ -526,7 +556,12 @@ async def get_deal(deal_id: str):
     doc = await db.deals.find_one({"_id": oid(deal_id), "status": "approved"})
     if not doc:
         raise HTTPException(404, "Deal not found")
-    return Deal.from_mongo(doc).out()
+    out = Deal.from_mongo(doc).out()
+    owner = await db.users.find_one({"_id": oid(doc["submitted_by"]), "role": "business"}) if doc.get("submitted_by") else None
+    if owner and owner.get("business_status") == "approved":
+        out["partner"] = {k: owner.get(k) for k in PROFILE_FIELDS} | {
+            "business_name": owner.get("business_name"), "logo_url": logo_url(owner.get("logo_path"))}
+    return out
 
 
 @api.get("/suburbs")
@@ -704,6 +739,64 @@ async def submit_deal(body: DealIn, user=Depends(require_partner)):
     res = await db.deals.insert_one(d.to_mongo())
     d.id = str(res.inserted_id)
     return d.out()
+
+
+class ProfileIn(BaseModel):
+    business_name: str = Field(min_length=1, max_length=120)
+    address: str = Field(min_length=3, max_length=200)
+    suburb: str = Field(min_length=2, max_length=80)
+    phone: str = Field(min_length=6, max_length=30)
+    website: Optional[str] = Field(None, max_length=200)
+    instagram: Optional[str] = Field(None, max_length=60)
+    opening_hours: str = Field(min_length=3, max_length=600)
+    about: str = Field(min_length=10, max_length=600)
+
+
+@api.put("/business/profile")
+async def update_profile(body: ProfileIn, user=Depends(require_approved_business)):
+    data = {k: (v.strip() if isinstance(v, str) else v) for k, v in body.model_dump().items()}
+    if data.get("website") and not data["website"].startswith(("http://", "https://")):
+        data["website"] = "https://" + data["website"]
+    if data.get("instagram"):
+        data["instagram"] = data["instagram"].lstrip("@").split("instagram.com/")[-1].strip("/")
+    await db.users.update_one({"_id": oid(user["id"])}, {"$set": data})
+    return user_out(await db.users.find_one({"_id": oid(user["id"])}))
+
+
+LOGO_TYPES = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}
+
+
+@api.post("/business/logo")
+async def upload_logo(file: UploadFile = File(...), user=Depends(require_approved_business)):
+    ext = LOGO_TYPES.get(file.content_type or "")
+    if not ext:
+        raise HTTPException(400, "Please upload a PNG, JPG or WebP image")
+    data = await file.read()
+    if len(data) > 3 * 1024 * 1024:
+        raise HTTPException(400, "Logo must be under 3 MB")
+    path = f"{storage.APP_NAME}/logos/{user['id']}/{uuid.uuid4()}.{ext}"
+    try:
+        result = await asyncio.to_thread(storage.put_object, path, data, file.content_type)
+    except Exception as e:
+        logger.warning("logo upload failed: %s", e)
+        raise HTTPException(502, "Upload failed, please try again")
+    await db.files.update_many({"owner_id": user["id"], "kind": "logo"}, {"$set": {"is_deleted": True}})
+    await db.files.insert_one({"storage_path": result["path"], "owner_id": user["id"], "kind": "logo", "content_type": file.content_type,
+                               "original_filename": file.filename, "size": result.get("size"), "is_deleted": False, "created_at": now_iso()})
+    await db.users.update_one({"_id": oid(user["id"])}, {"$set": {"logo_path": result["path"]}})
+    return user_out(await db.users.find_one({"_id": oid(user["id"])}))
+
+
+@api.get("/files/{path:path}")
+async def get_file(path: str):
+    rec = await db.files.find_one({"storage_path": path, "kind": "logo", "is_deleted": False})
+    if not rec:
+        raise HTTPException(404, "File not found")
+    try:
+        data, _ct = await asyncio.to_thread(storage.get_object, path)
+    except Exception:
+        raise HTTPException(404, "File not found")
+    return Response(content=data, media_type=rec["content_type"], headers={"Cache-Control": "public, max-age=86400"})
 
 
 @api.get("/business/stats")
@@ -1264,6 +1357,10 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    try:
+        await asyncio.to_thread(storage.init_storage)
+    except Exception as e:
+        logger.error("Storage init failed: %s", e)
     await db.users.create_index("email", unique=True)
     await db.login_attempts.create_index("identifier")
     await db.deals.create_index([("status", 1), ("category", 1)])

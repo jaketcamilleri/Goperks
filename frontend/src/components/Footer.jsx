@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
+import { BizLink, MainLink } from "@/lib/site";
 
 export function Footer() {
   return (
@@ -13,16 +13,16 @@ export function Footer() {
           <div className="md:col-span-3">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">Explore</p>
             <ul className="mt-4 space-y-2 text-[#C2DEDA]">
-              <li><Link to="/deals" className="hover:text-white">All deals</Link></li>
-              <li><Link to="/join" className="hover:text-white">Membership</Link></li>
-              <li><Link to="/dashboard" className="hover:text-white">My card</Link></li>
+              <li><MainLink to="/deals" className="hover:text-white">All deals</MainLink></li>
+              <li><MainLink to="/join" className="hover:text-white">Membership</MainLink></li>
+              <li><MainLink to="/dashboard" className="hover:text-white">My card</MainLink></li>
             </ul>
           </div>
           <div className="md:col-span-3">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">Partners</p>
             <ul className="mt-4 space-y-2 text-[#C2DEDA]">
-              <li><Link to="/business" className="hover:text-white">List your deal</Link></li>
-              <li><Link to="/login" className="hover:text-white">Partner login</Link></li>
+              <li><BizLink to="/register" className="hover:text-white" data-testid="footer-partner-apply">List your deal</BizLink></li>
+              <li><BizLink to="/login" className="hover:text-white" data-testid="footer-partner-login">Partner login</BizLink></li>
             </ul>
           </div>
         </div>

@@ -5,6 +5,8 @@ from email_service import EMAIL_FROM_NAME
 
 
 def _app_url(path: str) -> str:
+    if path.startswith("biz:"):
+        return f"{os.environ['BUSINESS_URL'].rstrip('/')}{path[4:]}"
     return f"{os.environ['FRONTEND_URL'].rstrip('/')}{path}"
 
 
@@ -68,13 +70,14 @@ def partner_welcome_email(name: str, business: str):
     body = (_p(f"Hi {first}, welcome to {escape(EMAIL_FROM_NAME)}! {escape(business)} is now set up as a partner.")
             + _p("Here's everything you need to get started:")
             + '<table role="presentation" style="margin:8px 0 16px">'
-            + step(1, "Submit your first deal", "Open your partner portal and add an offer. We review it and put it live for members.")
-            + step(2, "Print your window sticker", "In your portal, tap \u201cWindow sticker\u201d then \u201cPrint or save as PDF\u201d. Stick it on your door or counter so members know to ask.")
-            + step(3, "Check codes at the counter", "Members show a QR code on their phone. In your portal tap \u201cScan\u201d (or type the code) under \u201cCheck a code\u201d.")
-            + step(4, "Redeem the deal", "For a voucher, tap \u201cMark as redeemed\u201d. For a member card, pick the deal they're using. Each deal is one use per member per year.")
+            + step(1, "Complete your business profile", "Log in to your partner portal and add your address, phone, opening hours, logo and a short description. Members see these on your deal pages.")
+            + step(2, "Submit your first deal", "Add an offer from your portal. We review it and put it live for members.")
+            + step(3, "Print your window sticker", "In your portal, tap \u201cWindow sticker\u201d then \u201cPrint or save as PDF\u201d. Stick it on your door or counter so members know to ask.")
+            + step(4, "Check codes at the counter", "Members show a QR code on their phone. In your portal tap \u201cScan\u201d (or type the code) under \u201cCheck a code\u201d.")
+            + step(5, "Redeem the deal", "For a voucher, tap \u201cMark as redeemed\u201d. For a member card, pick the deal they're using. Each deal is one use per member per year.")
             + '</table>'
             + _p("Your portal also shows how many members claimed and redeemed your deals each month."))
-    return f"Welcome to {EMAIL_FROM_NAME} \u2014 your partner kit", _layout("Your partner kit", body, "Get my window sticker", "/business/sticker")
+    return f"Welcome to {EMAIL_FROM_NAME} \u2014 your partner kit", _layout("Your partner kit", body, "Open my partner portal", "biz:/profile")
 
 
 def deal_decision_email(name: str, title: str, approved: bool, note: str):
@@ -86,11 +89,11 @@ def deal_decision_email(name: str, title: str, approved: bool, note: str):
         body = (_p(f"Hi {first}, great news \u2014 your deal <b>\u201c{t}\u201d</b> has been approved and is now live for members.")
                 + note_html
                 + _p("Members can find it in the deals directory and on the map. Scan their QR code at the counter to redeem it, and keep an eye on your monthly stats in the portal."))
-        return f"Your deal is live on {EMAIL_FROM_NAME}", _layout("You're live!", body, "View my partner portal", "/business")
+        return f"Your deal is live on {EMAIL_FROM_NAME}", _layout("You're live!", body, "View my partner portal", "biz:")
     body = (_p(f"Hi {first}, thanks for submitting <b>\u201c{t}\u201d</b>. Unfortunately we couldn't approve it this time.")
             + note_html
             + _p("You're welcome to adjust the offer and submit it again from your partner portal."))
-    return f"Update on your {EMAIL_FROM_NAME} deal", _layout("About your deal", body, "Submit a new deal", "/business")
+    return f"Update on your {EMAIL_FROM_NAME} deal", _layout("About your deal", body, "Submit a new deal", "biz:")
 
 
 def business_rejected_email(name: str, business: str, note: str):

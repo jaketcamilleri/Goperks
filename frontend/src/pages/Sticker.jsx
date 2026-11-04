@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Printer, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoStacked } from "@/components/Logo";
+import { bp, MAIN_URL } from "@/lib/site";
 
 function Sticker({ businessName, url }) {
   return (
@@ -20,11 +21,11 @@ function Sticker({ businessName, url }) {
 
 export default function StickerPage() {
   const { user } = useAuth();
-  const url = `${window.location.origin}/join`;
+  const url = `${MAIN_URL}/join`;
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-8" data-testid="sticker-page">
       <div className="print-hide">
-        <Link to="/business" className="inline-flex items-center gap-2 text-sm font-semibold" data-testid="sticker-back-link"><ArrowLeft className="h-4 w-4" /> Partner portal</Link>
+        <Link to={bp("")} className="inline-flex items-center gap-2 text-sm font-semibold" data-testid="sticker-back-link"><ArrowLeft className="h-4 w-4" /> Partner portal</Link>
         <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Your window sticker</h1>
         <p className="mt-3 max-w-xl text-[#3D5E65]">Print it on sticker paper (about 12 cm round) and pop it on your door or counter so members know to ask. Choose "Save as PDF" in the print window to keep a copy or send it to a printer.</p>
         <button onClick={() => window.print()} data-testid="sticker-print-btn"

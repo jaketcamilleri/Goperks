@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { BizLink } from "@/lib/site";
 import { motion } from "framer-motion";
 import { Eyebrow, FadeUp } from "@/components/Reveal";
 
@@ -43,9 +43,9 @@ export function BusinessCta() {
           <Eyebrow>For local businesses</Eyebrow>
           <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl">Run a family business? <em className="font-normal italic text-[#B9512E]">Share a deal.</em></h2>
           <p className="mt-5 text-[#3D5E65] md:text-lg">Put your cafe, play centre or shop in front of local families. Submit your offer — we review it and put it live for members.</p>
-          <Link to="/business" data-testid="business-cta-btn" className="mt-8 inline-flex rounded-full bg-[#17434C] px-7 py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#B9512E] active:scale-95">
+          <BizLink data-testid="business-cta-btn" className="mt-8 inline-flex rounded-full bg-[#17434C] px-7 py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#B9512E] active:scale-95">
             List your deal
-          </Link>
+          </BizLink>
         </FadeUp>
       </div>
     </section>

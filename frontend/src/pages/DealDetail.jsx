@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Eyebrow } from "@/components/Reveal";
 import { HeartButton } from "@/components/HeartButton";
 import { QRCodeSVG } from "qrcode.react";
+import { PartnerCard } from "@/components/PartnerCard";
 
 export function VoucherTicket({ v }) {
   const copy = () => { navigator.clipboard?.writeText(v.code); toast.success("Voucher code copied"); };
@@ -109,6 +110,7 @@ export default function DealDetail() {
             )}
             <p className="mt-4 text-sm text-[#3D5E65]" data-testid="deal-once-per-term-note">One use per member, per membership year.</p>
           </div>
+          <PartnerCard p={deal.partner} />
         </div>
       </div>
     </div>
