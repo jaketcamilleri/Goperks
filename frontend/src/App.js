@@ -1,5 +1,4 @@
 import "@/App.css";
-import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
@@ -40,7 +39,7 @@ import GiftsPage from "@/admin/GiftsPage";
 import ProspectsPage from "@/admin/ProspectsPage";
 import EmailsPage from "@/admin/EmailsPage";
 import Unsubscribe from "@/pages/Unsubscribe";
-import { IS_BIZ_HOST, EXTERNAL_BIZ, BIZ_URL, MAIN_URL, bp, IS_ADMIN_HOST, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
+import { bp, ap } from "@/lib/site";
 
 function Layout() {
   return (
@@ -61,14 +60,6 @@ function BizLayout() {
       <Footer />
     </>
   );
-}
-
-function GoElsewhere({ base, strip = "" }) {
-  const loc = useLocation();
-  useEffect(() => {
-    window.location.replace(`${base}${loc.pathname.slice(strip.length)}${loc.search}`);
-  }, [base, strip, loc]);
-  return <div className="grid min-h-[60vh] place-items-center font-mono text-sm text-[#3D5E65]" data-testid="redirecting">Taking you there…</div>;
 }
 
 const bizOnly = (el) => <ProtectedRoute roles={["business", "admin"]} loginPath={bp("/login")}>{el}</ProtectedRoute>;
@@ -127,26 +118,10 @@ function adminRoutes() {
 function AppRoutes() {
   const location = useLocation();
   if (location.hash?.includes("session_id=")) return <AuthCallback />;
-  if (IS_ADMIN_HOST) {
-    return (
-      <Routes>
-        {adminRoutes()}
-        <Route path="*" element={<GoElsewhere base={MAIN_URL} />} />
-      </Routes>
-    );
-  }
-  if (IS_BIZ_HOST) {
-    return (
-      <Routes>
-        {bizRoutes()}
-        <Route path="*" element={<GoElsewhere base={MAIN_URL} />} />
-      </Routes>
-    );
-  }
   return (
         <Routes>
-          {EXTERNAL_BIZ ? <Route path="/business/*" element={<GoElsewhere base={BIZ_URL} strip="/business" />} /> : bizRoutes()}
-          {EXTERNAL_ADMIN ? <Route path="/admin/*" element={<GoElsewhere base={ADMIN_URL} strip="/admin" />} /> : adminRoutes()}
+          {bizRoutes()}
+          {adminRoutes()}
           <Route element={<Layout />}>
             <Route path="/" element={<Landing />} />
             <Route path="/deals" element={<Deals />} />

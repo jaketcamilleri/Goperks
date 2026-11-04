@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MaskLines } from "@/components/Reveal";
-import { bp, BizLink, MainLink, EXTERNAL_BIZ, EXTERNAL_ADMIN, ADMIN_URL, ap } from "@/lib/site";
+import { bp, BizLink, MainLink, ap } from "@/lib/site";
 
 const SIDE_IMG = "https://images.unsplash.com/photo-1564327367919-cb377ea6a88f?auto=format&fit=crop&w=1200&q=80";
 
@@ -41,10 +41,8 @@ export default function Auth({ mode, business = false }) {
       const body = isLogin ? { email: f.email, password: f.password } : { ...f, role, business_name: business ? f.business_name : null, ref: business ? undefined : getRef() };
       const { data } = await api.post(isLogin ? "/auth/login" : "/auth/register", body);
       if (business && data.role === "member") { await logout(); setWrongArea("member"); return; }
-      if (!business && data.role === "business" && EXTERNAL_BIZ) { await logout(); setWrongArea("business"); return; }
       setUser(data);
       const team = data.role === "admin" || data.role === "staff";
-      if (team && EXTERNAL_ADMIN && !next) { window.location.href = ADMIN_URL; return; }
       const home = team ? ap("") : data.role === "business" ? bp("") : data.membership_status === "active" ? "/dashboard" : "/join";
       nav(next || (business && data.role === "admin" ? bp("") : home));
     } catch (e2) {
@@ -116,7 +114,6 @@ export default function Auth({ mode, business = false }) {
           {!isLogin && !business && <ReferralCodeField />}
           {err && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-error">{err}</p>}
           {wrongArea === "member" && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-wrong-area">This login is for business partners. <MainLink to="/login" className="font-semibold underline">Members log in here →</MainLink></p>}
-          {wrongArea === "business" && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-wrong-area">That's a partner account. <BizLink to="/login" className="font-semibold underline">Log in at the partner area →</BizLink></p>}
           <button disabled={busy} type="submit" data-testid="auth-submit-btn"
             className="w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">
             {busy ? "Please wait…" : isLogin ? "Log in" : "Create account"}

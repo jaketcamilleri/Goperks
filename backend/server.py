@@ -2,7 +2,6 @@
 import asyncio
 import os
 from datetime import datetime, timezone, timedelta
-from urllib.parse import urlsplit
 
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
@@ -21,8 +20,7 @@ app.include_router(api)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=sorted({f"{urlsplit(os.environ[k]).scheme}://{urlsplit(os.environ[k]).netloc}"
-                          for k in ("FRONTEND_URL", "BUSINESS_URL", "ADMIN_URL")} | {"http://localhost:3000"}),
+    allow_origins=[os.environ["FRONTEND_URL"], "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

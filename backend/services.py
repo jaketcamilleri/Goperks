@@ -211,8 +211,8 @@ async def send_password_link(doc: dict, invite: bool = False):
     await db.password_reset_tokens.insert_one({
         "token": token, "user_id": str(doc["_id"]), "used": False,
         "created_at": datetime.now(timezone.utc), "expires_at": datetime.now(timezone.utc) + timedelta(hours=hours)})
-    base = {"business": os.environ["BUSINESS_URL"], "admin": os.environ["ADMIN_URL"], "staff": os.environ["ADMIN_URL"]}.get(doc.get("role"), os.environ["FRONTEND_URL"])
-    link = f"{base.rstrip('/')}/reset-password?token={token}"
+    area = {"business": "/business", "admin": "/admin", "staff": "/admin"}.get(doc.get("role"), "")
+    link = f"{os.environ['FRONTEND_URL'].rstrip('/')}{area}/reset-password?token={token}"
     heading = "Your account is ready" if invite else "Reset your password"
     intro = (f"we've set up a {escape(EMAIL_FROM_NAME)} account for you. Choose a password to log in." if invite
              else f"we received a request to reset the password for your {escape(EMAIL_FROM_NAME)} account.")

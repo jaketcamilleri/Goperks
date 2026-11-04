@@ -107,9 +107,9 @@ def template(key: str) -> dict:
 # ---------- Rendering ----------
 def _app_url(path: str) -> str:
     if path.startswith("biz:"):
-        return f"{os.environ['BUSINESS_URL'].rstrip('/')}{path[4:]}"
+        return f"{os.environ['FRONTEND_URL'].rstrip('/')}/business{path[4:]}"
     if path.startswith("adm:"):
-        return f"{os.environ['ADMIN_URL'].rstrip('/')}{path[4:]}"
+        return f"{os.environ['FRONTEND_URL'].rstrip('/')}/admin{path[4:]}"
     return f"{os.environ['FRONTEND_URL'].rstrip('/')}{path}"
 
 

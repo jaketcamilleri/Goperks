@@ -207,7 +207,7 @@ async def admin_monthly(_=Depends(owner)):
 async def admin_payments(_=Depends(owner)):
     txns = await db.payment_transactions.find({}, {"_id": 0, "session_id": 1, "email": 1, "kind": 1, "amount": 1, "currency": 1,
                                                    "payment_status": 1, "created_at": 1, "gift_name": 1, "gift_email": 1}).sort("created_at", -1).to_list(5000)
-    gifts = {g["session_id"]: g for g in await db.gifts.find({}, {"_id": 0}).to_list(5000)}
+    gifts = {g["session_id"]: g for g in await db.gifts.find({"session_id": {"$exists": True}}, {"_id": 0}).to_list(5000)}
     for t in txns:
         g = gifts.get(t["session_id"])
         if g:
