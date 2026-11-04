@@ -4,6 +4,9 @@ Rebrand 2 (2026-11-04): name "Go Perks"; logos in frontend/public/brand/: go-per
 Partner window sticker: /business/sticker (business/admin), print-only CSS, QR to /join.
 Partner welcome kit: email sent on business registration (4-step guide: submit deal, print sticker, scan codes, redeem) with button to /business/sticker.
 Deal decision emails: approve/reject (status change only) emails the submitting business; admin can add an optional reason on reject (included in email).
+Super admin: SUPER_ADMIN_EMAIL=jaketcamilleri@gmail.com seeded/promoted at startup (role admin, super_admin true, no password).
+Admin control room: stats (revenue, members, active, gifts, businesses, waiting businesses/deals, live deals, vouchers, redeemed) + sections Deals / Members / Businesses (/api/admin/users, /api/admin/businesses/{id}/status).
+Business approval gate: new business accounts pending; require_partner blocks partner endpoints until approved; approval sends partner kit email, decline sends email with optional reason.
 
 Rebrand (2026-11-04): name "Local Perks", user-supplied logo at frontend/public/brand/ (background removed), favicon/apple-touch icon, new member codes LP-XXXXXX (old TV- codes still accepted at partner checker), email sender name, wallet pass org, Stripe product renamed. Demo login emails unchanged.
 Palette (2026-11-04): mint bg #EAF6F3 / #D3ECE7, deep teal ink #17434C / #0F3138, coral-deep #B9512E (buttons/accents), coral #EE8A63 (fills), lines #C2DEDA. Emails + wallet passes match.

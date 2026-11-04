@@ -93,6 +93,15 @@ def deal_decision_email(name: str, title: str, approved: bool, note: str):
     return f"Update on your {EMAIL_FROM_NAME} deal", _layout("About your deal", body, "Submit a new deal", "/business")
 
 
+def business_rejected_email(name: str, business: str, note: str):
+    first = escape(name.split(" ")[0] if name else "there")
+    note_html = (f'<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;background:#FFFFFF;border-left:3px solid #EE8A63;padding:12px 14px;margin:16px 0">'
+                 f'<b>Note from the Go Perks team:</b><br>{escape(note)}</p>') if note else ""
+    body = (_p(f"Hi {first}, thanks for your interest in listing {escape(business)} with {escape(EMAIL_FROM_NAME)}. Unfortunately we can't approve your partner account at the moment.")
+            + note_html + _p("If you think this is a mistake, just reply to this email."))
+    return f"Your {EMAIL_FROM_NAME} partner application", _layout("About your application", body, "Visit Go Perks", "/")
+
+
 def renewal_email(name: str, code: str, expires: str, saved: float, used: int):
     first = escape(name.split(" ")[0] if name else "there")
     saved_line = (f"So far you've saved <b>${saved:,.2f}</b> across {used} deal{'s' if used != 1 else ''} — "

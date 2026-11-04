@@ -29,7 +29,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
-from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email
+from email_templates import welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email, business_rejected_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -76,6 +76,8 @@ class User(BaseDocument):
     membership_status: str = "inactive"
     membership_expires_at: Optional[str] = None
     member_code: Optional[str] = None
+    business_status: Optional[str] = None
+    super_admin: bool = False
     created_at: str = Field(default_factory=lambda: now_iso())
 
 
@@ -256,6 +258,16 @@ def require_role(*roles):
     return dep
 
 
+async def require_partner(user=Depends(current_user)):
+    if user["role"] == "admin":
+        return user
+    if user["role"] != "business":
+        raise HTTPException(403, "Not allowed")
+    if user.get("business_status") != "approved":
+        raise HTTPException(403, "Your business account is waiting for approval")
+    return user
+
+
 async def geocode(suburb: str):
     if not suburb or "multiple" in suburb.lower():
         return None, None
@@ -381,7 +393,7 @@ async def register(body: RegisterIn, response: Response):
     res = await db.users.insert_one(doc)
     set_auth_cookies(response, str(res.inserted_id))
     if body.role == "business":
-        asyncio.create_task(send_partner_welcome(email, body.name, body.business_name))
+        await db.users.update_one({"_id": res.inserted_id}, {"$set": {"business_status": "pending"}})
     return user_out(await db.users.find_one({"_id": res.inserted_id}))
 
 
@@ -620,7 +632,7 @@ async def find_partner_voucher(code: str, user: dict):
 
 
 @api.post("/partner/check")
-async def partner_check(body: CodeIn, user=Depends(require_role("business", "admin"))):
+async def partner_check(body: CodeIn, user=Depends(require_partner)):
     code = body.code.strip().upper()
     if code.startswith(("GP-", "LP-", "TV-")):
         m = await db.users.find_one({"member_code": code})
@@ -646,7 +658,7 @@ async def partner_check(body: CodeIn, user=Depends(require_role("business", "adm
 
 
 @api.post("/partner/redeem-card")
-async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_role("business", "admin"))):
+async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_partner)):
     m = await db.users.find_one({"member_code": body.member_code.strip().upper()})
     if not m:
         raise HTTPException(404, "No member with that card number")
@@ -669,7 +681,7 @@ async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_role("bus
 
 
 @api.post("/partner/redeem")
-async def partner_redeem(body: CodeIn, user=Depends(require_role("business", "admin"))):
+async def partner_redeem(body: CodeIn, user=Depends(require_partner)):
     v = await find_partner_voucher(body.code, user)
     if v["status"] != "active" or v["expires_at"] < now_iso():
         raise HTTPException(400, "This voucher has already been used or has expired")
@@ -683,7 +695,7 @@ async def partner_redeem(body: CodeIn, user=Depends(require_role("business", "ad
 
 # ---------- Business ----------
 @api.post("/business/deals")
-async def submit_deal(body: DealIn, user=Depends(require_role("business", "admin"))):
+async def submit_deal(body: DealIn, user=Depends(require_partner)):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
     data = await with_coords(body.model_dump(exclude={"featured"}))
@@ -694,7 +706,7 @@ async def submit_deal(body: DealIn, user=Depends(require_role("business", "admin
 
 
 @api.get("/business/stats")
-async def business_stats(user=Depends(require_role("business", "admin"))):
+async def business_stats(user=Depends(require_partner)):
     deals = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(200)
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
     rows, totals = [], {"claimed_month": 0, "redeemed_month": 0, "claimed_all": 0, "redeemed_all": 0, "saved_all": 0.0}
@@ -745,7 +757,7 @@ async def redeem_gift(body: GiftRedeemIn, user=Depends(current_user)):
 
 
 @api.get("/business/deals")
-async def my_business_deals(user=Depends(require_role("business", "admin"))):
+async def my_business_deals(user=Depends(require_partner)):
     docs = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(100)
     return [Deal.from_mongo(d).out() for d in docs]
 
@@ -813,14 +825,58 @@ async def admin_delete_deal(deal_id: str, _=Depends(require_role("admin"))):
 
 @api.get("/admin/stats")
 async def admin_stats(_=Depends(require_role("admin"))):
+    paid = await db.payment_transactions.find({"payment_status": "paid"}, {"amount": 1, "kind": 1}).to_list(100000)
     return {
         "members": await db.users.count_documents({"role": "member"}),
         "active_members": await db.users.count_documents({"membership_status": "active", "membership_expires_at": {"$gt": now_iso()}}),
-        "businesses": await db.users.count_documents({"role": "business"}),
+        "businesses": await db.users.count_documents({"role": "business", "business_status": "approved"}),
+        "pending_businesses": await db.users.count_documents({"role": "business", "business_status": "pending"}),
         "pending_deals": await db.deals.count_documents({"status": "pending"}),
         "live_deals": await db.deals.count_documents({"status": "approved"}),
         "vouchers": await db.vouchers.count_documents({}),
+        "redeemed": await db.vouchers.count_documents({"status": "redeemed"}),
+        "revenue": round(sum(p.get("amount") or 0 for p in paid), 2),
+        "gifts_sold": sum(1 for p in paid if p.get("kind") == "gift"),
     }
+
+
+@api.get("/admin/users")
+async def admin_users(role: Optional[str] = None, _=Depends(require_role("admin"))):
+    q = {"role": role} if role else {}
+    docs = await db.users.find(q).sort("created_at", -1).to_list(2000)
+    out = []
+    for d in docs:
+        u = user_out(d)
+        u["auth_provider"] = d.get("auth_provider", "email")
+        if u["role"] == "business":
+            u["deal_count"] = await db.deals.count_documents({"submitted_by": u["id"]})
+        else:
+            u["redeemed_count"] = await db.vouchers.count_documents({"user_id": u["id"], "status": "redeemed"})
+        out.append(u)
+    return out
+
+
+@api.post("/admin/businesses/{user_id}/status")
+async def admin_business_status(user_id: str, body: StatusIn, _=Depends(require_role("admin"))):
+    if body.status not in ("approved", "rejected"):
+        raise HTTPException(400, "Invalid status")
+    prev = await db.users.find_one_and_update({"_id": oid(user_id), "role": "business"}, {"$set": {"business_status": body.status}})
+    if not prev:
+        raise HTTPException(404, "Business not found")
+    if prev.get("business_status") != body.status:
+        if body.status == "approved":
+            asyncio.create_task(send_partner_welcome(prev["email"], prev.get("name", ""), prev.get("business_name") or "Your business"))
+        else:
+            asyncio.create_task(send_business_rejected(prev, body.note or ""))
+    return user_out(await db.users.find_one({"_id": prev["_id"]}))
+
+
+async def send_business_rejected(u: dict, note: str):
+    try:
+        subject, html = business_rejected_email(u.get("name", ""), u.get("business_name") or "your business", note)
+        await send_email(to=u["email"], subject=subject, html=html)
+    except Exception as e:
+        logger.warning("business rejection email failed for %s: %s", u.get("email"), e)
 
 
 # ---------- Payments ----------
@@ -1097,6 +1153,14 @@ async def startup():
     for d in SEED_DEALS:
         await db.deals.update_one({"title": d["title"], "lat": {"$exists": False}},
                                   {"$set": {"lat": d["lat"], "lng": d["lng"], "est_saving": d["est_saving"]}})
+    await db.users.update_many({"role": "business", "business_status": {"$exists": False}}, {"$set": {"business_status": "approved"}})
+    super_email = os.environ.get("SUPER_ADMIN_EMAIL", "").lower()
+    if super_email:
+        existing = await db.users.find_one({"email": super_email})
+        if not existing:
+            await db.users.insert_one({**User(email=super_email, name="Jake Camilleri", role="admin", super_admin=True).to_mongo()})
+        elif existing.get("role") != "admin" or not existing.get("super_admin"):
+            await db.users.update_one({"_id": existing["_id"]}, {"$set": {"role": "admin", "super_admin": True}})
     demo_biz = await db.users.find_one({"email": "business@tinysvouchers.com.au"})
     if demo_biz:
         await db.deals.update_many({"business_name": {"$in": DEMO_BUSINESS_DEALS}, "submitted_by": None},

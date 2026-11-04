@@ -39,7 +39,8 @@ export default function Business() {
   const [mine, setMine] = useState([]);
   const [busy, setBusy] = useState(false);
   const [formKey, setFormKey] = useState(0);
-  const isPartner = user && (user.role === "business" || user.role === "admin");
+  const isPartner = user && (user.role === "admin" || (user.role === "business" && user.business_status === "approved"));
+  const awaiting = user && user.role === "business" && user.business_status !== "approved";
 
   const load = () => api.get("/business/deals").then((r) => setMine(Array.isArray(r.data) ? r.data : [])).catch(() => setMine([]));
   useEffect(() => { if (isPartner) load(); }, [isPartner]);
@@ -59,7 +60,21 @@ export default function Business() {
       <Eyebrow>For local businesses</Eyebrow>
       <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
         lines={[<>Share a deal,</>, <em key="x" className="font-normal italic text-[#B9512E]">fill your tables.</em>]} />
-      {!isPartner ? <Pitch /> : (
+      {awaiting ? (
+        <div className="mt-12 max-w-2xl rounded-[28px] border border-[#C2DEDA] bg-white p-8" data-testid="business-awaiting-approval">
+          {user.business_status === "rejected" ? (
+            <>
+              <p className="font-display text-3xl font-semibold">Application not approved</p>
+              <p className="mt-3 text-[#3D5E65]">Sorry, we couldn't approve {user.business_name || "your business"} as a partner this time. Check your email for details.</p>
+            </>
+          ) : (
+            <>
+              <p className="font-display text-3xl font-semibold">Thanks — you're on the list!</p>
+              <p className="mt-3 text-[#3D5E65]">We review every new partner before they go live. We'll email you as soon as {user.business_name || "your business"} is approved, with your partner kit and window sticker.</p>
+            </>
+          )}
+        </div>
+      ) : !isPartner ? <Pitch /> : (
         <>
         <div className="mt-12"><PartnerChecker /></div>
         <Link to="/business/sticker" data-testid="sticker-link"

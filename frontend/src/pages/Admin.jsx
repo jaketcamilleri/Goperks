@@ -7,6 +7,9 @@ import { DealForm } from "@/components/DealForm";
 import { PartnerChecker } from "@/components/PartnerChecker";
 import { StatusPill } from "@/pages/Business";
 import { Eyebrow } from "@/components/Reveal";
+import { AdminPeople } from "@/components/AdminPeople";
+
+const SECTIONS = [{ k: "deals", l: "Deals" }, { k: "member", l: "Members" }, { k: "business", l: "Businesses" }];
 
 const TABS = ["pending", "approved", "rejected"];
 
@@ -21,6 +24,7 @@ function Stat({ label, value, id }) {
 
 export default function Admin() {
   const [tab, setTab] = useState("pending");
+  const [section, setSection] = useState("deals");
   const [deals, setDeals] = useState([]);
   const [stats, setStats] = useState({});
   const [editing, setEditing] = useState(null);
@@ -69,16 +73,29 @@ export default function Admin() {
           <Plus className="h-4 w-4" /> New deal
         </button>
       </div>
-      <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+        <Stat id="revenue" label="Revenue (A$)" value={stats.revenue != null ? `$${Math.round(stats.revenue)}` : null} />
         <Stat id="members" label="Members" value={stats.members} />
-        <Stat id="active" label="Active" value={stats.active_members} />
+        <Stat id="active" label="Active members" value={stats.active_members} />
+        <Stat id="gifts" label="Gifts sold" value={stats.gifts_sold} />
         <Stat id="businesses" label="Businesses" value={stats.businesses} />
-        <Stat id="pending" label="Pending" value={stats.pending_deals} />
+        <Stat id="pending-businesses" label="Businesses waiting" value={stats.pending_businesses} />
+        <Stat id="pending" label="Deals waiting" value={stats.pending_deals} />
         <Stat id="live" label="Live deals" value={stats.live_deals} />
-        <Stat id="vouchers" label="Vouchers" value={stats.vouchers} />
+        <Stat id="vouchers" label="Vouchers claimed" value={stats.vouchers} />
+        <Stat id="redeemed" label="Redeemed" value={stats.redeemed} />
       </div>
       <div className="mt-10"><PartnerChecker /></div>
-      <div className="mt-12 flex gap-2">
+      <div className="mt-12 flex flex-wrap gap-2 border-b border-[#C2DEDA] pb-4" data-testid="admin-sections">
+        {SECTIONS.map((s) => (
+          <button key={s.k} onClick={() => setSection(s.k)} data-testid={`admin-section-${s.k}`}
+            className={`rounded-full px-6 py-3 font-display text-lg font-semibold ${section === s.k ? "bg-[#B9512E] text-[#EAF6F3]" : "text-[#17434C] hover:bg-white"}`}>
+            {s.l}{s.k === "business" && stats.pending_businesses ? ` (${stats.pending_businesses})` : ""}
+          </button>
+        ))}
+      </div>
+      {section !== "deals" ? <AdminPeople role={section} onChange={load} /> : (<>
+      <div className="mt-8 flex gap-2">
         {TABS.map((t) => (
           <button key={t} onClick={() => setTab(t)} data-testid={`admin-tab-${t}`}
             className={`rounded-full px-5 py-2.5 text-sm font-semibold capitalize ${tab === t ? "bg-[#17434C] text-[#EAF6F3]" : "border border-[#C2DEDA] bg-white"}`}>{t}</button>
@@ -104,6 +121,7 @@ export default function Admin() {
           ))}
         </ul>
       )}
+      </>)}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#EAF6F3]" data-lenis-prevent data-testid="admin-deal-dialog">
           <DialogHeader><DialogTitle className="font-display text-2xl">{editing === "new" ? "New deal" : "Edit deal"}</DialogTitle></DialogHeader>
