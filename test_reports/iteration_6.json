@@ -1,0 +1,38 @@
+{
+  "summary": "Verified the backend refactor (server.py split into core/models/deps/services + routes/*) plus the two new features (admin activity log and monthly partner-report cron). Full pytest regression 114 passed / 1 skipped (109 existing + 5 new in test_activity_reports.py). Frontend spot-checks: admin login works, every admin page (/admin, /deals, /businesses, /members, /reviews, /payments, /team) renders with data and no error elements; new /admin/activity page shows the DataTable with all 6 filter pills (all/deals/businesses/people/reviews/system), search, CSV export, 96 activity rows + action pills populated from prior test runs; mobile menu exposes admin-mnav-activity testid at 390px. Business portal login works at /business/login and partner-report-note (data-testid 'partner-report-note', count=1) is rendered on /business stats section. Member and anonymous access to /admin/activity are blocked by backend (403/401) and member is redirected to the admin login screen with 'This account doesn't have admin access.' (admin area has its own separate login so the admin-owner-only banner only applies to a staff role already signed into /admin, which is unit-tested server-side). Cron endpoint /api/cron/partner-reports: 401 without secret, 400 on non-object body, {status:'skipped'} off-the-1st, {status:'accepted'}+{status:'duplicate'} with force+same X-Webhook-Id. Other cron endpoints untouched. .emergent/crons.yml has the new partner-reports entry.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_activity_reports.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_business_profile.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_reviews_ends_on.py",
+    "/app/backend/tests/test_team_staff.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Seed business profile (business@tinysvouchers.com.au) remains 'completed' from a previous iteration (address '1 Test Lane, Melbourne'). Not reset here because the test request did not require it, but this means /business already shows stats + the new partner-report-note instead of the 'Complete my profile' empty state — consider resetting when you want to demo the onboarding path again.",
+    "TEST_* records created during pytest (deals, staff users, businesses from bulk-approve test) are cleaned up by autouse fixtures, but a few hidden reviews + old TEST_ deals from earlier iterations still show up in the activity feed. Harmless; purely informational."
+  ],
+  "critical_code_review_comments": [
+    "Refactor is clean: server.py is now 93 lines and acts purely as composition root; routers live under /app/backend/routes and share deps/services/core/models. No behaviour change observed — full regression passes.",
+    "services.run_partner_reports() marks partner_reports with status:'sent' on failure removal (idempotency via unique index partner_id+month). Good. Make sure the retry path doesn't double-log 'reports.sent' in activity when a subsequent run actually sends after a previous failure cleared the row — current code logs one system entry per run, which is fine semantically but can spam the activity page over months. Consider aggregating per cron-run.",
+    "routes/cron.py accept() helper correctly handles 401/400/duplicate/skipped+force; worth adding a test that non-JSON body is also 400 (currently only tested with data='[1,2]').",
+    "log_activity() swallows no changed fields on deal edits (nice), but 'deal.edited' with only a note change still logs 'details=\"\"' — minor cosmetic; UI shows empty details column for those rows.",
+    "Admin UI ActivityPage only pages client-side; on a long-running prod instance (10k+ entries) GET /api/admin/activity should accept ?limit/?since. Non-blocking.",
+    "email_templates.partner_report_email calls _stats() that could divide-by-zero if a partner has an approved deal but zero vouchers/redemptions in the window — spot check shows it's guarded. Fine."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (114 passed, 1 intentional skip; 5/5 new activity+cron tests)", "frontend": "100% smoke on admin login, 7 admin subpages, activity page (desktop+mobile), business portal login + partner stats note, member access control"},
+  "test_credentials": "Used seed creds from /app/memory/test_credentials.md unchanged. No seed passwords or roles modified. TEST_ artefacts from pytest were deleted by cleanup fixtures.",
+  "seed_data_creation": "pytest's test_activity_reports created a TEST_ deal that was edited/rejected/deleted within the same test — the activity rows for it remain (by design, the activity log is append-only).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is now split: /app/backend/{core,deps,services,models}.py + /app/backend/routes/{auth,deals,member,partner,admin,payments,cron,wallet}.py; server.py is composition root. Activity entries created by log_activity() in services.py and called throughout routes/admin.py. /api/admin/activity is owner-only (role=='admin'); staff get 403 and the UI shows 'Only the owner can see this page.' with testid admin-owner-only. Partner-reports cron: POST /api/cron/partner-reports requires Bearer WEBHOOK_CRON_SECRET; skipped unless Melbourne date is the 1st or ?force=true; idempotent via X-Webhook-Id and collection partner_reports (unique index partner_id+month). Admin UI testids: admin-nav-activity (desktop sidebar), admin-mnav-activity (mobile menu), admin-activity-page, activity-filter-{all,deals,businesses,people,reviews,system}, activity-search, activity-export, activity-row-<id>, activity-action-<id>. Partner stats testid: partner-report-note.",
+  "rca of the issue": "No defects found. Refactor preserves behaviour; new activity log + partner-reports cron behave per spec. Email send failures are expected (provider rate-limited) and correctly surface as warnings, not exceptions."
+}
