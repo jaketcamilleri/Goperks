@@ -6,6 +6,7 @@ import { MapPin, ArrowLeft, Copy, Ticket } from "lucide-react";
 import { api, catLabel, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Eyebrow } from "@/components/Reveal";
+import { HeartButton } from "@/components/HeartButton";
 
 export function VoucherTicket({ v }) {
   const copy = () => { navigator.clipboard?.writeText(v.code); toast.success("Voucher code copied"); };
@@ -68,6 +69,7 @@ export default function DealDetail() {
           className="relative aspect-[4/3] overflow-hidden lg:col-span-7">
           <img src={deal.image_url} alt={deal.title} className="h-full w-full object-cover" />
           <span className="absolute left-5 top-5 rotate-[-4deg] rounded-full bg-[#F3A72E] px-5 py-2 font-display text-2xl font-semibold">{deal.discount_label}</span>
+          <HeartButton dealId={deal.id} className="absolute right-5 top-5" />
         </motion.div>
         <div className="lg:col-span-5">
           <Eyebrow>{catLabel(deal.category)}</Eyebrow>

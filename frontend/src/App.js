@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -16,6 +17,8 @@ import Dashboard from "@/pages/Dashboard";
 import Business from "@/pages/Business";
 import Admin from "@/pages/Admin";
 import { ForgotPassword, ResetPassword } from "@/pages/PasswordReset";
+import GiftPage from "@/pages/Gift";
+import RedeemGift from "@/pages/RedeemGift";
 
 function Layout() {
   return (
@@ -31,6 +34,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <FavoritesProvider>
         <SmoothScroll />
         <Toaster position="top-center" richColors />
         <Routes>
@@ -39,6 +43,8 @@ function App() {
             <Route path="/deals" element={<Deals />} />
             <Route path="/deals/:id" element={<DealDetail />} />
             <Route path="/join" element={<Join />} />
+            <Route path="/gift" element={<GiftPage />} />
+            <Route path="/redeem-gift" element={<RedeemGift />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />
             <Route path="/login" element={<Auth mode="login" />} />
@@ -50,6 +56,7 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
           </Route>
         </Routes>
+        </FavoritesProvider>
       </AuthProvider>
     </BrowserRouter>
   );

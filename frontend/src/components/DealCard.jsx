@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, ArrowUpRight } from "lucide-react";
 import { catLabel } from "@/lib/api";
+import { HeartButton } from "@/components/HeartButton";
 
 export function DealCard({ deal, index = 0 }) {
   return (
@@ -10,7 +11,9 @@ export function DealCard({ deal, index = 0 }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: (index % 3) * 0.08 }}
+      className="relative"
     >
+      <HeartButton dealId={deal.id} className="absolute right-4 top-4 z-10" />
       <Link to={`/deals/${deal.id}`} className="group block" data-testid={`deal-card-${deal.id}`}>
         <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-[#F3EDE2]">
           <img

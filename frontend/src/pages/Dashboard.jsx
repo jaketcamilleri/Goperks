@@ -5,6 +5,8 @@ import { api, formatErr } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { MemberCard } from "@/components/MemberCard";
 import { SavingsTracker } from "@/components/SavingsTracker";
+import { SavedDeals } from "@/components/SavedDeals";
+import { WalletButtons } from "@/components/WalletButtons";
 import { MaskLines, Eyebrow } from "@/components/Reveal";
 
 function VoucherRow({ v, onRedeem }) {
@@ -52,7 +54,10 @@ export default function Dashboard() {
         <div className="lg:col-span-5">
           <MemberCard name={user?.name} code={user?.member_code || "Not active"} expires={exp} status={user?.membership_status} />
           {active ? (
+            <>
             <p className="mt-5 text-sm text-[#525B68]" data-testid="membership-active-note">Show this card at any partner counter. Tilt it — it's alive.</p>
+            <WalletButtons />
+            </>
           ) : (
             <div className="mt-6 rounded-[24px] bg-[#FDF0EC] p-6" data-testid="membership-inactive-note">
               <p className="font-display text-2xl font-semibold">Your card isn't active yet.</p>
@@ -76,6 +81,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      <SavedDeals />
     </div>
   );
 }

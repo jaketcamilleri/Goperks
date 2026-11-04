@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Lock } from "lucide-react";
 import { api, formatErr } from "@/lib/api";
@@ -52,6 +53,7 @@ export default function Join() {
             Pay once a year, save all year. Checkout is handled securely by Stripe — Apple Pay and Google Pay appear automatically on supported devices.
           </p>
           {active && <p className="mt-6 rounded-2xl bg-[#EBF3EC] p-4 text-[#2F5A3A]" data-testid="already-member-note">You're already a member until {new Date(user.membership_expires_at).toLocaleDateString("en-AU")}. Renewing adds another 12 months.</p>}
+          <p className="mt-6 text-sm text-[#525B68]">Buying for someone else? <Link to="/gift" className="font-semibold text-[#B63F18]" data-testid="join-gift-link">Gift a membership →</Link> · Got a gift code? <Link to="/redeem-gift" className="font-semibold text-[#B63F18]" data-testid="join-redeem-link">Claim it</Link></p>
           <FadeUp delay={0.2} className="mt-12 max-w-md">
             <MemberCard name={user?.name || "Your Name"} code={user?.member_code || "TV-XXXXXX"} status={active ? "active" : "preview"} />
           </FadeUp>

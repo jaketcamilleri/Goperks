@@ -10,7 +10,8 @@ CATALOG = [{
     "emergent_product_id": "annual_membership",
     "name": "Tiny's Vouchers Annual Membership",
     "tax_code": "txcd_10000000",
-    "prices": [{"lookup_key": "membership_yearly_aud", "amount": 4900, "currency": "aud", "interval": "year"}],
+    "prices": [{"lookup_key": "membership_yearly_aud", "amount": 4900, "currency": "aud", "interval": "year"},
+               {"lookup_key": "membership_gift_aud", "amount": 4900, "currency": "aud"}],
 }]
 
 

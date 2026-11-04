@@ -1,0 +1,9 @@
+crons:
+  - name: renewal-reminders
+    description: "Emails members whose yearly membership ends within 14 days, with their savings so far"
+    cron: "0 9 * * *"
+    timezone: "Australia/Melbourne"
+    endpoint: "{{BASE_URL}}/api/cron/renewal-reminders"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true

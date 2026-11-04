@@ -5,6 +5,8 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 import os
+import asyncio
+import hmac
 import logging
 import secrets
 import string
@@ -18,12 +20,15 @@ import stripe
 from html import escape
 from bson import ObjectId
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from fastapi.responses import FileResponse
+import wallet
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, BeforeValidator, ConfigDict, EmailStr
 from starlette.middleware.cors import CORSMiddleware
 
 from seed_data import SEED_DEALS, DEMO_BUSINESS_DEALS
 from email_service import send_email, EMAIL_FROM_NAME
+from email_templates import welcome_email, renewal_email, gift_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -33,6 +38,7 @@ db = client[os.environ["DB_NAME"]]
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or "sk_test_emergent"
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 MEMBERSHIP_LOOKUP_KEY = "membership_yearly_aud"
+GIFT_LOOKUP_KEY = "membership_gift_aud"
 TAX_MODE = "full"
 JWT_ALGORITHM = "HS256"
 CATEGORIES = ["cafes", "kids", "dining", "family-fun", "essentials", "travel"]
@@ -155,6 +161,14 @@ class RedeemIn(BaseModel):
 
 class CheckoutIn(BaseModel):
     origin_url: str
+    kind: str = "membership"
+    gift_name: Optional[str] = Field(None, max_length=80)
+    gift_email: Optional[EmailStr] = None
+    gift_message: Optional[str] = Field(None, max_length=300)
+
+
+class GiftRedeemIn(BaseModel):
+    code: str = Field(min_length=6, max_length=30)
 
 
 # ---------- Helpers ----------
@@ -254,6 +268,22 @@ async def with_coords(data: dict, previous: Optional[dict] = None) -> dict:
     return data
 
 
+def nice_date(iso: str) -> str:
+    return datetime.fromisoformat(iso).strftime("%-d %B %Y")
+
+
+async def send_welcome(user_id: str):
+    try:
+        doc = await db.users.find_one({"_id": oid(user_id)})
+        if not doc or doc.get("welcome_sent"):
+            return
+        subject, html = welcome_email(doc.get("name", ""), doc["member_code"], nice_date(doc["membership_expires_at"]))
+        await send_email(to=doc["email"], subject=subject, html=html)
+        await db.users.update_one({"_id": doc["_id"]}, {"$set": {"welcome_sent": True}})
+    except Exception as e:
+        logger.warning("welcome email failed for %s: %s", user_id, e)
+
+
 async def activate_membership(user_id: str):
     doc = await db.users.find_one({"_id": oid(user_id)})
     if not doc:
@@ -267,6 +297,7 @@ async def activate_membership(user_id: str):
         "membership_expires_at": (base + timedelta(days=365)).isoformat(),
         "member_code": doc.get("member_code") or f"TV-{rand_code(6)}",
     }})
+    asyncio.create_task(send_welcome(user_id))
 
 
 async def mark_paid(session_id: str, extra: dict):
@@ -274,8 +305,25 @@ async def mark_paid(session_id: str, extra: dict):
         {"session_id": session_id, "payment_status": {"$ne": "paid"}},
         {"$set": {"status": "completed", "payment_status": "paid", "updated_at": now_iso(), **extra}},
     )
-    if res and res.get("user_id"):
+    if res and res.get("kind") == "gift":
+        await create_gift(res)
+    elif res and res.get("user_id"):
         await activate_membership(res["user_id"])
+
+
+async def create_gift(txn: dict):
+    code = f"GIFT-{rand_code(4)}-{rand_code(4)}"
+    await db.gifts.insert_one({
+        "code": code, "session_id": txn["session_id"], "buyer_id": txn["user_id"],
+        "recipient_name": txn["gift_name"], "recipient_email": txn["gift_email"],
+        "message": txn.get("gift_message") or "", "status": "unredeemed", "created_at": now_iso()})
+    try:
+        buyer = await db.users.find_one({"_id": oid(txn["user_id"])})
+        subject, html = gift_email(txn["gift_name"], (buyer or {}).get("name", "A friend"), txn.get("gift_message") or "", code)
+        await send_email(to=txn["gift_email"], subject=subject, html=html)
+        await db.gifts.update_one({"code": code}, {"$set": {"email_sent": True}})
+    except Exception as e:
+        logger.warning("gift email failed for %s: %s", code, e)
 
 
 # ---------- Auth ----------
@@ -521,6 +569,57 @@ async def submit_deal(body: DealIn, user=Depends(require_role("business", "admin
     return d.out()
 
 
+@api.get("/business/stats")
+async def business_stats(user=Depends(require_role("business", "admin"))):
+    deals = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(200)
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    rows, totals = [], {"claimed_month": 0, "redeemed_month": 0, "claimed_all": 0, "redeemed_all": 0, "saved_all": 0.0}
+    for d in deals:
+        did = str(d["_id"])
+        vs = await db.vouchers.find({"deal_id": did}, {"created_at": 1, "redeemed_at": 1, "status": 1, "amount_saved": 1}).to_list(5000)
+        row = {
+            "deal_id": did, "title": d["title"], "status": d["status"], "discount_label": d["discount_label"],
+            "claimed_month": sum(1 for v in vs if v["created_at"] >= month_start),
+            "redeemed_month": sum(1 for v in vs if v.get("status") == "redeemed" and (v.get("redeemed_at") or "") >= month_start),
+            "claimed_all": len(vs),
+            "redeemed_all": sum(1 for v in vs if v.get("status") == "redeemed"),
+            "saved_all": round(sum(v.get("amount_saved") or 0 for v in vs if v.get("status") == "redeemed"), 2),
+        }
+        for k in totals:
+            totals[k] += row[k]
+        rows.append(row)
+    totals["saved_all"] = round(totals["saved_all"], 2)
+    return {"month": datetime.now(timezone.utc).strftime("%B %Y"), "totals": totals, "deals": rows}
+
+
+# ---------- Gifts ----------
+@api.get("/me/gifts")
+async def my_gifts(user=Depends(current_user)):
+    docs = await db.gifts.find({"buyer_id": user["id"]}, {"_id": 0, "session_id": 0}).sort("created_at", -1).to_list(100)
+    return docs
+
+
+@api.get("/gifts/{code}")
+async def gift_info(code: str):
+    g = await db.gifts.find_one({"code": code.strip().upper()})
+    if not g:
+        raise HTTPException(404, "Gift code not found")
+    buyer = await db.users.find_one({"_id": oid(g["buyer_id"])})
+    return {"recipient_name": g["recipient_name"], "from_name": (buyer or {}).get("name", "A friend").split(" ")[0],
+            "message": g.get("message", ""), "status": g["status"]}
+
+
+@api.post("/gifts/redeem")
+async def redeem_gift(body: GiftRedeemIn, user=Depends(current_user)):
+    g = await db.gifts.find_one_and_update(
+        {"code": body.code.strip().upper(), "status": "unredeemed"},
+        {"$set": {"status": "redeemed", "redeemed_by": user["id"], "redeemed_at": now_iso()}})
+    if not g:
+        raise HTTPException(400, "This gift code is invalid or has already been used")
+    await activate_membership(user["id"])
+    return user_out(await db.users.find_one({"_id": oid(user["id"])}))
+
+
 @api.get("/business/deals")
 async def my_business_deals(user=Depends(require_role("business", "admin"))):
     docs = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(100)
@@ -588,17 +687,21 @@ async def admin_stats(_=Depends(require_role("admin"))):
 # ---------- Payments ----------
 @api.post("/payments/checkout")
 async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
-    prices = stripe.Price.list(lookup_keys=[MEMBERSHIP_LOOKUP_KEY], active=True, limit=1).data
+    is_gift = body.kind == "gift"
+    if is_gift and not (body.gift_name and body.gift_email):
+        raise HTTPException(400, "Please add the recipient's name and email")
+    lookup = GIFT_LOOKUP_KEY if is_gift else MEMBERSHIP_LOOKUP_KEY
+    prices = stripe.Price.list(lookup_keys=[lookup], active=True, limit=1).data
     if not prices:
         raise HTTPException(500, "Membership price not configured")
     price = prices[0]
     kwargs = dict(
         line_items=[{"price": price.id, "quantity": 1}],
         mode="subscription" if price.recurring else "payment",
-        success_url=f"{body.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+        success_url=f"{body.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}" + ("&kind=gift" if is_gift else ""),
         cancel_url=f"{body.origin_url}/payment/cancel",
         customer_email=user["email"],
-        metadata={"user_id": user["id"], "lookup_key": MEMBERSHIP_LOOKUP_KEY},
+        metadata={"user_id": user["id"], "lookup_key": lookup},
     )
     try:
         session = stripe.checkout.Session.create(**kwargs, managed_payments={"enabled": True})
@@ -611,7 +714,11 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
             raise HTTPException(400, e.user_message or "Checkout failed")
     await db.payment_transactions.insert_one({
         "session_id": session.id, "user_id": user["id"], "email": user["email"],
-        "lookup_key": MEMBERSHIP_LOOKUP_KEY, "amount": float((price.unit_amount or 0) / 100),
+        "lookup_key": lookup, "kind": "gift" if is_gift else "membership",
+        "gift_name": body.gift_name if is_gift else None,
+        "gift_email": body.gift_email.lower() if is_gift else None,
+        "gift_message": body.gift_message if is_gift else None,
+        "amount": float((price.unit_amount or 0) / 100),
         "currency": price.currency, "status": "initiated", "payment_status": "pending",
         "created_at": now_iso(), "updated_at": now_iso(),
     })
@@ -657,6 +764,120 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
+# ---------- Favourites ----------
+@api.get("/me/favorites")
+async def my_favorites(user=Depends(current_user)):
+    favs = await db.favorites.find({"user_id": user["id"]}).sort("created_at", -1).to_list(500)
+    ids = [f["deal_id"] for f in favs]
+    docs = await db.deals.find({"_id": {"$in": [ObjectId(i) for i in ids if ObjectId.is_valid(i)]}, "status": "approved"}).to_list(500)
+    by_id = {str(d["_id"]): Deal.from_mongo(d).out() for d in docs}
+    return [by_id[i] for i in ids if i in by_id]
+
+
+@api.get("/me/favorite-ids")
+async def my_favorite_ids(user=Depends(current_user)):
+    favs = await db.favorites.find({"user_id": user["id"]}, {"deal_id": 1}).to_list(500)
+    return [f["deal_id"] for f in favs]
+
+
+@api.post("/me/favorites/{deal_id}")
+async def toggle_favorite(deal_id: str, user=Depends(current_user)):
+    if not await db.deals.find_one({"_id": oid(deal_id), "status": "approved"}):
+        raise HTTPException(404, "Deal not found")
+    res = await db.favorites.delete_one({"user_id": user["id"], "deal_id": deal_id})
+    if res.deleted_count:
+        return {"favorited": False}
+    await db.favorites.update_one({"user_id": user["id"], "deal_id": deal_id},
+                                  {"$setOnInsert": {"created_at": now_iso()}}, upsert=True)
+    return {"favorited": True}
+
+
+# ---------- Scheduled: renewal reminders ----------
+async def run_renewal_reminders():
+    now = datetime.now(timezone.utc)
+    window_end = (now + timedelta(days=14)).isoformat()
+    cursor = db.users.find({"membership_status": "active", "membership_expires_at": {"$gt": now.isoformat(), "$lte": window_end}})
+    sent = 0
+    async for u in cursor:
+        if u.get("reminder_sent_for") == u["membership_expires_at"]:
+            continue
+        redeemed = await db.vouchers.find({"user_id": str(u["_id"]), "status": "redeemed"}).to_list(1000)
+        saved = round(sum(v.get("amount_saved") or 0 for v in redeemed), 2)
+        subject, html = renewal_email(u.get("name", ""), u.get("member_code", ""), nice_date(u["membership_expires_at"]), saved, len(redeemed))
+        try:
+            await send_email(to=u["email"], subject=subject, html=html)
+            await db.users.update_one({"_id": u["_id"]}, {"$set": {"reminder_sent_for": u["membership_expires_at"]}})
+            sent += 1
+        except Exception as e:
+            logger.warning("renewal reminder failed for %s: %s", u["email"], e)
+    logger.info("renewal reminders sent: %s", sent)
+
+
+@api.post("/cron/renewal-reminders")
+async def cron_renewal_reminders(request: Request):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    auth = request.headers.get("Authorization", "")
+    secret = os.environ.get("WEBHOOK_CRON_SECRET", "")
+    if not secret or not auth.startswith("Bearer ") or not hmac.compare_digest(auth[7:], secret):
+        raise HTTPException(401, "Unauthorized")
+    try:
+        envelope = await request.json()
+    except Exception:
+        envelope = None
+    if envelope is not None and not isinstance(envelope, dict):
+        raise HTTPException(400, "Invalid body")
+    run_id = request.headers.get("X-Webhook-Id") or (envelope or {}).get("run_id") or now_iso()
+    try:
+        await db.cron_runs.insert_one({"_id": f"renewal:{run_id}", "created_at": now_iso()})
+    except Exception:
+        return {"status": "duplicate"}
+    asyncio.create_task(run_renewal_reminders())
+    return {"status": "accepted"}
+
+
+# ---------- Phone wallet cards ----------
+def wallet_member(user: dict) -> dict:
+    if user["membership_status"] != "active" or not user.get("member_code"):
+        raise HTTPException(402, "An active membership is required for a wallet card")
+    return user
+
+
+@api.get("/wallet/status")
+async def wallet_status():
+    return {"apple": wallet.apple_ready(), "google": wallet.google_ready()}
+
+
+@api.get("/wallet/apple")
+async def wallet_apple(user=Depends(current_user)):
+    if not wallet.apple_ready():
+        raise HTTPException(503, "Apple Wallet isn't set up yet")
+    member = wallet_member(user)
+    try:
+        data = wallet.build_pkpass(member)
+    except Exception as e:
+        logger.error("pkpass build failed: %s", type(e).__name__)
+        raise HTTPException(503, "Apple Wallet card is temporarily unavailable")
+    return Response(content=data, media_type="application/vnd.apple.pkpass",
+                    headers={"Content-Disposition": f'attachment; filename="tinys-card-{member["member_code"]}.pkpass"'})
+
+
+@api.get("/wallet/google")
+async def wallet_google(user=Depends(current_user)):
+    if not wallet.google_ready():
+        raise HTTPException(503, "Google Wallet isn't set up yet")
+    member = wallet_member(user)
+    try:
+        return {"url": wallet.google_save_url(member)}
+    except Exception as e:
+        logger.error("google wallet link failed: %s", type(e).__name__)
+        raise HTTPException(503, "Google Wallet card is temporarily unavailable")
+
+
+@api.get("/wallet/google-logo.png")
+async def wallet_google_logo():
+    return FileResponse(wallet.ASSETS / "google_logo.png", media_type="image/png")
+
+
 app.include_router(api)
 
 app.add_middleware(
@@ -679,6 +900,10 @@ async def startup():
     await db.password_reset_tokens.create_index("token")
     await db.vouchers.create_index("code")
     await db.users.create_index("member_code")
+    await db.favorites.create_index([("user_id", 1), ("deal_id", 1)], unique=True)
+    await db.gifts.create_index("code", unique=True)
+    await db.gifts.create_index("buyer_id")
+    await db.vouchers.create_index("deal_id")
     seeds = [
         (os.environ["ADMIN_EMAIL"], os.environ["ADMIN_PASSWORD"], "Admin", "admin", None, False),
         ("member@tinysvouchers.com.au", "Member!2026", "Demo Member", "member", None, True),

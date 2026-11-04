@@ -8,6 +8,8 @@ import { MaskLines } from "@/components/Reveal";
 export function PaymentSuccess() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
+  const isGift = params.get("kind") === "gift";
+  const [gift, setGift] = useState(null);
   const { refresh } = useAuth();
   const [state, setState] = useState("checking");
   const [me, setMe] = useState(null);
@@ -21,6 +23,12 @@ export function PaymentSuccess() {
       try {
         const { data } = await api.get(`/payments/status/${sessionId}`);
         if (data?.payment_status === "paid") {
+          if (isGift) {
+            await new Promise((r) => setTimeout(r, 1500));
+            const g = await api.get("/me/gifts").catch(() => ({ data: [] }));
+            if (!stopped) { setGift(Array.isArray(g.data) ? g.data[0] : null); setState("gift"); }
+            return;
+          }
           const u = await refresh();
           if (!stopped) { setMe(u); setState("paid"); }
           return;
@@ -32,7 +40,19 @@ export function PaymentSuccess() {
     };
     poll();
     return () => { stopped = true; clearTimeout(timer); };
-  }, [sessionId, refresh]);
+  }, [sessionId, refresh, isGift]);
+
+  if (state === "gift") {
+    return (
+      <div className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8" data-testid="gift-success-page">
+        <MaskLines as="h1" className="font-display text-5xl font-semibold tracking-tight sm:text-6xl"
+          lines={[<>Gift <em key="s" className="font-normal italic text-[#D95329]">sent!</em></>]} />
+        <p className="mt-5 text-[#525B68] md:text-lg">We've emailed {gift?.recipient_name || "them"} their gift code. You can also share it yourself:</p>
+        <p className="mx-auto mt-8 w-fit rounded-[20px] bg-[#1E2229] px-8 py-5 font-mono text-2xl font-bold tracking-[0.15em] text-[#FBF8F3]" data-testid="gift-success-code">{gift?.code || "—"}</p>
+        <Link to="/deals" className="mt-10 inline-flex rounded-full bg-[#D95329] px-7 py-4 font-semibold text-[#FBF8F3]">Back to the deals</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:px-8" data-testid="payment-success-page">

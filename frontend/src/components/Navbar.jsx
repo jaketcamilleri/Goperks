@@ -9,6 +9,7 @@ const LINKS = [
   { to: "/deals", label: "Deals" },
   { to: "/#how", label: "How it works" },
   { to: "/join", label: "Membership" },
+  { to: "/gift", label: "Gift" },
   { to: "/business", label: "For businesses" },
 ];
 
