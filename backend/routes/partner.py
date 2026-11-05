@@ -1,6 +1,7 @@
 """Partner portal: counter checks, deal submissions, business profile, photos and stats."""
 import asyncio
 import os
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -19,15 +20,33 @@ MAX_PHOTOS = 6
 
 
 # ---------- Counter check ----------
+MEMBER_PREFIXES = ("GP", "LP", "TV")
+
+
+def read_code(raw: str) -> tuple:
+    """Staff may type codes with or without dashes/spaces. Returns (member_code or None, voucher_code).
+    'GP8K2Q4M', 'gp 8k2q4m' and '8K2Q4M' -> GP-8K2Q4M; 'AB12CD34' -> AB12-CD34."""
+    s = raw.strip().upper()
+    flat = re.sub(r"[^A-Z0-9]", "", s)
+    member = None
+    if len(flat) == 8 and flat[:2] in MEMBER_PREFIXES:
+        member = f"{flat[:2]}-{flat[2:]}"
+    elif len(flat) == 6:
+        member = f"GP-{flat}"
+    voucher = f"{flat[:4]}-{flat[4:]}" if len(flat) == 8 else s
+    return member, voucher
+
+
 async def find_partner_voucher(code: str, user: dict):
     """A business can only see and redeem vouchers for deals that belong to it right now."""
-    v = await db.vouchers.find_one({"code": code.strip().upper()})
+    _, voucher = read_code(code)
+    v = await db.vouchers.find_one({"code": {"$in": list({voucher, code.strip().upper()})}})
     if v and user["role"] not in ("admin", "staff"):
         deal = await db.deals.find_one({"_id": oid(v["deal_id"])}, {"submitted_by": 1})
         if not deal or deal.get("submitted_by") != user["id"]:
             v = None
     if not v:
-        raise HTTPException(404, "No voucher with that code for your business")
+        raise HTTPException(404, "No voucher or member card with that code for your business")
     return v
 
 
@@ -35,15 +54,23 @@ async def find_partner_voucher(code: str, user: dict):
 async def partner_check(body: CodeIn, user=Depends(require_partner)):
     code = body.code.strip().upper()
     live = "typed"
+    m = None
     if code.startswith("GPL."):
         tcode, live = check_live_token(code)
         if live == "invalid":
             raise HTTPException(400, "This QR code isn't a genuine Go Perks card")
         code = tcode
-    if code.startswith(("GP-", "LP-", "TV-")):
         m = await db.users.find_one({"member_code": code})
         if not m:
             raise HTTPException(404, "No member with that card number")
+    else:
+        member_code, _ = read_code(code)
+        m = await db.users.find_one({"member_code": member_code}) if member_code else None
+        if m:
+            code = member_code
+        elif member_code and len(re.sub(r"[^A-Z0-9]", "", code)) == 6:
+            raise HTTPException(404, "No member with that card number")
+    if m:
         info = user_out(m)
         q = {"status": "approved"} if user["role"] in ("admin", "staff") else {"status": "approved", "submitted_by": user["id"]}
         deals = await db.deals.find(q).sort("title", 1).to_list(200)
@@ -65,11 +92,12 @@ async def partner_check(body: CodeIn, user=Depends(require_partner)):
 
 @router.post("/partner/redeem-card")
 async def partner_redeem_card(body: CardRedeemIn, user=Depends(require_partner)):
+    member_code = read_code(body.member_code)[0] or body.member_code.strip().upper()
     if body.live_token:
         tcode, state = check_live_token(body.live_token)
-        if state != "live" or tcode != body.member_code.strip().upper():
+        if state != "live" or tcode != member_code:
             raise HTTPException(400, "This card code has expired — ask the member to show their live card and scan again")
-    m = await db.users.find_one({"member_code": body.member_code.strip().upper()})
+    m = await db.users.find_one({"member_code": member_code})
     if not m:
         raise HTTPException(404, "No member with that card number")
     member = user_out(m)
