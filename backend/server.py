@@ -1,12 +1,11 @@
 """Go Perks API: app setup, routers, startup indexes and seed data. Routes live in routes/*."""
 import asyncio
 import os
-from datetime import datetime, timezone, timedelta
 
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 
-from core import db, client, logger, hash_password, rand_code  # first: loads backend/.env
+from core import db, client, logger  # first: loads backend/.env
 import storage
 from models import User
 from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects, templates
@@ -50,20 +49,24 @@ async def create_indexes():
     await db.email_templates.create_index("key", unique=True)
 
 
+DEMO_EMAILS = ["admin@tinysvouchers.com.au", "member@tinysvouchers.com.au", "business@tinysvouchers.com.au"]
+DEMO_LINKS = [("vouchers", "user_id"), ("vouchers", "partner_id"), ("deals", "partner_id"), ("reviews", "user_id"),
+              ("payment_transactions", "user_id"), ("partner_reports", "partner_id"), ("favorites", "user_id")]
+
+
+async def remove_demo_accounts():
+    demo = await db.users.find({"email": {"$in": DEMO_EMAILS}}, {"_id": 1}).to_list(None)
+    if not demo:
+        return
+    ids = [str(d["_id"]) for d in demo]
+    for coll, field in DEMO_LINKS:
+        await db[coll].delete_many({field: {"$in": ids}})
+    await db.users.delete_many({"_id": {"$in": [d["_id"] for d in demo]}})
+    logger.info("Removed %d demo accounts", len(demo))
+
+
 async def seed():
-    seeds = [
-        (os.environ["ADMIN_EMAIL"], os.environ["ADMIN_PASSWORD"], "Admin", "admin", None, False),
-        ("member@tinysvouchers.com.au", "Member!2026", "Demo Member", "member", None, True),
-        ("business@tinysvouchers.com.au", "Business!2026", "Demo Business", "business", "Demo Corner Cafe", False),
-    ]
-    for email, pw, name, role, biz, active in seeds:
-        if not await db.users.find_one({"email": email}):
-            doc = User(email=email, name=name, role=role, business_name=biz).to_mongo()
-            doc["password_hash"] = hash_password(pw)
-            if active:
-                doc.update(membership_status="active", member_code=f"GP-{rand_code(6)}",
-                           membership_expires_at=(datetime.now(timezone.utc) + timedelta(days=365)).isoformat())
-            await db.users.insert_one(doc)
+    await remove_demo_accounts()
     await db.users.update_many({"role": "business", "business_status": {"$exists": False}}, {"$set": {"business_status": "approved"}})
     super_email = os.environ.get("SUPER_ADMIN_EMAIL", "").lower()
     if super_email:

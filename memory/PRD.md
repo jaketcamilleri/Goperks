@@ -49,6 +49,10 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Partner stats on business portal: claimed/redeemed this month, all-time redeemed, member savings, per-deal table (/api/business/stats)
 - Gift a membership: /gift form (recipient name, email, note) -> Stripe one-time A$49 (lookup membership_gift_aud) -> gift code emailed to recipient + shown to buyer; /redeem-gift claims it and activates 12 months
 
+## Implemented (2026-11-05)
+- Removed demo admin/member/business logins (admin@, member@, business@tinysvouchers.com.au) before launch. They are no longer seeded and `remove_demo_accounts()` on startup deletes them plus their vouchers, deals, reviews, payments, reports and favourites (so the live site is cleaned on next publish). Only admin is now the owner Google account jaketcamilleri@gmail.com.
+
+
 ## Business rules
 - Each deal can be redeemed once per member per membership year (term = membership_expires_at - 365 days). Enforced on claim, member self-redeem, partner voucher redeem and partner card redeem (/api/partner/redeem-card); deal page shows "used this year" state.
 - Auth: email/password + Emergent Google sign-in (/api/auth/google exchanges session_id, matches by email, issues same JWT cookies). Refresh cookie 30 days.
