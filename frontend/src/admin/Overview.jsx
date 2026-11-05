@@ -5,6 +5,7 @@ import { ap } from "@/lib/site";
 import { RevenueChart } from "@/components/RevenueChart";
 import { TopDeals } from "@/components/TopDeals";
 import { PageHead } from "@/admin/AdminShell";
+import { LaunchOfferSettings } from "@/admin/LaunchOfferSettings";
 import { useOutletContext } from "react-router-dom";
 
 const MONEY = new Set(["revenue", "members", "active_members", "gifts_sold"]);
@@ -32,6 +33,7 @@ export default function Overview() {
   return (
     <div data-testid="admin-overview">
       <PageHead title="Overview" sub="Everything happening across Go Perks." />
+      {owner && <LaunchOfferSettings />}
       <div className="grid gap-3 sm:grid-cols-2">
         <Todo n={s.pending_businesses} label="Businesses waiting for approval" to={ap("/businesses")} id="businesses" />
         <Todo n={s.pending_deals} label="Deals waiting for review" to={ap("/deals")} id="deals" />

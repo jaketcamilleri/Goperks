@@ -9,6 +9,7 @@ from core import db, oid, now_iso, melb_today, MELB, STRIPE_WEBHOOK_SECRET, MEMB
 from deps import current_user
 from models import CheckoutIn
 from services import mark_paid, attach_referrer, activate_membership
+from routes.launch import active_launch, LAUNCH_DISCOUNT_CENTS
 
 router = APIRouter()
 MEMBERSHIP_PRICE_CENTS = 4900
@@ -22,6 +23,16 @@ def referral_coupon(currency: str) -> str:
     except stripe.error.InvalidRequestError:
         stripe.Coupon.create(id=cid, amount_off=REFERRAL_DISCOUNT_CENTS, currency=currency, duration="once",
                              name="Friend referral: 1 month off")
+    return cid
+
+
+def launch_coupon(currency: str) -> str:
+    cid = f"gp_launch_half_{currency}"
+    try:
+        stripe.Coupon.retrieve(cid)
+    except stripe.error.InvalidRequestError:
+        stripe.Coupon.create(id=cid, amount_off=LAUNCH_DISCOUNT_CENTS, currency=currency, duration="once",
+                             name="Launch week: half price first year")
     return cid
 
 
@@ -44,25 +55,29 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
     if not is_gift and not user.get("can_renew", True):
         opens = datetime.fromisoformat(user["renew_opens_at"]).astimezone(MELB).strftime("%-d %B %Y")
         raise HTTPException(400, f"Your membership is active. You can renew from {opens}, 2 months before it ends.")
-    referred = False
+    referred = launch = False
     if not is_gift and not await db.payment_transactions.find_one({"user_id": user["id"], "kind": "membership", "payment_status": "paid"}):
         await attach_referrer(user["id"], user["email"], body.ref)
         doc = await db.users.find_one({"_id": oid(user["id"])}, {"referred_by": 1, "referral_rewarded": 1})
-        referred = bool(doc.get("referred_by")) and not doc.get("referral_rewarded")
+        launch = bool(await active_launch())  # half price beats the referral month; they don't stack
+        referred = not launch and bool(doc.get("referred_by")) and not doc.get("referral_rewarded")
     prices = stripe.Price.list(lookup_keys=[lookup], active=True, limit=1).data
     if not prices:
         raise HTTPException(500, "Membership price not configured")
     price = prices[0]
-    amount = (price.unit_amount or 0) - (REFERRAL_DISCOUNT_CENTS if referred else 0)
+    amount = (price.unit_amount or 0) - (LAUNCH_DISCOUNT_CENTS if launch else REFERRAL_DISCOUNT_CENTS if referred else 0)
     kwargs = dict(
         line_items=[{"price": price.id, "quantity": 1}],
         mode="subscription" if price.recurring else "payment",
         success_url=f"{body.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}" + ("&kind=gift" if is_gift else ""),
         cancel_url=f"{body.origin_url}/payment/cancel",
         customer_email=user["email"],
-        metadata={"user_id": user["id"], "lookup_key": lookup, "referral_discount": "yes" if referred else "no"},
+        metadata={"user_id": user["id"], "lookup_key": lookup, "referral_discount": "yes" if referred else "no",
+                  "launch_offer": "yes" if launch else "no"},
     )
-    if referred:
+    if launch:
+        kwargs["discounts"] = [{"coupon": launch_coupon(price.currency)}]
+    elif referred:
         kwargs["discounts"] = [{"coupon": referral_coupon(price.currency)}]
     try:
         session = stripe.checkout.Session.create(**kwargs, managed_payments={"enabled": True})
@@ -80,11 +95,12 @@ async def create_checkout(body: CheckoutIn, user=Depends(current_user)):
         "gift_email": body.gift_email.lower() if is_gift else None,
         "gift_message": body.gift_message if is_gift else None,
         "gift_send_date": body.gift_send_date if is_gift else None,
-        "amount": float(amount / 100), "referral_discount": referred,
+        "amount": float(amount / 100), "referral_discount": referred, "launch_offer": launch,
         "currency": price.currency, "status": "initiated", "payment_status": "pending",
         "created_at": now_iso(), "updated_at": now_iso(),
     })
-    return {"checkout_url": session.url, "session_id": session.id, "amount": float(amount / 100), "referral_discount": referred}
+    return {"checkout_url": session.url, "session_id": session.id, "amount": float(amount / 100),
+            "referral_discount": referred, "launch_offer": launch}
 
 
 @router.get("/payments/my-price")
@@ -92,13 +108,15 @@ async def my_price(ref: Optional[str] = None, user=Depends(current_user)):
     """What this member pays at checkout: 11 months' price for a first year with a valid friend's code."""
     full = MEMBERSHIP_PRICE_CENTS / 100
     if await db.payment_transactions.find_one({"user_id": user["id"], "kind": "membership", "payment_status": "paid"}):
-        return {"amount": full, "referral_discount": False}
+        return {"amount": full, "referral_discount": False, "launch_offer": False}
+    if await active_launch():
+        return {"amount": (MEMBERSHIP_PRICE_CENTS - LAUNCH_DISCOUNT_CENTS) / 100, "referral_discount": False, "launch_offer": True}
     doc = await db.users.find_one({"_id": oid(user["id"])}, {"referred_by": 1, "email": 1})
     ok = bool(doc.get("referred_by"))
     if not ok and ref:
         r = await db.users.find_one({"referral_code": ref.strip().upper(), "role": "member"}, {"email": 1})
         ok = bool(r) and r["email"] != doc.get("email") and str(r["_id"]) != user["id"]
-    return {"amount": (MEMBERSHIP_PRICE_CENTS - REFERRAL_DISCOUNT_CENTS) / 100 if ok else full, "referral_discount": ok}
+    return {"amount": (MEMBERSHIP_PRICE_CENTS - REFERRAL_DISCOUNT_CENTS) / 100 if ok else full, "referral_discount": ok, "launch_offer": False}
 
 
 @router.get("/payments/status/{session_id}")

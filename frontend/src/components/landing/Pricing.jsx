@@ -24,9 +24,15 @@ export function PricingTicket({ cta, price }) {
           <span className="pb-2 text-[#3D5E65]">AUD / {price && price !== 49 ? "first year" : "year"}</span>
         </p>
         <p className="mt-2 text-sm text-[#3D5E65]">That's less than a dollar a week.</p>
-        <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2.5 text-sm font-semibold text-[#9A4024]" data-testid="pricing-referral-line">
-          <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Invited by a friend? Your first year is $44.92 (one month free), and they get a free month at their next renewal.
-        </p>
+        {price === 24.5 ? (
+          <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2.5 text-sm font-semibold text-[#9A4024]" data-testid="pricing-launch-line">
+            <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Launch week offer: half price for your first year. Then $49 a year.
+          </p>
+        ) : (
+          <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#FDF0EC] px-3 py-2.5 text-sm font-semibold text-[#9A4024]" data-testid="pricing-referral-line">
+            <Gift className="mt-0.5 h-4 w-4 shrink-0" /> Invited by a friend? Your first year is $44.92 (one month free), and they get a free month at their next renewal.
+          </p>
+        )}
       </div>
       <div className="mx-8 border-t-2 border-dashed border-[#C2DEDA] sm:mx-10" />
       <div className="p-8 sm:p-10">
@@ -44,7 +50,7 @@ export function PricingTicket({ cta, price }) {
   );
 }
 
-export function Pricing() {
+export function Pricing({ price }) {
   return (
     <section className="relative overflow-hidden bg-[#17434C] text-[#EAF6F3]" data-testid="pricing-section">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-12 lg:py-24">
@@ -60,7 +66,7 @@ export function Pricing() {
             <Link to="/join" data-testid="pricing-join-btn" className="mt-8 block rounded-full bg-[#B9512E] py-4 text-center font-semibold text-white transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98]">
               Become a member
             </Link>
-          } />
+          } price={price} />
         </div>
       </div>
     </section>

@@ -11,6 +11,8 @@ import { Pricing } from "@/components/landing/Pricing";
 import { ReferFriend } from "@/components/landing/ReferFriend";
 import { MemberVoices, Faq } from "@/components/landing/MemberVoices";
 import { BusinessCta } from "@/components/landing/BusinessCta";
+import { LaunchBanner } from "@/components/landing/LaunchBanner";
+import { useLaunchOffer } from "@/lib/launch";
 
 function Rows({ deals }) {
   const fresh = deals.filter(isNew);
@@ -29,6 +31,7 @@ function Rows({ deals }) {
 export default function Landing() {
   const [deals, setDeals] = useState(null);
   const [stats, setStats] = useState(null);
+  const offer = useLaunchOffer();
   useEffect(() => {
     api.get("/deals").then((r) => setDeals(Array.isArray(r.data) ? r.data : [])).catch(() => setDeals([]));
     api.get("/stats").then((r) => setStats(r.data || null)).catch(() => setStats(null));
@@ -36,6 +39,7 @@ export default function Landing() {
 
   return (
     <div data-testid="landing-page">
+      <LaunchBanner offer={offer} />
       <Hero stats={stats} />
       <section className="mx-auto max-w-7xl px-5 pb-6 sm:px-8" data-testid="landing-categories">
         <div className="flex items-end justify-between gap-4">
@@ -46,7 +50,7 @@ export default function Landing() {
       </section>
       {deals && deals.length > 0 && <Rows deals={deals} />}
       <div className="mt-10"><HowItWorks /></div>
-      <Pricing />
+      <Pricing price={offer.active ? offer.price : undefined} />
       <ReferFriend />
       <MemberVoices />
       <Faq />

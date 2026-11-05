@@ -8,11 +8,11 @@ from starlette.middleware.cors import CORSMiddleware
 from core import db, client, logger  # first: loads backend/.env
 import storage
 from models import User
-from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects, templates
+from routes import auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects, templates, launch
 
 app = FastAPI()
 api = APIRouter(prefix="/api")
-for module in (auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects, templates):
+for module in (auth, deals, member, partner, admin, payments, cron, wallet, invites, prospects, templates, launch):
     api.include_router(module.router)
 app.include_router(api)
 

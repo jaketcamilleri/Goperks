@@ -52,6 +52,9 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 ## Implemented (2026-11-05)
 - Removed demo admin/member/business logins (admin@, member@, business@tinysvouchers.com.au) before launch. They are no longer seeded and `remove_demo_accounts()` on startup deletes them plus their vouchers, deals, reviews, payments, reports and favourites (so the live site is cleaned on next publish). Only admin is now the owner Google account jaketcamilleri@gmail.com.
 
+- Launch week offer: owner sets on/off + start/end dates in Admin → Overview (db.settings _id "launch", GET/PUT /api/admin/launch-offer). While live (Melbourne dates), public GET /api/launch-offer drives a home-page banner, $24.50 pricing ticket and Join note; checkout applies a once-off Stripe coupon (gp_launch_half_aud, A$24.50 off) for first-time members. Doesn't stack with the referral discount (launch wins). Renewals full price. Offer currently OFF.
+
+
 
 ## Business rules
 - Each deal can be redeemed once per member per membership year (term = membership_expires_at - 365 days). Enforced on claim, member self-redeem, partner voucher redeem and partner card redeem (/api/partner/redeem-card); deal page shows "used this year" state.
