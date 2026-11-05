@@ -6,6 +6,14 @@ import { btn, fmtDate } from "@/admin/DataTable";
 /** Shown inside the admin deal dialog when the business has asked for the deal to be taken down. */
 export function RemovalRequestBox({ deal, onDone }) {
   const [busy, setBusy] = useState(false);
+  if (deal?.status === "removed") {
+    return (
+      <div className="rounded-xl border border-[#D7E7E4] bg-[#ECECEC] p-4 text-sm" data-testid="removal-history-box">
+        <p className="font-semibold">Taken off the site {fmtDate(deal.removed_at)}</p>
+        {deal.removal_reason && <p className="mt-1 text-[#3D5E65]">Business's reason: “{deal.removal_reason}”</p>}
+      </div>
+    );
+  }
   if (!deal?.removal_requested_at || deal.status !== "approved") return null;
 
   const decide = async (approve) => {
