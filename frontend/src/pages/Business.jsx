@@ -7,6 +7,7 @@ import { DealForm } from "@/components/DealForm";
 import { ScanLine } from "lucide-react";
 import { PartnerStats } from "@/components/PartnerStats";
 import { PartnerReviews } from "@/components/PartnerReviews";
+import { RemovalRequestDialog } from "@/components/RemovalRequestDialog";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 import { bp, assetUrl } from "@/lib/site";
 
@@ -64,6 +65,7 @@ export default function Business() {
   const [mine, setMine] = useState([]);
   const [busy, setBusy] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  const [removing, setRemoving] = useState(null);
   const isPartner = user && (user.role === "admin" || (user.role === "business" && user.business_status === "approved" && user.profile_complete));
   const awaiting = user && user.role === "business" && user.business_status !== "approved";
   const needsProfile = user && user.role === "business" && user.business_status === "approved" && !user.profile_complete;
@@ -81,16 +83,7 @@ export default function Business() {
     } catch (e) { toast.error(formatErr(e)); } finally { setBusy(false); }
   };
 
-  const requestRemoval = async (d) => {
-    const reason = window.prompt(`Why should "${d.title}" come down? The Go Perks team will review your request. Your deal stays live until then.`, "");
-    if (reason === null) return;
-    if (reason.trim().length < 3) { toast.error("Please add a short reason"); return; }
-    try {
-      await api.post(`/business/deals/${d.id}/removal-request`, { reason: reason.trim() });
-      toast.success("Removal requested — we'll be in touch");
-      load();
-    } catch (e) { toast.error(formatErr(e)); }
-  };
+  const requestRemoval = (d) => setRemoving(d);
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-14 sm:px-8" data-testid="business-portal">
@@ -156,6 +149,7 @@ export default function Business() {
             )}
           </div>
         </div>
+        {removing && <RemovalRequestDialog deal={removing} onClose={() => setRemoving(null)} onSent={() => { setRemoving(null); load(); }} />}
         </>
       )}
     </div>
