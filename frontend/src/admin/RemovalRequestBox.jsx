@@ -8,7 +8,7 @@ export function RemovalRequestBox({ deal, onDone }) {
   const [busy, setBusy] = useState(false);
   if (deal?.status === "removed") {
     return (
-      <div className="rounded-xl border border-[#D7E7E4] bg-[#ECECEC] p-4 text-sm" data-testid="removal-history-box">
+      <div className="rounded-xl border border-[#D7E7E4] bg-[#E3EDEB] p-4 text-sm" data-testid="removal-history-box">
         <p className="font-semibold">Taken off the site {fmtDate(deal.removed_at)}</p>
         {deal.removal_reason && <p className="mt-1 text-[#3D5E65]">Business's reason: “{deal.removal_reason}”</p>}
       </div>
@@ -28,8 +28,8 @@ export function RemovalRequestBox({ deal, onDone }) {
   };
 
   return (
-    <div className="rounded-xl border-2 border-[#FF70A6] bg-[#FFE3EC] p-4" data-testid="removal-request-box">
-      <p className="font-semibold text-[#750B35]">The business asked to remove this deal · {fmtDate(deal.removal_requested_at)}</p>
+    <div className="rounded-xl border border-[#EE8A63] bg-[#FDF0EC] p-4" data-testid="removal-request-box">
+      <p className="font-semibold text-[#9A4024]">The business asked to remove this deal · {fmtDate(deal.removal_requested_at)}</p>
       <p className="mt-1 whitespace-pre-line text-sm text-[#17434C]" data-testid="removal-request-reason">“{deal.removal_reason}”</p>
       <p className="mt-1 text-xs text-[#3D5E65]">Approving takes it off the site. Past vouchers and savings stay in your records.</p>
       <div className="mt-3 flex flex-wrap gap-2">

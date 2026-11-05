@@ -10,8 +10,6 @@ const FALLBACK = [
   { q: "Love how easy it is. No clunky vouchers, just our phones at the counter. We've discovered so many new places nearby.", n: "Josh & Amy", s: "Fitzroy" },
 ];
 
-const TINTS = [["#FFF4CE", "#FFD166"], ["#E2F9FE", "#4CC9F0"], ["#FFE3EC", "#FF70A6"]];
-
 export function MemberVoices() {
   const [rows, setRows] = useState([]);
   useEffect(() => {
@@ -24,15 +22,15 @@ export function MemberVoices() {
     <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24" data-testid="member-voices">
       <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">{real ? "Latest member reviews" : "What members say"}</p>
       <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Real people, real savings.</h2>
-      <div className="mt-10 grid gap-5 md:grid-cols-3">
+      <div className="mt-10 grid gap-4 md:grid-cols-3">
         {items.map((t, i) => (
-          <figure key={t.id || t.n} className="pop flex flex-col justify-between rounded-3xl border-2 border-[#17434C] p-6" style={{ background: TINTS[i % 3][0], transform: `rotate(${[-1, 0.8, -0.6][i % 3]}deg)` }} data-testid={`member-voice-${i}`}>
+          <figure key={t.id || t.n} className="flex flex-col justify-between rounded-2xl border border-[#D3ECE7] bg-white p-6" data-testid={`member-voice-${i}`}>
             <div>
-              {t.rating ? <Stars value={t.rating} /> : <Quote className="h-7 w-7 text-[#B9512E]" />}
+              {t.rating ? <Stars value={t.rating} /> : <Quote className="h-6 w-6 text-[#EE8A63]" />}
               <blockquote className="mt-4 text-lg leading-relaxed text-[#17434C]">“{t.q}”</blockquote>
             </div>
             <figcaption className="mt-6 flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full border-2 border-[#17434C] font-display font-semibold" style={{ background: TINTS[i % 3][1] }}>{t.n[0]}</span>
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-[#D3ECE7] font-display font-semibold">{t.n[0]}</span>
               <span><span className="block font-semibold">{t.n}</span><span className="text-sm text-[#3D5E65]">{t.s}</span></span>
             </figcaption>
           </figure>

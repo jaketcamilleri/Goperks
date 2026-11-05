@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { StatusPill } from "@/pages/Business";
 
-function Big({ label, value, id, bg }) {
+function Big({ label, value, id }) {
   return (
-    <div className="pop rounded-[24px] border-2 border-[#17434C] p-5" style={{ background: bg }} data-testid={`partner-stat-${id}`}>
-      <p className="font-mono text-[11px] uppercase tracking-widest text-[#17434C]">{label}</p>
+    <div className="rounded-[24px] border border-[#C2DEDA] bg-white p-5" data-testid={`partner-stat-${id}`}>
+      <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">{label}</p>
       <p className="mt-2 font-display text-4xl font-semibold">{value ?? 0}</p>
     </div>
   );
@@ -28,10 +28,10 @@ export function PartnerStats() {
       </div>
       <p className="mt-2 text-sm text-[#3D5E65]" data-testid="partner-report-note">We email you a summary of last month's numbers on the 1st of every month.</p>
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Big id="claimed-month" label="Claimed this month" value={t.claimed_month} bg="#FFF4CE" />
-        <Big id="redeemed-month" label="Redeemed this month" value={t.redeemed_month} bg="#E2F9FE" />
-        <Big id="redeemed-all" label="Redeemed all time" value={t.redeemed_all} bg="#EAFCDA" />
-        <Big id="saved-all" label="Members saved" value={`$${Math.round(t.saved_all || 0)}`} bg="#FFE3EC" />
+        <Big id="claimed-month" label="Claimed this month" value={t.claimed_month} />
+        <Big id="redeemed-month" label="Redeemed this month" value={t.redeemed_month} />
+        <Big id="redeemed-all" label="Redeemed all time" value={t.redeemed_all} />
+        <Big id="saved-all" label="Members saved" value={`$${Math.round(t.saved_all || 0)}`} />
       </div>
       {rows.length > 0 && (
         <div className="mt-6 overflow-x-auto rounded-[24px] border border-[#C2DEDA] bg-white" data-lenis-prevent>

@@ -10,8 +10,6 @@ import { useOutletContext } from "react-router-dom";
 
 const MONEY = new Set(["revenue", "members", "active_members", "gifts_sold"]);
 
-const TINTS = ["#FFEAD2", "#E2F9FE", "#EAFCDA", "#FFF4CE", "#F0EAFF", "#FFE3EC", "#E2F9FE", "#EAFCDA"];
-
 const CARDS = [
   ["revenue", "Revenue (A$)", (v) => `$${Math.round(v)}`], ["members", "Members"], ["active_members", "Active members"], ["gifts_sold", "Gifts sold"],
   ["businesses", "Partners"], ["live_deals", "Live deals"], ["vouchers", "Vouchers claimed"], ["redeemed", "Redeemed"],
@@ -41,9 +39,9 @@ export default function Overview() {
         <Todo n={s.pending_deals} label="Deals waiting for review" to={ap("/deals")} id="deals" />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {CARDS.filter(([k]) => owner || !MONEY.has(k)).map(([k, label, f], i) => (
-          <div key={k} className="rounded-xl border-2 border-[#17434C] p-4 shadow-[3px_3px_0_#17434C]" style={{ background: TINTS[i % TINTS.length] }} data-testid={`admin-stat-${k}`}>
-            <p className="font-mono text-[11px] uppercase tracking-widest text-[#17434C]">{label}</p>
+        {CARDS.filter(([k]) => owner || !MONEY.has(k)).map(([k, label, f]) => (
+          <div key={k} className="rounded-xl border border-[#D7E7E4] bg-white p-4" data-testid={`admin-stat-${k}`}>
+            <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">{label}</p>
             <p className="mt-1 font-display text-3xl font-semibold">{s[k] == null ? "—" : f ? f(s[k]) : s[k]}</p>
           </div>
         ))}

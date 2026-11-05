@@ -11,11 +11,12 @@ export function CategoryTiles({ deals }) {
         const n = count(c.key);
         return (
           <Link key={c.key} to={`/deals?category=${c.key}`} data-testid={`category-tile-${c.key}`}
-            className="pop pop-hover group relative flex aspect-[4/5] flex-col overflow-hidden rounded-3xl border-[3px] border-[#17434C] sm:aspect-[3/4]" style={{ background: c.tone.solid }}>
-            <div className="relative min-h-0 flex-1 overflow-hidden"><img src={c.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /></div>
-            <div className="shrink-0 border-t-[3px] border-[#17434C] p-3 sm:p-4" style={{ background: c.tone.bg }}>
-              <p className="font-display text-base font-semibold leading-tight sm:text-lg" style={{ color: c.tone.fg }}>{c.label}</p>
-              <p className="mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: c.tone.solid, color: c.tone.on }} data-testid={`category-count-${c.key}`}>{n ? `${n} deal${n === 1 ? "" : "s"}` : "Coming soon"}</p>
+            className="group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-[#17434C] sm:aspect-[3/4]">
+            <img src={c.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F3138]/90 via-[#0F3138]/25 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+              <p className="font-display text-lg font-semibold leading-tight text-white sm:text-xl">{c.label}</p>
+              <p className="mt-1 text-xs font-semibold text-[#D3ECE7]" data-testid={`category-count-${c.key}`}>{n ? `${n} deal${n === 1 ? "" : "s"}` : "Coming soon"}</p>
             </div>
           </Link>
         );

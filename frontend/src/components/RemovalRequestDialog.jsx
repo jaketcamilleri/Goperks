@@ -33,7 +33,7 @@ export function RemovalRequestDialog({ deal, onClose, onSent }) {
           {REASONS.map((r) => (
             <button key={r} type="button" onClick={() => setPick(pick === r ? "" : r)} aria-pressed={pick === r}
               data-testid={`removal-reason-${r.toLowerCase().replace(/\s+/g, "-")}`}
-              className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition-colors ${pick === r ? "border-[#17434C] bg-[#FFD166] text-[#17434C]" : "border-[#C2DEDA] bg-white text-[#17434C] hover:border-[#17434C]"}`}>
+              className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition-colors ${pick === r ? "border-[#17434C] bg-[#17434C] text-[#EAF6F3]" : "border-[#C2DEDA] bg-white text-[#17434C] hover:border-[#17434C]"}`}>
               {r}
             </button>
           ))}
@@ -44,8 +44,8 @@ export function RemovalRequestDialog({ deal, onClose, onSent }) {
             className="mt-1 w-full rounded-xl border border-[#C2DEDA] px-3 py-2 text-sm font-normal outline-none focus:border-[#17434C]" data-testid="removal-reason-details" />
         </label>
         <div className="flex flex-wrap justify-end gap-2">
-          <button onClick={onClose} className="rounded-full border-2 border-[#17434C] px-5 py-2.5 text-sm font-semibold" data-testid="removal-request-cancel">Cancel</button>
-          <button onClick={send} disabled={!ok || busy} className="rounded-full border-2 border-[#17434C] bg-[#B9512E] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" data-testid="removal-request-send">
+          <button onClick={onClose} className="rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold" data-testid="removal-request-cancel">Cancel</button>
+          <button onClick={send} disabled={!ok || busy} className="rounded-full bg-[#B9512E] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" data-testid="removal-request-send">
             {busy ? "Sending…" : "Send request"}
           </button>
         </div>

@@ -16,5 +16,5 @@ if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
     for name, px in (("icon.png", 29), ("icon@2x.png", 58), ("icon@3x.png", 87), ("logo.png", 50), ("logo@2x.png", 100), ("logo@3x.png", 150)):
         square(px).save(OUT / name)
-    square(660, (255, 209, 102, 255)).save(OUT / "google_logo.png")
+    square(660, (205, 233, 231, 255)).save(OUT / "google_logo.png")
     print("ok")
