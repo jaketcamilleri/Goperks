@@ -39,10 +39,19 @@ async def public_launch_offer():
     return {"active": True, "ends_on": s["ends_on"], "price": 24.5, "full_price": 49}
 
 
+async def launch_signups() -> dict:
+    paid = {"kind": "membership", "launch_offer": True, "payment_status": "paid"}
+    rows = await db.payment_transactions.aggregate([
+        {"$match": paid}, {"$group": {"_id": None, "n": {"$sum": 1}, "revenue": {"$sum": "$amount"}}},
+    ]).to_list(1)
+    r = rows[0] if rows else {}
+    return {"signups": r.get("n", 0), "revenue": round(r.get("revenue", 0), 2)}
+
+
 @router.get("/admin/launch-offer")
 async def get_launch_offer(_=Depends(owner)):
     s = await launch_settings()
-    return {**s, "live": bool(await active_launch())}
+    return {**s, "live": bool(await active_launch()), **await launch_signups()}
 
 
 @router.put("/admin/launch-offer")
@@ -53,4 +62,4 @@ async def set_launch_offer(body: LaunchIn, user=Depends(owner)):
     await db.settings.update_one({"_id": "launch"}, {"$set": {**data, "updated_at": now_iso()}}, upsert=True)
     await log_activity(user, "settings.launch_offer", "settings", None, "Launch offer",
                        f"{'On' if body.enabled else 'Off'}: {data['starts_on']} to {data['ends_on']}")
-    return {**data, "live": bool(await active_launch())}
+    return {**data, "live": bool(await active_launch()), **await launch_signups()}

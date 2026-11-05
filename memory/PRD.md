@@ -53,6 +53,7 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Removed demo admin/member/business logins (admin@, member@, business@tinysvouchers.com.au) before launch. They are no longer seeded and `remove_demo_accounts()` on startup deletes them plus their vouchers, deals, reviews, payments, reports and favourites (so the live site is cleaned on next publish). Only admin is now the owner Google account jaketcamilleri@gmail.com.
 
 - Launch week offer: owner sets on/off + start/end dates in Admin → Overview (db.settings _id "launch", GET/PUT /api/admin/launch-offer). While live (Melbourne dates), public GET /api/launch-offer drives a home-page banner, $24.50 pricing ticket and Join note; checkout applies a once-off Stripe coupon (gp_launch_half_aud, A$24.50 off) for first-time members. Doesn't stack with the referral discount (launch wins). Renewals full price. Offer currently OFF.
+- Launch sign-up tracker (2026-11-05): launch box on Admin → Overview shows "Joined at launch price" (paid membership txns with launch_offer=true) and launch revenue; returned by GET/PUT /api/admin/launch-offer as signups/revenue.
 
 
 

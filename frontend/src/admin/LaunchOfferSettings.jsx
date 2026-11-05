@@ -10,11 +10,13 @@ const input = "mt-1 h-10 w-full rounded-lg border border-[#D7E7E4] px-3 text-sm 
 export function LaunchOfferSettings() {
   const [f, setF] = useState({ enabled: false, starts_on: "", ends_on: "" });
   const [live, setLive] = useState(false);
+  const [stats, setStats] = useState({ signups: 0, revenue: 0 });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     api.get("/admin/launch-offer").then((r) => {
       const d = r.data || {};
       setF({ enabled: !!d.enabled, starts_on: d.starts_on || "", ends_on: d.ends_on || "" }); setLive(!!d.live);
+      setStats({ signups: d.signups ?? 0, revenue: d.revenue ?? 0 });
     }).catch(() => {});
   }, []);
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: k === "enabled" ? e.target.checked : e.target.value }));
@@ -24,6 +26,7 @@ export function LaunchOfferSettings() {
     try {
       const { data } = await api.put("/admin/launch-offer", f);
       setLive(!!data?.live);
+      setStats({ signups: data?.signups ?? 0, revenue: data?.revenue ?? 0 });
       toast.success(data?.live ? "Launch offer is live on the home page" : "Launch offer saved");
     } catch (e) { toast.error(formatErr(e)); } finally { setBusy(false); }
   };
@@ -36,7 +39,17 @@ export function LaunchOfferSettings() {
           {live ? "Live now" : "Not showing"}
         </span>
       </div>
-      <p className="mt-0.5 text-xs text-[#3D5E65]">New members pay $24.50 for their first year (instead of $49) between these dates. Shows a banner on the home page and applies at checkout. Renewals are full price.</p>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-[#EAF6F3] p-3" data-testid="launch-offer-signups">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">Joined at launch price</p>
+          <p className="mt-1 font-display text-3xl font-semibold" data-testid="launch-offer-signups-count">{stats.signups}</p>
+        </div>
+        <div className="rounded-xl bg-[#EAF6F3] p-3" data-testid="launch-offer-revenue">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-[#3D5E65]">Launch revenue (A$)</p>
+          <p className="mt-1 font-display text-3xl font-semibold" data-testid="launch-offer-revenue-amount">${Number(stats.revenue).toFixed(2)}</p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-[#3D5E65]">New members pay $24.50 for their first year (instead of $49) between these dates. Shows a banner on the home page and applies at checkout. Renewals are full price.</p>
       <div className="mt-3 flex flex-wrap items-end gap-3">
         <label className="flex h-10 items-center gap-2 text-sm font-semibold">
           <input type="checkbox" checked={f.enabled} onChange={set("enabled")} className="h-4 w-4 accent-[#B9512E]" data-testid="launch-offer-enabled" /> Offer on
