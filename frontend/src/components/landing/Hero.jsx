@@ -44,7 +44,7 @@ function HeroPhotos() {
         <img src="/images/family/family-picnic.jpg" alt="A family having a picnic" className="h-full w-full object-cover" />
       </div>
       <span className="pop-sm absolute -top-4 right-4 rotate-6 rounded-full border-2 border-[#17434C] bg-[#70E000] px-4 py-1.5 text-sm font-bold text-[#0F3138]" data-testid="hero-kids-sticker">Kids love it!</span>
-      <div className="relative -mt-14 ml-auto w-[86%] max-w-[320px] sm:absolute sm:-bottom-2 sm:-right-4 sm:mt-0 sm:w-[62%] sm:max-w-[300px]" style={{ transform: "rotate(-4deg)" }}>
+      <div className="relative -mt-14 ml-auto w-[86%] max-w-[320px] sm:absolute sm:-bottom-2 sm:-right-4 sm:mt-0 sm:w-[62%] sm:max-w-[300px]" style={{ transform: "rotate(-4deg)" }} data-testid="hero-member-card">
         <MemberCard name="The Morgans" code="GP-8K2Q4M" expires="Nov 2027" status="active" />
       </div>
     </div>

@@ -54,6 +54,7 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 
 - Launch week offer: owner sets on/off + start/end dates in Admin → Overview (db.settings _id "launch", GET/PUT /api/admin/launch-offer). While live (Melbourne dates), public GET /api/launch-offer drives a home-page banner, $24.50 pricing ticket and Join note; checkout applies a once-off Stripe coupon (gp_launch_half_aud, A$24.50 off) for first-time members. Doesn't stack with the referral discount (launch wins). Renewals full price. Offer currently OFF.
 - Launch sign-up tracker (2026-11-05): launch box on Admin → Overview shows "Joined at launch price" (paid membership txns with launch_offer=true) and launch revenue; returned by GET/PUT /api/admin/launch-offer as signups/revenue.
+- Colourful family restyle (2026-11-05, whole site): kept teal/orange brand, added bright palette (sun #FFD166, pink #FF70A6, sky #4CC9F0, lime #70E000, grape #7054CB, tangerine #FF8531) as CSS vars + .pop/.pop-hover hard-shadow, rainbow bar, confetti (components/Fun.jsx). Cream page background #FFF8E7. Per-category colour tones in lib/api.js CATEGORIES (catTone). Family/kids photos saved locally in /public/images/family/ (hero, categories, how-it-works, dashboard, auth). Hero copy "More family fun, for less."; register "Join the family club." Business portal + admin get coloured stat cards, purple Partners pill, yellow active sidebar item. Guidelines in /app/design_guidelines.json.
 
 
 
