@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { SuburbPicker } from "@/components/SuburbPicker";
 import { ImageUpload } from "@/components/ImageUpload";
 
-const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, est_saving: "", ends_on: "" };
+const EMPTY = { title: "", business_name: "", partner_id: "", category: "cafes", discount_label: "", description: "", terms: "", suburb: "", image_url: "", featured: false, holiday_pick: false, est_saving: "", ends_on: "" };
 
 function BusinessField({ partners, lockedBusiness, f, setF, field }) {
   if (partners) {
@@ -96,6 +96,12 @@ export function DealForm({ initial, onSubmit, submitLabel = "Submit deal", showF
       {showFeatured && (
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input type="checkbox" checked={f.featured} onChange={set("featured")} data-testid="deal-form-featured" /> Feature on homepage
+        </label>
+      )}
+      {showFeatured && (
+        <label className="flex items-start gap-2 text-sm sm:col-span-2">
+          <input type="checkbox" checked={!!f.holiday_pick} onChange={set("holiday_pick")} className="mt-0.5" data-testid="deal-form-holiday-pick" />
+          <span>School holiday pick<span className="block text-xs text-[#3D5E65]">Shows in the “School holiday picks” row on the home page, only during Victorian school holidays.</span></span>
         </label>
       )}
       <button disabled={busy} type="submit" data-testid="deal-form-submit"

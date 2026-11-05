@@ -123,7 +123,7 @@ async def partner_redeem(body: CodeIn, user=Depends(require_partner)):
 async def submit_deal(body: DealIn, user=Depends(require_partner)):
     if body.category not in CATEGORIES:
         raise HTTPException(400, "Invalid category")
-    data = body.model_dump(exclude={"featured", "partner_id"})
+    data = body.model_dump(exclude={"featured", "holiday_pick", "partner_id"})
     data["business_name"] = user.get("business_name") or user["name"]
     data["suburb"] = data.get("suburb") or user.get("suburb") or ""
     data = await with_coords(data)

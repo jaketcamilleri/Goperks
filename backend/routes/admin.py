@@ -22,7 +22,7 @@ owner = require_role("admin")
 
 DEAL_FIELDS = {"title": "title", "submitted_by": "business", "category": "category", "discount_label": "offer",
                "description": "description", "terms": "terms", "suburb": "suburb", "image_url": "image",
-               "featured": "featured", "est_saving": "estimated saving", "ends_on": "end date"}
+               "featured": "featured", "holiday_pick": "school holiday pick", "est_saving": "estimated saving", "ends_on": "end date"}
 
 
 def person_label(doc: dict) -> str:

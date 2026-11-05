@@ -64,6 +64,7 @@ class Deal(BaseDocument):
     status: str = "approved"
     submitted_by: Optional[str] = None
     featured: bool = False
+    holiday_pick: bool = False
     est_saving: float = 0.0
     lat: Optional[float] = None
     lng: Optional[float] = None
@@ -142,6 +143,7 @@ class DealIn(BaseModel):
     suburb: str = ""
     image_url: str = ""
     featured: bool = False
+    holiday_pick: bool = False
     est_saving: float = Field(0.0, ge=0, le=10000)
     ends_on: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 

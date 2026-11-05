@@ -12,6 +12,7 @@ import { ReferFriend } from "@/components/landing/ReferFriend";
 import { MemberVoices, Faq } from "@/components/landing/MemberVoices";
 import { BusinessCta } from "@/components/landing/BusinessCta";
 import { LaunchBanner } from "@/components/landing/LaunchBanner";
+import { HolidayPicks } from "@/components/landing/HolidayPicks";
 import { useLaunchOffer } from "@/lib/launch";
 
 function Rows({ deals }) {
@@ -48,6 +49,7 @@ export default function Landing() {
         </div>
         <div className="mt-5"><CategoryTiles deals={deals} /></div>
       </section>
+      <HolidayPicks deals={deals} />
       {deals && deals.length > 0 && <Rows deals={deals} />}
       <div className="mt-10"><HowItWorks /></div>
       <Pricing price={offer.active ? offer.price : undefined} />
