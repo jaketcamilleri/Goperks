@@ -39,10 +39,10 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
     <div className={`[perspective:1200px] ${className}`} onPointerMove={onMove} onPointerLeave={reset} data-testid="member-card">
       <motion.div
         style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
-        className="relative aspect-[1.586/1] w-full overflow-hidden rounded-[22px] bg-[#17434C] p-5 text-[#EAF6F3] shadow-[0_40px_80px_-30px_rgba(30,34,41,0.6)] sm:p-6"
+        className="relative aspect-[1.586/1] w-full overflow-hidden rounded-[22px] bg-[#4CC9F0] p-5 text-[#0F3138] shadow-[0_40px_80px_-30px_rgba(30,34,41,0.6)] sm:p-6"
       >
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#B9512E]" />
-        <div className="pointer-events-none absolute -bottom-24 right-10 h-48 w-48 rounded-full bg-[#EE8A63]/90" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#FFD166]" />
+        <div className="pointer-events-none absolute -bottom-24 right-10 h-48 w-48 rounded-full bg-[#70E000]/90" />
         <motion.div
           className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
           style={{ background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.8) 50%, transparent 70%)", backgroundSize: "200% 100%", backgroundPositionX: glareX }}
@@ -50,10 +50,10 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
         {liveOn && <div className="live-sheen pointer-events-none absolute inset-0" aria-hidden="true" />}
         <div className={`relative flex h-full flex-col justify-between ${liveOn ? "pb-6" : ""}`} style={{ transform: "translateZ(40px)" }}>
           <div className="flex items-start justify-between">
-            <Logo light className="h-7 w-auto" />
+            <Logo className="h-7 w-auto" />
             <span
               data-testid="member-card-status"
-              className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest ${active ? "bg-[#EBF3EC] text-[#2F5A3A]" : "bg-[#EAF6F3] text-[#17434C]"}`}
+              className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest ${active ? "bg-[#EBF3EC] text-[#2F5A3A]" : "bg-white text-[#17434C]"}`}
             >
               {active ? "Active" : status === "expired" ? "Expired" : "Member"}
             </span>
@@ -62,9 +62,9 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
             <p className="font-display text-2xl font-semibold leading-tight sm:text-3xl" data-testid="member-card-name">{name}</p>
             <div className="mt-3 flex items-end justify-between gap-4">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Member no.</p>
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[#17434C]">Member no.</p>
                 <p className="font-mono text-sm font-bold sm:text-base" data-testid="member-card-code">{code}</p>
-                <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Valid until</p>
+                <p className="mt-2 font-mono text-[11px] font-semibold uppercase tracking-widest text-[#17434C]">Valid until</p>
                 <p className="font-mono text-sm font-bold sm:text-base">{expires || "12 months"}</p>
               </div>
               {active && validCode && (
