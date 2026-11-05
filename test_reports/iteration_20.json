@@ -1,0 +1,24 @@
+{
+  "summary": "Broad layout + functional smoke on Go Perks after white-background / colourful restyle. Tested 12 public pages (/, /deals, /join, /gift, /login, /register, /business, /business/login, /business/join, /terms, /privacy, /about), 3 member pages (/dashboard, /account, /saved), 6 business pages (/business, /business/redeem, /business/deals, /business/submit, /business/profile, /business/stats), and 14 admin pages (/admin + /admin/deals, invites, emails, payments, check, businesses, gifts, team, activity, members, referrals, reviews, prospects) at 390, 768 and 1440 widths — 105 page/width combos in total. For every combo: document.documentElement.scrollWidth === window.innerWidth (no horizontal page overflow) and no clipped text inside cards/buttons/pills/badges/nav/tabs/member card/pricing ticket. Only one clipped-text finding: /account has data-testid=referral-link using text-overflow:ellipsis on a long preview URL next to a copy button — intentional truncation, not a bug. Functional smoke: home hero search navigates to /deals?q=pizza ✓, launch-home-banner correctly hidden on home (offer OFF), launch-offer-settings box present on /admin Overview with 'NOT SHOWING' pill and 0/$0 counters (enabled=false preserved), all three test_qa_ logins (member/business/admin) succeed via /api/auth/login 200, admin sidebar + mobile admin bar render fine at 390/768/1440. No TEST_ records created; no data mutated.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_20.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Admin /admin/prospects table at 1440 (sidebar 240px + 14-column table) relies on an inner overflow-x:auto container, so the page itself does not overflow but the rightmost column header ('EMAIL FOUND URL') is visually clipped at the viewport edge until the user scrolls the table. Not a scope violation per the brief (page scrollWidth === innerWidth) but a UX nit — consider a sticky horizontal scroll hint or hiding the last column below a certain breakpoint.",
+    "On /account the referral-link span is truncated with ellipsis — fine, but there is no visible 'Copy' affordance on hover for keyboard users; a title/tooltip would help accessibility.",
+    "Member mobile-bottom-tab-bar is only rendered for role=member — not a bug, just a note that admin/business users see the standard nav on mobile."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (frontend-only round, 3 auth logins returned 200)", "frontend": "105/105 page+width combos clean (no horizontal overflow, no clipped text in in-scope elements)"},
+  "test_credentials": "test_qa_member@example.com / test_qa_business@example.com / test_qa_admin@example.com (password TestQA!2026) — all three authenticate successfully against /api/auth/login.",
+  "seed_data_creation": "None. No TEST_ records created, no deals created or modified, launch offer left enabled=false as required.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Layout is clean at 390/768/1440 across every public, member, business and admin route exposed in the sidebar. Admin sidebar links discovered dynamically: /admin, /admin/deals, /admin/invites, /admin/emails, /admin/payments, /admin/check, /admin/businesses, /admin/gifts, /admin/team, /admin/activity, /admin/members, /admin/referrals, /admin/reviews, /admin/prospects. Business routes: /business, /business/redeem, /business/deals, /business/submit, /business/profile, /business/stats. Known intentional ellipsis: [data-testid=referral-link] on /account. Known inner table overflow (not page overflow) on /admin/prospects. Launch offer currently OFF (NOT SHOWING pill, enabled=false). All three test_qa_ logins work.",
+  "rca of the issue": "No defects found this round."
+}

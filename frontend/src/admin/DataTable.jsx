@@ -81,6 +81,7 @@ export function DataTable({ id, columns, rows, filters, searchKeys, selectable =
           <button onClick={() => onSelect(new Set())} className="ml-auto text-[#3D5E65] hover:underline">Clear</button>
         </div>
       )}
+      {columns.length > 8 && <p className="px-3 pt-2 text-xs text-[#3D5E65]" data-testid={`${id}-scroll-hint`}>Scroll sideways to see all columns →</p>}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="bg-[#F7FBFA] text-[11px] uppercase tracking-wider text-[#3D5E65]">

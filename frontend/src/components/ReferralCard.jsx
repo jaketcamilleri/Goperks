@@ -58,7 +58,7 @@ export function ReferralCard() {
 
           <p className="mt-6 font-mono text-[11px] uppercase tracking-widest text-[#C2DEDA]">Or share your link</p>
           <div className="mt-2 flex items-center gap-2 rounded-xl bg-[#0F3138] p-2 pl-3">
-            <span className="min-w-0 flex-1 truncate font-mono text-xs" data-testid="referral-link">{r.link}</span>
+            <span className="min-w-0 flex-1 truncate font-mono text-xs" data-testid="referral-link" title={r.link}>{r.link}</span>
             <button onClick={() => copyText(r.link, "Link")} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#EAF6F3] px-3 py-2 text-xs font-bold text-[#17434C] transition-transform active:scale-95" data-testid="referral-copy-btn"><Copy className="h-3.5 w-3.5" /> Copy</button>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
