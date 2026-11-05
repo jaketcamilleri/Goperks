@@ -41,9 +41,9 @@ def build_pkpass(user: dict) -> bytes:
         "organizationName": ORG,
         "description": f"{ORG} member card",
         "logoText": ORG,
-        "foregroundColor": "rgb(234, 246, 243)",
-        "labelColor": "rgb(238, 138, 99)",
-        "backgroundColor": "rgb(23, 67, 76)",
+        "foregroundColor": "rgb(15, 49, 56)",
+        "labelColor": "rgb(23, 67, 76)",
+        "backgroundColor": "rgb(76, 201, 240)",
         "expirationDate": expires,
         "sharingProhibited": True,
         "storeCard": {
@@ -92,7 +92,7 @@ def google_save_url(user: dict) -> str:
         "cardTitle": text(ORG),
         "header": text(user["name"]),
         "subheader": text("Member"),
-        "hexBackgroundColor": "#17434C",
+        "hexBackgroundColor": "#4CC9F0",
         "logo": {"sourceUri": {"uri": f"{frontend}/api/wallet/google-logo.png"}},
         "textModulesData": [
             {"id": "member_code", "header": "Member no.", "body": user["member_code"]},
