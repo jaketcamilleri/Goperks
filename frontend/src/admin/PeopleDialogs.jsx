@@ -90,12 +90,31 @@ export function BusinessDialog({ biz, owner, onClose, onSaved }) {
           {biz.business_status !== "rejected" && <button disabled={!!busy} onClick={() => decide("rejected")} className={btn.danger} data-testid="business-dialog-reject">Reject</button>}
           {owner && <button disabled={!!busy} onClick={() => run("pw", () => api.post(`/admin/users/${biz.id}/password-link`), "Password link sent")} className={btn.ghost} data-testid="business-dialog-password-link">Send password link</button>}
         </div>
+        {owner && <DeleteAccount person={biz} label={biz.business_name || biz.name} onDeleted={() => { onSaved(); onClose(); }} />}
       </DialogContent>
     </Dialog>
   );
 }
 
 const toDateInput = (iso) => (iso ? new Date(iso).toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" }) : "");
+
+/** Owner-only. Members and businesses can never delete accounts themselves. */
+function DeleteAccount({ person, label, onDeleted }) {
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    const typed = window.prompt(`Permanently delete ${label}'s account? This can't be undone.${person.role === "business" ? " Their deals will come off the site." : ""}\n\nType DELETE to confirm.`, "");
+    if (typed === null) return;
+    if (typed.trim().toUpperCase() !== "DELETE") { toast.error("Not deleted — you need to type DELETE"); return; }
+    setBusy(true);
+    try { await api.delete(`/admin/users/${person.id}`); toast.success("Account deleted"); onDeleted(); }
+    catch (e) { toast.error(formatErr(e)); } finally { setBusy(false); }
+  };
+  return (
+    <div className="border-t border-[#E3F0ED] pt-3">
+      <button disabled={busy} onClick={go} className={btn.danger} data-testid="delete-account-btn">{busy ? "Deleting…" : "Delete account"}</button>
+    </div>
+  );
+}
 
 export function MemberDialog({ member, onClose, onSaved }) {
   const [name, setName] = useState(member?.name || "");
@@ -137,6 +156,7 @@ export function MemberDialog({ member, onClose, onSaved }) {
             <button disabled={!!busy || !active} onClick={() => run("card", () => api.post(`/admin/users/${member.id}/resend-card`), "Card email sent")} className={btn.ghost} data-testid="member-resend-card">Resend card email</button>
             <button disabled={!!busy} onClick={() => run("pw", () => api.post(`/admin/users/${member.id}/password-link`), "Password link sent")} className={btn.ghost} data-testid="member-password-link">Send password link</button>
           </div>
+          <DeleteAccount person={member} label={member.name} onDeleted={() => { onSaved(); onClose(); }} />
         </div>
       </DialogContent>
     </Dialog>

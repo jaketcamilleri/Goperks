@@ -10,8 +10,8 @@ from fastapi import APIRouter, HTTPException, Response, Depends, UploadFile, Fil
 import storage
 from core import db, logger, oid, now_iso, rand_code, with_coords, hours_text, check_live_token, find_suburb, CATEGORIES, DAYS, MELB
 from deps import user_out, require_partner, require_approved_business
-from models import Deal, Voucher, DealIn, CodeIn, CardRedeemIn, ProfileIn, PhotoPathIn
-from services import used_this_term, review_out
+from models import Deal, Voucher, DealIn, CodeIn, CardRedeemIn, ProfileIn, PhotoPathIn, RemovalRequestIn
+from services import used_this_term, review_out, log_activity, send_removal_request
 
 router = APIRouter()
 
@@ -172,6 +172,24 @@ async def upload_deal_image(file: UploadFile = File(...), user=Depends(require_p
 async def my_business_deals(user=Depends(require_partner)):
     docs = await db.deals.find({"submitted_by": user["id"]}).sort("created_at", -1).to_list(100)
     return [Deal.from_mongo(d).out() for d in docs]
+
+
+@router.post("/business/deals/{deal_id}/removal-request")
+async def request_deal_removal(deal_id: str, body: RemovalRequestIn, user=Depends(require_partner)):
+    """Businesses can't delete live deals; they ask the Go Perks team to take one down."""
+    d = await db.deals.find_one({"_id": oid(deal_id), "submitted_by": user["id"]})
+    if not d:
+        raise HTTPException(404, "Deal not found")
+    if d["status"] != "approved":
+        raise HTTPException(400, "Only live deals can have a removal request")
+    if d.get("removal_requested_at"):
+        raise HTTPException(400, "You've already asked for this deal to be removed")
+    reason = body.reason.strip()
+    res = await db.deals.find_one_and_update({"_id": d["_id"]}, {"$set": {"removal_requested_at": now_iso(), "removal_reason": reason}},
+                                             return_document=True)
+    await log_activity(user, "deal.removal_requested", "deal", d["_id"], d["title"], reason)
+    asyncio.create_task(send_removal_request(res, reason))
+    return Deal.from_mongo(res).out()
 
 
 @router.get("/business/reviews")

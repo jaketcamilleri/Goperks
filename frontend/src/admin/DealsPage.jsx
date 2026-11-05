@@ -7,11 +7,16 @@ import { DealForm } from "@/components/DealForm";
 import { DataTable, Pill, fmtDate, btn } from "@/admin/DataTable";
 import { PageHead } from "@/admin/AdminShell";
 import { useOutletContext } from "react-router-dom";
+import { RemovalRequestBox } from "@/admin/RemovalRequestBox";
+
+const wantsRemoval = (d) => d.status === "approved" && !!d.removal_requested_at;
 
 const FILTERS = [
   { key: "pending", label: "Pending", test: (d) => d.status === "pending" },
+  { key: "removal", label: "Removal requests", test: wantsRemoval },
   { key: "approved", label: "Live", test: (d) => d.status === "approved" },
   { key: "rejected", label: "Rejected", test: (d) => d.status === "rejected" },
+  { key: "removed", label: "Removed", test: (d) => d.status === "removed" },
   { key: "all", label: "All", test: () => true },
 ];
 
@@ -59,7 +64,7 @@ export default function DealsPage() {
     { key: "category", label: "Category", value: (d) => catLabel(d.category) },
     { key: "discount_label", label: "Offer" },
     { key: "suburb", label: "Suburb" },
-    { key: "status", label: "Status", render: (d) => <Pill s={d.status} /> },
+    { key: "status", label: "Status", value: (d) => (wantsRemoval(d) ? "removal requested" : d.status), render: (d) => <span data-testid={`deal-status-${d.id}`}><Pill s={wantsRemoval(d) ? "removal requested" : d.status} /></span> },
     { key: "created_at", label: "Added", value: (d) => d.created_at, render: (d) => fmtDate(d.created_at) },
   ];
 
@@ -78,6 +83,7 @@ export default function DealsPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent aria-describedby={undefined} className="max-h-[90vh] max-w-2xl overflow-y-auto bg-[#F3F8F7]" data-lenis-prevent data-testid="admin-deal-dialog">
           <DialogHeader><DialogTitle className="font-display text-2xl">{editing === "new" ? "New deal" : "Edit deal"}</DialogTitle></DialogHeader>
+          {editing && editing !== "new" && <RemovalRequestBox deal={editing} onDone={() => { setEditing(null); load(); refreshCounts?.(); }} />}
           {editing && <DealForm initial={editing === "new" ? {} : editing} partners={partners} onSubmit={save} busy={busy} submitLabel="Save deal" showFeatured />}
         </DialogContent>
       </Dialog>

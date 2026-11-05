@@ -10,7 +10,7 @@ import AdminLogin from "@/admin/AdminLogin";
 
 const NAV = [
   { to: "", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/deals", label: "Deals", icon: Tag, badge: "pending_deals" },
+  { to: "/deals", label: "Deals", icon: Tag, badge: "deal_tasks" },
   { to: "/businesses", label: "Businesses", icon: Store, badge: "pending_businesses" },
   { to: "/members", label: "Members", icon: Users, ownerOnly: true },
   { to: "/invites", label: "Invites", icon: MailPlus, ownerOnly: true },
@@ -70,10 +70,11 @@ export default function AdminShell() {
   const nav = useNavigate();
   const isAdmin = user && TEAM_ROLES.includes(user.role);
 
+  const loadCounts = () => api.get("/admin/stats").then((r) => { const d = r.data || {}; setCounts({ ...d, deal_tasks: (d.pending_deals || 0) + (d.removal_requests || 0) }); }).catch(() => {});
   useEffect(() => {
     if (!isAdmin) return;
-    api.get("/admin/stats").then((r) => setCounts(r.data || {})).catch(() => {});
-  }, [isAdmin, loc.pathname]);
+    loadCounts();
+  }, [isAdmin, loc.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setOpen(false); }, [loc.pathname]);
 
   if (user === null) return <div className="grid min-h-screen place-items-center bg-[#F3F8F7] font-mono text-sm text-[#3D5E65]" data-testid="admin-loading">Loading…</div>;
@@ -100,7 +101,7 @@ export default function AdminShell() {
           <SideFooter user={user} onLogout={doLogout} prefix="admin-m" />
         </div>
       )}
-      <main className="px-4 py-6 sm:px-6 lg:ml-60 lg:px-10 lg:py-8"><Outlet context={{ role: user.role, refreshCounts: () => api.get("/admin/stats").then((r) => setCounts(r.data || {})).catch(() => {}) }} /></main>
+      <main className="px-4 py-6 sm:px-6 lg:ml-60 lg:px-10 lg:py-8"><Outlet context={{ role: user.role, refreshCounts: loadCounts }} /></main>
     </div>
   );
 }

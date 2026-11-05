@@ -120,6 +120,7 @@ const PILL = {
   approved: "bg-[#EBF3EC] text-[#2F5A3A]", active: "bg-[#EBF3EC] text-[#2F5A3A]", paid: "bg-[#EBF3EC] text-[#2F5A3A]", redeemed: "bg-[#EBF3EC] text-[#2F5A3A]",
   pending: "bg-[#FEF4DC] text-[#7A5310]", initiated: "bg-[#FEF4DC] text-[#7A5310]", unredeemed: "bg-[#FEF4DC] text-[#7A5310]",
   rejected: "bg-[#FDF0EC] text-[#9A4024]", expired: "bg-[#FDF0EC] text-[#9A4024]", failed: "bg-[#FDF0EC] text-[#9A4024]", refunded: "bg-[#FDF0EC] text-[#9A4024]",
+  removed: "bg-[#ECECEC] text-[#3D3D3D]", "removal requested": "bg-[#FFE3EC] text-[#750B35]",
 };
 export const Pill = ({ s }) => <span className={`inline-block rounded-md px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider ${PILL[s] || "bg-[#E3F0ED] text-[#3D5E65]"}`}>{s || "—"}</span>;
 

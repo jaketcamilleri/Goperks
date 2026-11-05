@@ -77,6 +77,18 @@ DEFAULTS = {
                        "Hi {first_name}, thanks for submitting **“{deal_title}”**. Unfortunately we couldn't approve it this time.",
                        "You're welcome to adjust the offer and submit it again from your partner portal.", "Submit a new deal", "biz:",
                        sample={"first_name": "Sue", "deal_title": "Free scoop with any cone", "note": "Please add an end date."}),
+    "deal_removed": D("Deal removal approved", "business", "auto", ["first_name", "deal_title"], "Your {brand} deal has been removed", "Deal removed",
+                       "Hi {first_name}, as requested, **“{deal_title}”** has been taken off {brand}. Members can no longer see or claim it.",
+                       "Your past redemptions and stats for this deal are kept in your partner portal. You can submit a new deal any time.", "View my partner portal", "biz:",
+                       sample={"first_name": "Sue", "deal_title": "Free scoop with any cone", "note": ""}),
+    "removal_declined": D("Deal removal declined", "business", "auto", ["first_name", "deal_title"], "About your {brand} removal request", "Your deal is staying live",
+                       "Hi {first_name}, we've looked at your request to remove **“{deal_title}”** and it will stay live for now.",
+                       "If you have any questions, just reply to this email and we'll help.", "View my partner portal", "biz:",
+                       sample={"first_name": "Sue", "deal_title": "Free scoop with any cone", "note": "Members have vouchers for this deal until the end of the month."}),
+    "removal_request": D("Deal removal request (to you)", "owner", "auto", ["business", "deal_title", "reason"], "Removal request: {deal_title} ({business})",
+                       "A partner wants a deal removed", "**{business}** has asked to remove their deal **“{deal_title}”**.",
+                       "The deal stays live until you approve or decline the request in Admin → Deals.", "Review the request", "adm:/deals",
+                       sample={"business": "Gigi's Gelato", "deal_title": "Free scoop with any cone", "reason": "We've changed our menu."}),
     "business_rejected": D("Partner application declined", "business", "auto", ["first_name", "business"], "Your {brand} partner application",
                            "About your application",
                            "Hi {first_name}, thanks for your interest in listing {business} with {brand}. Unfortunately we can't approve your partner account at the moment.",
@@ -284,6 +296,16 @@ def partner_welcome_email(name: str, business: str):
 def deal_decision_email(name: str, title: str, approved: bool, note: str):
     return render("deal_approved" if approved else "deal_rejected", {"first_name": _first(name), "deal_title": title},
                   _note(note, "Note from the Go Perks team:"))
+
+
+def removal_decision_email(name: str, title: str, approved: bool, note: str):
+    return render("deal_removed" if approved else "removal_declined", {"first_name": _first(name), "deal_title": title},
+                  _note(note, "Note from the Go Perks team:"))
+
+
+def removal_request_email(business: str, title: str, reason: str):
+    return render("removal_request", {"business": business, "deal_title": title, "reason": reason},
+                  _note(reason, "Their reason:"))
 
 
 def business_rejected_email(name: str, business: str, note: str):

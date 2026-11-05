@@ -71,7 +71,19 @@ class Deal(BaseDocument):
     ends_on: Optional[str] = None
     rating_avg: float = 0.0
     rating_count: int = 0
+    removal_requested_at: Optional[str] = None
+    removal_reason: Optional[str] = None
+    removed_at: Optional[str] = None
     created_at: str = Field(default_factory=now_iso)
+
+
+class RemovalRequestIn(BaseModel):
+    reason: str = Field(min_length=3, max_length=500)
+
+
+class RemovalDecisionIn(BaseModel):
+    approve: bool
+    note: Optional[str] = Field(default=None, max_length=500)
 
 
 class Voucher(BaseDocument):

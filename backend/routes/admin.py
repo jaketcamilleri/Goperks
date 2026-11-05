@@ -1,6 +1,7 @@
 """Admin control room: moderation, people, payments, team and the activity log."""
 import asyncio
 import os
+import stripe
 import secrets
 from datetime import datetime
 from typing import Optional
@@ -10,9 +11,9 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from core import db, logger, oid, now_iso, hash_password, with_coords, month_start, month_range, MELB, CATEGORIES, JWT_ALGORITHM, rand_code, melb_today
 from deps import user_out, require_role
-from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn, AdminGiftIn, EmailSettingsIn
+from models import Deal, User, Activity, DealIn, StatusIn, HideIn, AdminCreateIn, AdminUserPatch, BulkIn, DecisionIn, AdminGiftIn, EmailSettingsIn, RemovalDecisionIn
 from email_service import reply_inbox
-from services import (log_activity, with_note, set_business_status, send_deal_decision, send_password_link, send_welcome,
+from services import (log_activity, with_note, set_business_status, send_deal_decision, send_removal_decision, send_password_link, send_welcome,
                       send_partner_welcome, comp_membership, review_out, refresh_rating,
                       ensure_referral_code, REFERRAL_CAP, send_gift_email, gift_length)
 
@@ -117,6 +118,23 @@ async def admin_set_status(deal_id: str, body: StatusIn, user=Depends(team)):
     return Deal.from_mongo(res).out()
 
 
+@router.post("/deals/{deal_id}/removal")
+async def admin_decide_removal(deal_id: str, body: RemovalDecisionIn, user=Depends(team)):
+    """Approve: the deal comes off the site (history kept). Decline: it stays live and the request is cleared."""
+    d = await db.deals.find_one({"_id": oid(deal_id), "removal_requested_at": {"$ne": None}})
+    if not d:
+        raise HTTPException(404, "No removal request for this deal")
+    if body.approve:
+        change = {"$set": {"status": "removed", "removed_at": now_iso(), "featured": False, "holiday_pick": False}}
+    else:
+        change = {"$set": {"removal_requested_at": None, "removal_reason": None}}
+    res = await db.deals.find_one_and_update({"_id": d["_id"]}, change, return_document=True)
+    await log_activity(user, "deal.removed" if body.approve else "deal.removal_declined", "deal", d["_id"], d["title"],
+                       with_note(d.get("business_name", ""), body.note))
+    asyncio.create_task(send_removal_decision(res, body.approve, body.note or ""))
+    return Deal.from_mongo(res).out()
+
+
 @router.delete("/deals/{deal_id}")
 async def admin_delete_deal(deal_id: str, user=Depends(owner)):
     d = await db.deals.find_one_and_delete({"_id": oid(deal_id)})
@@ -154,6 +172,7 @@ async def admin_stats(user=Depends(team)):
             "businesses": await db.users.count_documents({"role": "business", "business_status": "approved"}),
             "pending_businesses": await db.users.count_documents({"role": "business", "business_status": "pending"}),
             "pending_deals": await db.deals.count_documents({"status": "pending"}),
+            "removal_requests": await db.deals.count_documents({"status": "approved", "removal_requested_at": {"$ne": None}}),
             "live_deals": await db.deals.count_documents({"status": "approved"}),
             "vouchers": await db.vouchers.count_documents({}),
             "redeemed": await db.vouchers.count_documents({"status": "redeemed"}),
@@ -165,6 +184,7 @@ async def admin_stats(user=Depends(team)):
         "businesses": await db.users.count_documents({"role": "business", "business_status": "approved"}),
         "pending_businesses": await db.users.count_documents({"role": "business", "business_status": "pending"}),
         "pending_deals": await db.deals.count_documents({"status": "pending"}),
+        "removal_requests": await db.deals.count_documents({"status": "approved", "removal_requested_at": {"$ne": None}}),
         "live_deals": await db.deals.count_documents({"status": "approved"}),
         "vouchers": await db.vouchers.count_documents({}),
         "redeemed": await db.vouchers.count_documents({"status": "redeemed"}),
@@ -425,6 +445,31 @@ async def admin_remove_staff(user_id: str, user=Depends(owner)):
         raise HTTPException(404, "Staff member not found")
     await log_activity(user, "staff.removed", "staff", doc["_id"], person_label(doc), doc["email"])
     return {"ok": True}
+
+
+@router.delete("/users/{user_id}")
+async def admin_delete_account(user_id: str, user=Depends(owner)):
+    """Only the owner (admin role) can delete a member or business account. Their deals come off the site;
+    past vouchers stay so business stats and savings history remain accurate."""
+    if user_id == user["id"]:
+        raise HTTPException(400, "You can't delete your own account")
+    doc = await db.users.find_one({"_id": oid(user_id), "role": {"$in": ["member", "business"]}})
+    if not doc:
+        raise HTTPException(404, "Member or business not found")
+    if doc.get("stripe_subscription_id") and doc.get("auto_renew"):
+        try:
+            stripe.Subscription.cancel(doc["stripe_subscription_id"])
+        except stripe.error.StripeError as e:
+            logger.warning("could not cancel subscription for deleted account %s: %s", user_id, e)
+    if doc["role"] == "business":
+        await db.deals.update_many({"submitted_by": user_id, "status": {"$ne": "removed"}},
+                                   {"$set": {"status": "removed", "removed_at": now_iso(), "featured": False, "holiday_pick": False}})
+    for coll in (db.favorites, db.reviews, db.user_sessions):
+        await coll.delete_many({"user_id": user_id})
+    await db.users.delete_one({"_id": doc["_id"]})
+    await log_activity(user, f"{doc['role']}.deleted", doc["role"], doc["_id"], person_label(doc), doc["email"])
+    return {"ok": True}
+
 
 
 # ---------- Businesses ----------

@@ -15,7 +15,8 @@ from deps import user_out
 from models import Activity
 from email_service import send_email, EMAIL_FROM_NAME
 from email_templates import (welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email,
-                             business_rejected_email, new_applicant_email, weekly_digest_email, partner_report_email, referral_reward_email)
+                             business_rejected_email, new_applicant_email, weekly_digest_email, partner_report_email, referral_reward_email,
+                             removal_request_email, removal_decision_email)
 
 
 # ---------- Activity log ----------
@@ -258,6 +259,25 @@ async def send_deal_decision(deal: dict, note: str):
         await db.deals.update_one({"_id": deal["_id"]}, {"$set": {"decision_emailed_at": now_iso()}})
     except Exception as e:
         logger.warning("deal decision email failed for %s: %s", deal.get("_id"), e)
+
+
+async def send_removal_request(deal: dict, reason: str):
+    try:
+        subject, html = removal_request_email(deal.get("business_name", ""), deal["title"], reason)
+        await send_email(to=os.environ["SUPER_ADMIN_EMAIL"], subject=subject, html=html)
+    except Exception as e:
+        logger.warning("removal request email failed for %s: %s", deal.get("_id"), e)
+
+
+async def send_removal_decision(deal: dict, approved: bool, note: str):
+    try:
+        owner = await db.users.find_one({"_id": oid(deal["submitted_by"])}) if deal.get("submitted_by") else None
+        if not owner or owner.get("role") != "business":
+            return
+        subject, html = removal_decision_email(owner.get("name", ""), deal["title"], approved, note)
+        await send_email(to=owner["email"], subject=subject, html=html)
+    except Exception as e:
+        logger.warning("removal decision email failed for %s: %s", deal.get("_id"), e)
 
 
 async def send_business_rejected(u: dict, note: str):

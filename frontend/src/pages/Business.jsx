@@ -10,7 +10,7 @@ import { PartnerReviews } from "@/components/PartnerReviews";
 import { MaskLines, Eyebrow, FadeUp } from "@/components/Reveal";
 import { bp, assetUrl } from "@/lib/site";
 
-const STATUS_STYLE = { pending: "bg-[#FEF4DC] text-[#7A5310]", approved: "bg-[#EBF3EC] text-[#2F5A3A]", rejected: "bg-[#FDF0EC] text-[#9A4024]" };
+const STATUS_STYLE = { pending: "bg-[#FEF4DC] text-[#7A5310]", approved: "bg-[#EBF3EC] text-[#2F5A3A]", rejected: "bg-[#FDF0EC] text-[#9A4024]", removed: "bg-[#ECECEC] text-[#3D3D3D]" };
 
 export function StatusPill({ status }) {
   return <span className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest ${STATUS_STYLE[status] || ""}`} data-testid="deal-status-pill">{status}</span>;
@@ -81,6 +81,17 @@ export default function Business() {
     } catch (e) { toast.error(formatErr(e)); } finally { setBusy(false); }
   };
 
+  const requestRemoval = async (d) => {
+    const reason = window.prompt(`Why should "${d.title}" come down? The Go Perks team will review your request. Your deal stays live until then.`, "");
+    if (reason === null) return;
+    if (reason.trim().length < 3) { toast.error("Please add a short reason"); return; }
+    try {
+      await api.post(`/business/deals/${d.id}/removal-request`, { reason: reason.trim() });
+      toast.success("Removal requested — we'll be in touch");
+      load();
+    } catch (e) { toast.error(formatErr(e)); }
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-14 sm:px-8" data-testid="business-portal">
       <Eyebrow>For local businesses</Eyebrow>
@@ -131,9 +142,14 @@ export default function Business() {
             {mine.length === 0 ? <p className="mt-4 text-[#3D5E65]" data-testid="business-empty">Nothing submitted yet.</p> : (
               <ul className="mt-4 space-y-3" data-testid="business-submissions">
                 {mine.map((d) => (
-                  <li key={d.id} className="flex items-center justify-between gap-3 rounded-2xl border border-[#C2DEDA] bg-white p-4" data-testid={`business-deal-${d.id}`}>
-                    <div><p className="font-semibold">{d.title}</p><p className="text-sm text-[#3D5E65]">{catLabel(d.category)} · {d.discount_label}</p></div>
-                    <StatusPill status={d.status} />
+                  <li key={d.id} className="rounded-2xl border border-[#C2DEDA] bg-white p-4" data-testid={`business-deal-${d.id}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0"><p className="font-semibold">{d.title}</p><p className="text-sm text-[#3D5E65]">{catLabel(d.category)} · {d.discount_label}</p></div>
+                      <StatusPill status={d.status} />
+                    </div>
+                    {d.status === "approved" && (d.removal_requested_at
+                      ? <p className="mt-3 rounded-xl bg-[#FFE3EC] px-3 py-2 text-sm font-semibold text-[#750B35]" data-testid={`business-deal-removal-pending-${d.id}`}>Removal requested — the Go Perks team is reviewing it. It stays live until then.</p>
+                      : <button onClick={() => requestRemoval(d)} className="mt-3 rounded-full border-2 border-[#17434C] px-4 py-1.5 text-sm font-semibold transition-colors hover:bg-[#FFE3EC]" data-testid={`business-deal-request-removal-${d.id}`}>Request removal</button>)}
                   </li>
                 ))}
               </ul>

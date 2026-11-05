@@ -11,6 +11,9 @@ const SYSTEM = "bg-[#FEF4DC] text-[#7A5310]";
 const ACTIONS = {
   "deal.approved": ["Approved deal", GOOD], "deal.rejected": ["Rejected deal", BAD], "deal.pending": ["Sent deal back to review", NEUTRAL],
   "deal.created": ["Added deal", GOOD], "deal.edited": ["Edited deal", NEUTRAL], "deal.deleted": ["Deleted deal", BAD],
+  "deal.removal_requested": ["Asked to remove deal", NEUTRAL], "deal.removed": ["Took deal off the site", BAD], "deal.removal_declined": ["Kept deal live", GOOD],
+  "member.deleted": ["Deleted member account", BAD], "business.deleted": ["Deleted business account", BAD],
+  "settings.launch_offer": ["Changed launch offer", NEUTRAL],
   "business.approved": ["Approved business", GOOD], "business.rejected": ["Rejected business", BAD],
   "review.hidden": ["Hid review", BAD], "review.shown": ["Showed review", GOOD],
   "user.created": ["Added account", GOOD], "user.edited": ["Edited account", NEUTRAL],
