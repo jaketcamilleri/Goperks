@@ -58,7 +58,7 @@ async def assign_partner(body: DealIn) -> dict:
 async def admin_create_deal(body: DealIn, user=Depends(team)):
     data = await assign_partner(body)
     d = Deal(**(await with_coords(data)), status="approved")
-    res = await db.deals.insert_one(d.to_mongo())
+    res = await db.deals.insert_one({**d.to_mongo(), "approved_at": now_iso()})
     d.id = str(res.inserted_id)
     await log_activity(user, "deal.created", "deal", d.id, d.title, f"For {d.business_name} · live straight away")
     return d.out()
@@ -81,7 +81,7 @@ async def admin_deals_bulk(body: BulkIn, user=Depends(team)):
             await log_activity(user, "deal.deleted", "deal", d["_id"], d["title"], f"{d.get('business_name', '')} · bulk action")
         return {"updated": res.deleted_count}
     changed = await db.deals.find({"_id": {"$in": ids}, "status": {"$ne": body.status}}).to_list(200)
-    await db.deals.update_many({"_id": {"$in": ids}}, {"$set": {"status": body.status}})
+    await db.deals.update_many({"_id": {"$in": ids}, "status": {"$ne": body.status}}, {"$set": {"status": body.status, **({"approved_at": now_iso()} if body.status == "approved" else {})}})
     for d in changed:
         await log_activity(user, f"deal.{body.status}", "deal", d["_id"], d["title"],
                            with_note(f"{d.get('business_name', '')} · bulk action", body.note))
@@ -107,7 +107,7 @@ async def admin_update_deal(deal_id: str, body: DealIn, user=Depends(team)):
 async def admin_set_status(deal_id: str, body: StatusIn, user=Depends(team)):
     if body.status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "Invalid status")
-    prev = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": {"status": body.status}})
+    prev = await db.deals.find_one_and_update({"_id": oid(deal_id)}, {"$set": {"status": body.status, **({"approved_at": now_iso()} if body.status == "approved" else {})}})
     if not prev:
         raise HTTPException(404, "Deal not found")
     res = await db.deals.find_one({"_id": prev["_id"]})

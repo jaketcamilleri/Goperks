@@ -21,6 +21,7 @@ const ACTIONS = {
   "membership.deactivated": ["Turned off membership", BAD], "card.resent": ["Re-sent member card", NEUTRAL],
   "password_link.sent": ["Sent password link", NEUTRAL], "staff.removed": ["Removed staff", BAD],
   "reports.sent": ["Sent partner reports", SYSTEM],
+  "new_deals.sent": ["Sent new deals emails", SYSTEM],
   "invites.sent": ["Sent member invites", GOOD], "invites.retried": ["Retried member invites", NEUTRAL],
   "pitch.sent": ["Sent partner pitches", GOOD],
   "gift.created": ["Created gift codes", GOOD], "gift.cancelled": ["Cancelled gift code", BAD],

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pymongo.errors import DuplicateKeyError
 
 from core import db, now_iso, verify_cron, MELB
-from services import run_weekly_digest, run_gift_deliveries, run_renewal_reminders, run_partner_reports
+from services import run_weekly_digest, run_gift_deliveries, run_renewal_reminders, run_partner_reports, run_new_deals
 
 router = APIRouter(prefix="/cron")
 
@@ -56,3 +56,10 @@ async def cron_partner_reports(request: Request, force: bool = False):
     if not force and datetime.now(MELB).day != 1:
         return {"status": "skipped", "reason": "Partner reports go out on the 1st of each month"}
     return await accept(request, "reports", run_partner_reports)
+
+
+@router.post("/new-deals")
+async def cron_new_deals(request: Request):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    verify_cron(request)
+    return await accept(request, "newdeals", run_new_deals)

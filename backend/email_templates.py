@@ -89,6 +89,10 @@ DEFAULTS = {
                        "A partner wants a deal removed", "**{business}** has asked to remove their deal **“{deal_title}”**.",
                        "The deal stays live until you approve or decline the request in Admin → Deals.", "Review the request", "adm:/deals",
                        sample={"business": "Gigi's Gelato", "deal_title": "Free scoop with any cone", "reason": "We've changed our menu."}),
+    "new_deals": D("New deals near you", "member", "auto", ["first_name", "count", "deal_word", "area"], "{count} new {brand} {deal_word} near {area}", "Fresh deals for the family",
+                     "Hi {first_name}, here's what's new on {brand} near **{area}** this week. Just show your live card at the counter.",
+                     "New deals go live every week, so keep an eye out.", "See all deals", "/deals",
+                     sample={"first_name": "Alex", "count": "3", "deal_word": "deals", "area": "Essendon"}),
     "business_rejected": D("Partner application declined", "business", "auto", ["first_name", "business"], "Your {brand} partner application",
                            "About your application",
                            "Hi {first_name}, thanks for your interest in listing {business} with {brand}. Unfortunately we can't approve your partner account at the moment.",
@@ -306,6 +310,18 @@ def removal_decision_email(name: str, title: str, approved: bool, note: str):
 def removal_request_email(business: str, title: str, reason: str):
     return render("removal_request", {"business": business, "deal_title": title, "reason": reason},
                   _note(reason, "Their reason:"))
+
+
+def new_deals_email(name: str, area: str, deals: list, unsub_url: str):
+    rows = "".join(
+        f'<li style="margin:0 0 10px"><a href="{escape(_app_url("/deals/" + d["id"]))}" style="color:#9A4024;font-weight:bold">{escape(d["title"])}</a>'
+        f'<br>{escape(d.get("discount_label") or "")} at {escape(d.get("business_name") or "")}'
+        f'{" · " + escape(d["suburb"]) if d.get("suburb") else ""}</li>' for d in deals)
+    block = f'<ul style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;margin:0 0 14px;padding-left:20px">{rows}</ul>'
+    footer = (f'<p style="font-family:Arial,sans-serif;font-size:12px;color:#5b7479;margin:14px 0 0">'
+              f'Don\'t want these? <a href="{escape(unsub_url)}" style="color:#5b7479">Stop new-deal emails</a>.</p>')
+    return render("new_deals", {"first_name": _first(name), "count": str(len(deals)), "deal_word": "deal" if len(deals) == 1 else "deals",
+                                 "area": area}, block, footer)
 
 
 def business_rejected_email(name: str, business: str, note: str):

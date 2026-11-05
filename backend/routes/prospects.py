@@ -18,6 +18,7 @@ owner = require_role("admin")
 STATUSES = ("new", "contacted", "interested", "joined", "not_interested")
 FOLLOW_UP_DAYS = 7
 SEED_FILE = Path(__file__).parent.parent / "prospects_seed.json"
+BATCH2_FILE = Path(__file__).parent.parent / "prospects_batch2.json"
 LOCATION_FIELDS = ("address", "suburb", "postcode")
 
 
@@ -160,6 +161,26 @@ async def seed_prospects():
     for r in rows:
         await db.prospects.update_one({"business_name": r["business_name"], "postcode": {"$exists": False}}, {"$set": {
             k: r.get(k) for k in ("address", "postcode", "lat", "lng", "located")}})
+
+
+async def import_batch2():
+    """One-time add of 150 researched Victorian businesses (never emailed). Runs once per database, so a prospect
+    you delete later doesn't come back. Rows: [name, category, address, suburb, postcode, website, source, note]."""
+    if not BATCH2_FILE.exists() or await db.settings.find_one({"_id": "prospects_batch2"}):
+        return
+    have = {d["business_name"].lower() for d in await db.prospects.find({}, {"business_name": 1}).to_list(10000)}
+    docs = []
+    for name, cat, address, suburb, postcode, website, source, note in json.loads(BATCH2_FILE.read_text()):
+        if name.lower() in have:
+            continue
+        place = find_suburb(suburb, postcode) or {}
+        docs.append(Prospect(business_name=name, category=cat, address=address, suburb=place.get("name", suburb),
+                             postcode=place.get("postcode", postcode), website=website, source_url=source,
+                             notes=(note + " Contact details not checked yet.").strip(), lat=place.get("lat"), lng=place.get("lng"),
+                             located="suburb" if place else "none").to_mongo())
+    if docs:
+        await db.prospects.insert_many(docs)
+    await db.settings.update_one({"_id": "prospects_batch2"}, {"$set": {"added": len(docs), "at": now_iso()}}, upsert=True)
 
 
 @router.get("")

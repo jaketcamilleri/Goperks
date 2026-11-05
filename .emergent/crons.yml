@@ -31,3 +31,12 @@ crons:
     method: POST
     # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
     enabled: true
+  - name: new-deals
+    description: "Fridays 9am Melbourne: emails active members the deals that went live in the last 7 days near their suburb"
+    cron: "0 9 * * 5"
+    timezone: "Australia/Melbourne"
+    endpoint: "{{BASE_URL}}/api/cron/new-deals"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true
+

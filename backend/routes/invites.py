@@ -166,6 +166,10 @@ async def unsubscribe(body: UnsubscribeIn):
         payload = jwt.decode(body.token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
     except jwt.InvalidTokenError:
         raise HTTPException(400, "This unsubscribe link isn't valid")
+    if payload.get("type") == "unsubscribe_deals":
+        email = payload["sub"].lower()
+        await db.users.update_one({"email": email}, {"$set": {"new_deals_emails": False}})
+        return {"ok": True, "email": email}
     if payload.get("type") != "unsubscribe":
         raise HTTPException(400, "This unsubscribe link isn't valid")
     email = payload["sub"].lower()

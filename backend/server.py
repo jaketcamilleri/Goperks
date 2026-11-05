@@ -86,6 +86,7 @@ async def startup():
     await create_indexes()
     await seed()
     await prospects.seed_prospects()
+    await prospects.import_batch2()
     await templates.refresh_templates()
 
 

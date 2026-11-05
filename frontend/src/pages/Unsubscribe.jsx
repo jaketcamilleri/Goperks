@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/Reveal";
 export default function Unsubscribe() {
   const [params] = useSearchParams();
   const token = params.get("token") || "";
+  const deals = params.get("list") === "deals";
   const [state, setState] = useState({ busy: false, done: null, error: "" });
 
   const confirm = async () => {
@@ -20,13 +21,15 @@ export default function Unsubscribe() {
     <div className="mx-auto max-w-xl px-5 pb-28 pt-14" data-testid="unsubscribe-page">
       <Eyebrow>Email preferences</Eyebrow>
       <h1 className="mt-5 font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-        {state.done ? "You're unsubscribed." : "Stop invite emails?"}
+        {state.done ? "You're unsubscribed." : deals ? "Stop new-deal emails?" : "Stop invite emails?"}
       </h1>
       {state.done ? (
-        <p className="mt-5 text-[#3D5E65]" data-testid="unsubscribe-done">We won't send invites to <span className="font-semibold text-[#17434C]">{state.done}</span> again. Changed your mind? You can still <Link to="/join" className="font-semibold text-[#9A4024]">join any time</Link>.</p>
+        deals
+          ? <p className="mt-5 text-[#3D5E65]" data-testid="unsubscribe-done">We won't send weekly new-deal emails to <span className="font-semibold text-[#17434C]">{state.done}</span> any more. Your membership and card aren't affected, and you can still <Link to="/deals" className="font-semibold text-[#9A4024]">browse deals</Link> any time.</p>
+          : <p className="mt-5 text-[#3D5E65]" data-testid="unsubscribe-done">We won't send invites to <span className="font-semibold text-[#17434C]">{state.done}</span> again. Changed your mind? You can still <Link to="/join" className="font-semibold text-[#9A4024]">join any time</Link>.</p>
       ) : (
         <>
-          <p className="mt-5 text-[#3D5E65]">Tap below and we won't email you any more invites to join Go Perks.</p>
+          <p className="mt-5 text-[#3D5E65]">{deals ? "Tap below and we'll stop emailing you about new deals near you. Your membership stays the same." : "Tap below and we won't email you any more invites to join Go Perks."}</p>
           {!token && <p className="mt-6 rounded-2xl bg-[#FDF0EC] p-4 text-sm text-[#9A4024]" data-testid="unsubscribe-missing">This link is missing its code. Please use the link from your email.</p>}
           {state.error && <p className="mt-6 rounded-2xl bg-[#FDF0EC] p-4 text-sm text-[#9A4024]" data-testid="unsubscribe-error">{state.error}</p>}
           <button onClick={confirm} disabled={!token || state.busy} data-testid="unsubscribe-confirm-btn"

@@ -1,5 +1,6 @@
 """Shared business logic: memberships, gifts, emails, partner decisions, activity log and scheduled jobs."""
 import asyncio
+import math
 import os
 import secrets
 from datetime import datetime, timezone, timedelta
@@ -10,13 +11,13 @@ from fastapi import HTTPException
 from pymongo.errors import DuplicateKeyError
 
 from core import (db, logger, oid, now_iso, nice_date, melb_today, rand_code, make_token, MELB,
-                  previous_month_start, month_range)
+                  previous_month_start, month_range, find_suburb)
 from deps import user_out
 from models import Activity
 from email_service import send_email, EMAIL_FROM_NAME
 from email_templates import (welcome_email, renewal_email, gift_email, partner_welcome_email, deal_decision_email,
                              business_rejected_email, new_applicant_email, weekly_digest_email, partner_report_email, referral_reward_email,
-                             removal_request_email, removal_decision_email)
+                             removal_request_email, removal_decision_email, new_deals_email)
 
 
 # ---------- Activity log ----------
@@ -424,3 +425,52 @@ async def run_partner_reports():
                            f"Emailed {sent} partner{'s' if sent != 1 else ''}" + (f" · {failed} couldn't be sent" if failed else ""))
     logger.info("partner reports for %s: sent %s, failed %s", key, sent, failed)
     return {"month": key, "sent": sent, "failed": failed}
+
+
+NEW_DEALS_RADIUS_KM = 15
+NEW_DEALS_MAX = 8
+
+
+def km_between(a_lat, a_lng, b_lat, b_lng) -> float:
+    dlat, dlng = math.radians(b_lat - a_lat), math.radians(b_lng - a_lng)
+    h = math.sin(dlat / 2) ** 2 + math.cos(math.radians(a_lat)) * math.cos(math.radians(b_lat)) * math.sin(dlng / 2) ** 2
+    return 6371 * 2 * math.asin(math.sqrt(h))
+
+
+def deals_near(deals: list, place: Optional[dict]) -> list:
+    """Deals within the radius of the member's suburb, closest first; every deal if we don't know their suburb."""
+    if not place:
+        return deals[:NEW_DEALS_MAX]
+    near = [(km_between(place["lat"], place["lng"], d["lat"], d["lng"]), d) for d in deals if d.get("lat") is not None and d.get("lng") is not None]
+    return [d for km, d in sorted(near, key=lambda x: x[0]) if km <= NEW_DEALS_RADIUS_KM][:NEW_DEALS_MAX]
+
+
+async def run_new_deals():
+    """Friday email to active members: deals that went live in the last 7 days near their suburb. Nothing new nearby = no email."""
+    since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    rows = await db.deals.find({"status": "approved", "$or": [{"approved_at": {"$gte": since}},
+                                                               {"approved_at": {"$exists": False}, "created_at": {"$gte": since}}]}).to_list(500)
+    deals = [{**r, "id": str(r["_id"])} for r in rows]
+    if not deals:
+        logger.info("new deals email: no new deals this week")
+        return {"sent": 0}
+    sent = failed = 0
+    async for u in db.users.find({"role": "member", "membership_status": "active", "new_deals_emails": {"$ne": False}}):
+        place = find_suburb(u.get("suburb", "")) if u.get("suburb") else None
+        picks = deals_near(deals, place)
+        if not picks:
+            continue
+        token = make_token(u["email"], "unsubscribe_deals", timedelta(days=60))
+        unsub = f"{os.environ['FRONTEND_URL'].rstrip('/')}/unsubscribe?list=deals&token={token}"
+        subject, html = new_deals_email(u.get("name", ""), place["name"] if place else "you", picks, unsub)
+        try:
+            await send_email(to=u["email"], subject=subject, html=html)
+            sent += 1
+        except Exception as e:
+            failed += 1
+            logger.warning("new deals email failed for %s: %s", u["email"], e)
+    if sent or failed:
+        await log_activity(None, "new_deals.sent", "system", None, "New deals near you",
+                           f"Emailed {sent} member{'s' if sent != 1 else ''}" + (f" · {failed} couldn't be sent" if failed else ""))
+    logger.info("new deals email: sent %s, failed %s", sent, failed)
+    return {"sent": sent, "failed": failed}
