@@ -44,8 +44,8 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
       >
         {/* Decorations are clipped in their own layer so the card itself can grow taller if its contents need room. */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[22px]" aria-hidden="true">
-          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#B9512E]" />
-          <div className="absolute -bottom-24 right-10 h-48 w-48 rounded-full bg-[#EE8A63]/90" />
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#B9512E]" />
+          <div className="absolute -bottom-14 right-16 h-28 w-28 rounded-full bg-[#EE8A63]/90" />
           <motion.div
             className="absolute inset-0 opacity-40 mix-blend-overlay"
             style={{ background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.8) 50%, transparent 70%)", backgroundSize: "200% 100%", backgroundPositionX: glareX }}
@@ -54,6 +54,7 @@ export function MemberCard({ name = "Your Name", code = "GP-XXXXXX", expires, st
         </div>
         {/* Gold edge: a solid gold line with a lighter inner highlight, drawn over the card edge without changing its size. */}
         <div className="pointer-events-none absolute inset-0 z-20 rounded-[22px] border-[3px] border-[#D4AF37] shadow-[inset_0_0_0_1px_rgba(255,232,160,0.55)]" aria-hidden="true" data-testid="member-card-gold-border" />
+        {liveOn && <div className="gold-edge-shine pointer-events-none absolute inset-0 z-20 rounded-[22px]" aria-hidden="true" data-testid="member-card-gold-shine" />}
         {/* Spacer keeps the bank-card shape; the content shares its grid cell, so a cramped card grows instead of clipping. */}
         <div className="col-start-1 row-start-1 aspect-[1.586/1]" aria-hidden="true" />
         <div className={`relative col-start-1 row-start-1 flex min-w-0 flex-col justify-between gap-3 p-5 sm:p-6 ${liveOn ? "pb-12 sm:pb-12" : ""}`} style={{ transform: "translateZ(40px)" }}>

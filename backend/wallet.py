@@ -6,7 +6,6 @@ import os
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -15,15 +14,10 @@ from cryptography.hazmat.primitives.serialization import pkcs7, pkcs12
 ASSETS = Path(__file__).parent / "wallet_assets"
 ORG = "Go Perks"
 APPLE_KEYS = ("APPLE_PASS_TYPE_ID", "APPLE_TEAM_ID", "APPLE_PASS_P12_BASE64", "APPLE_PASS_P12_PASSWORD")
-GOOGLE_KEYS = ("GOOGLE_WALLET_ISSUER_ID", "GOOGLE_WALLET_SERVICE_ACCOUNT_JSON")
 
 
 def apple_ready() -> bool:
     return all(os.environ.get(k) for k in APPLE_KEYS[:3])
-
-
-def google_ready() -> bool:
-    return all(os.environ.get(k) for k in GOOGLE_KEYS)
 
 
 def _iso(iso: str) -> str:
@@ -75,38 +69,3 @@ def build_pkpass(user: dict) -> bytes:
         for n, b in files.items():
             z.writestr(n, b)
     return out.getvalue()
-
-
-def google_save_url(user: dict) -> str:
-    from google.auth import crypt, jwt
-
-    info = json.loads(os.environ["GOOGLE_WALLET_SERVICE_ACCOUNT_JSON"])
-    issuer = os.environ["GOOGLE_WALLET_ISSUER_ID"]
-    class_id = f"{issuer}.tinys_membership_v1"
-    frontend = os.environ["FRONTEND_URL"].rstrip("/")
-    text = lambda v: {"defaultValue": {"language": "en-AU", "value": v}}
-    obj = {
-        "id": f"{issuer}.member_{user['member_code'].replace('-', '_')}",
-        "classId": class_id,
-        "state": "ACTIVE",
-        "cardTitle": text(ORG),
-        "header": text(user["name"]),
-        "subheader": text("Member"),
-        "hexBackgroundColor": "#17434C",
-        "logo": {"sourceUri": {"uri": f"{frontend}/api/wallet/google-logo.png"}},
-        "textModulesData": [
-            {"id": "member_code", "header": "Member no.", "body": user["member_code"]},
-            {"id": "valid_until", "header": "Valid until",
-             "body": datetime.fromisoformat(user["membership_expires_at"]).strftime("%-d %b %Y")},
-        ],
-        "barcode": {"type": "QR_CODE", "value": user["member_code"], "alternateText": user["member_code"]},
-        "validTimeInterval": {"end": {"date": _iso(user["membership_expires_at"])}},
-    }
-    claims = {
-        "iss": info["client_email"], "aud": "google", "origins": [frontend], "typ": "savetowallet",
-        "payload": {"genericClasses": [{"id": class_id}], "genericObjects": [obj]},
-    }
-    token = jwt.encode(crypt.RSASigner.from_service_account_info(info), claims)
-    if isinstance(token, bytes):
-        token = token.decode()
-    return "https://pay.google.com/gp/v/save/" + quote(token, safe="")

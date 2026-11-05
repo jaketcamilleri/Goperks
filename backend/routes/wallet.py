@@ -1,6 +1,5 @@
-"""Apple and Google Wallet member cards."""
+"""Apple Wallet member cards."""
 from fastapi import APIRouter, HTTPException, Response, Depends
-from fastapi.responses import FileResponse
 
 import wallet
 from core import logger
@@ -17,7 +16,7 @@ def wallet_member(user: dict) -> dict:
 
 @router.get("/status")
 async def wallet_status():
-    return {"apple": wallet.apple_ready(), "google": wallet.google_ready()}
+    return {"apple": wallet.apple_ready()}
 
 
 @router.get("/apple")
@@ -33,19 +32,3 @@ async def wallet_apple(user=Depends(current_user)):
     return Response(content=data, media_type="application/vnd.apple.pkpass",
                     headers={"Content-Disposition": f'attachment; filename="go-perks-card-{member["member_code"]}.pkpass"'})
 
-
-@router.get("/google")
-async def wallet_google(user=Depends(current_user)):
-    if not wallet.google_ready():
-        raise HTTPException(503, "Google Wallet isn't set up yet")
-    member = wallet_member(user)
-    try:
-        return {"url": wallet.google_save_url(member)}
-    except Exception as e:
-        logger.error("google wallet link failed: %s", type(e).__name__)
-        raise HTTPException(503, "Google Wallet card is temporarily unavailable")
-
-
-@router.get("/google-logo.png")
-async def wallet_google_logo():
-    return FileResponse(wallet.ASSETS / "google_logo.png", media_type="image/png")

@@ -43,7 +43,8 @@ Members (local families), Business partners (cafes, play centres, restaurants), 
 - Member favourites (heart on every deal card + detail page, "Saved favourites" grid on account page)
 - Welcome email with member card number sent once when membership is first activated
 - Renewal reminder email (platform cron daily 9am Melbourne -> /api/cron/renewal-reminders) for memberships ending within 14 days, includes savings so far; one reminder per expiry date
-- Apple Wallet (.pkpass storeCard, QR) + Google Wallet (generic pass save link) code built; buttons appear on account page only once secrets are set: APPLE_PASS_TYPE_ID, APPLE_TEAM_ID, APPLE_PASS_P12_BASE64, APPLE_PASS_P12_PASSWORD, GOOGLE_WALLET_ISSUER_ID, GOOGLE_WALLET_SERVICE_ACCOUNT_JSON. Signing verified only with a self-signed test cert.
+- Apple Wallet (.pkpass storeCard, QR) code built; button appears on account page only once secrets are set: APPLE_PASS_TYPE_ID, APPLE_TEAM_ID, APPLE_PASS_P12_BASE64, APPLE_PASS_P12_PASSWORD. Signing verified only with a self-signed test cert. Google Wallet REMOVED at owner's request (2026-11-05); nothing shows when Apple isn't set up.
+- 2026-11-05: Live member card has a slow looping gold shimmer around its gold edge (homepage/preview cards stay still); orange circles on the card made smaller.
 
 ## Implemented (2026-11-04, iteration 4)
 - Partner stats on business portal: claimed/redeemed this month, all-time redeemed, member savings, per-deal table (/api/business/stats)

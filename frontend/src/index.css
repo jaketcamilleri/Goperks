@@ -65,6 +65,19 @@ body {
   mix-blend-mode: screen;
 }
 @media (prefers-reduced-motion: reduce) { .live-sheen { animation-duration: 8s; } }
+/* Gold edge shimmer: a bright band sweeps along the border ring only (the mask hides the card's middle). */
+@keyframes gold-edge-shine { 0% { background-position: 150% 0; } 60%, 100% { background-position: -50% 0; } }
+.gold-edge-shine {
+  padding: 4px;
+  background: linear-gradient(110deg, transparent 38%, rgba(255, 231, 160, 0.7) 45%, #FFFBEA 50%, rgba(255, 231, 160, 0.7) 55%, transparent 62%);
+  background-size: 250% 100%;
+  filter: drop-shadow(0 0 3px rgba(255, 215, 120, 0.9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: gold-edge-shine 5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .gold-edge-shine { animation-duration: 12s; } }
 
 
 @media (prefers-reduced-motion: reduce) {
