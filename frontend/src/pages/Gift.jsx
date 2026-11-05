@@ -38,7 +38,7 @@ export default function GiftPage() {
   };
 
   return (
-    <div className="relative overflow-hidden bg-[#FFF8E7]" data-testid="gift-page">
+    <div className="relative overflow-hidden bg-white" data-testid="gift-page">
       <Confetti items={GIFT_CONFETTI} />
       <div className="relative mx-auto grid max-w-7xl gap-14 px-5 pb-28 pt-14 sm:px-8 lg:grid-cols-12 lg:pt-20">
         <div className="lg:col-span-6">

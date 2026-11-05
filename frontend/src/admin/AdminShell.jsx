@@ -81,7 +81,7 @@ export default function AdminShell() {
 
   const doLogout = async () => { await logout(); nav(ap("")); };
   return (
-    <div className="min-h-screen bg-[#FBFAF4] text-[#17434C]" data-testid="admin-shell">
+    <div className="min-h-screen bg-white text-[#17434C]" data-testid="admin-shell">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between bg-[#0F3138] p-4 pt-5 lg:flex">
         <RainbowBar className="absolute inset-x-0 top-0 h-1.5" />
         <div>

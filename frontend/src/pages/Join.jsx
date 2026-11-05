@@ -69,7 +69,7 @@ export default function Join() {
   );
 
   return (
-    <div className="relative overflow-hidden bg-[#FFF8E7]" data-testid="checkout-subscription-form">
+    <div className="relative overflow-hidden bg-white" data-testid="checkout-subscription-form">
       <div className="pointer-events-none absolute -right-32 top-10 h-[420px] w-[420px] rounded-full bg-[#FFE3EC]" aria-hidden="true" />
       <div className="relative mx-auto grid max-w-7xl gap-14 px-5 pb-28 pt-14 sm:px-8 lg:grid-cols-12 lg:pt-20">
         <div className="lg:col-span-6">

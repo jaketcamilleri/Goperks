@@ -39,7 +39,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#C2DEDA]/70 bg-[#FFFDF7]/85 backdrop-blur-xl" data-testid="main-navbar">
+    <header className="sticky top-0 z-50 border-b border-[#C2DEDA]/70 bg-white/90 backdrop-blur-xl" data-testid="main-navbar">
       <RainbowBar className="h-1" />
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
         <Link to="/" data-testid="nav-logo"><Logo /></Link>

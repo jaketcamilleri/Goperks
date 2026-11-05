@@ -27,7 +27,7 @@ html.lenis, html.lenis body { height: auto; }
 
 body {
     margin: 0;
-    background: #FFF8E7;
+    background: #FFFFFF;
     color: var(--ink);
     font-family: "Bricolage Grotesque", ui-sans-serif, sans-serif;
     -webkit-font-smoothing: antialiased;

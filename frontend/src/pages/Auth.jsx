@@ -130,7 +130,7 @@ export default function Auth({ mode, business = false }) {
         className="pop relative hidden min-h-[560px] overflow-hidden rounded-[32px] border-[3px] border-[#17434C] lg:block">
         <img src={business ? SIDE_IMG : FAMILY_IMG} alt={business ? "Coffee at a local cafe" : "A family sharing a meal together"} className="absolute inset-0 h-full w-full object-cover" />
         <span className="pop-sm absolute right-6 top-6 rotate-3 rounded-full border-2 border-[#17434C] bg-[#FFD166] px-4 py-1.5 text-sm font-bold text-[#17434C]">{business ? "Reach local families" : "Deals for the whole crew"}</span>
-        <div className="absolute inset-x-6 bottom-6 rounded-2xl border-2 border-[#17434C] bg-[#FFFDF7]/90 p-6 backdrop-blur-xl">
+        <div className="absolute inset-x-6 bottom-6 rounded-2xl border-2 border-[#17434C] bg-white/90 p-6 backdrop-blur-xl">
           <p className="font-display text-2xl leading-snug">“Half price at our favourite local — it covered the membership in the first month.”</p>
           <p className="mt-3 font-mono text-xs uppercase tracking-widest text-[#9A4024]">Priya · Brunswick</p>
         </div>
