@@ -55,7 +55,7 @@ export default function Join() {
     <>
       {user && !active && <ReferralCodeField className="mt-8 text-left" onChange={loadPrice} />}
       <button onClick={checkout} disabled={busy || locked} data-testid="checkout-btn"
-        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#17434C] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#B9512E] active:scale-[0.98] disabled:opacity-60">
+        className="pop pop-hover mt-8 flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#17434C] bg-[#B9512E] py-4 font-bold text-white hover:bg-[#9A4024] disabled:opacity-60">
         <Lock className="h-4 w-4" />
         {busy ? "Opening secure checkout…" : !user ? `Create account & pay $${price === 49 ? 49 : price.toFixed(2)}` : auto ? "Renews automatically" : locked ? `Renewal opens ${opens}` : active ? "Renew for another year" : `Pay $${price === 49 ? 49 : price.toFixed(2)} securely`}
       </button>
@@ -69,8 +69,9 @@ export default function Join() {
   );
 
   return (
-    <div className="grain relative overflow-hidden" data-testid="checkout-subscription-form">
-      <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-28 pt-14 sm:px-8 lg:grid-cols-12 lg:pt-20">
+    <div className="relative overflow-hidden bg-[#FFF8E7]" data-testid="checkout-subscription-form">
+      <div className="pointer-events-none absolute -right-32 top-10 h-[420px] w-[420px] rounded-full bg-[#FFE3EC]" aria-hidden="true" />
+      <div className="relative mx-auto grid max-w-7xl gap-14 px-5 pb-28 pt-14 sm:px-8 lg:grid-cols-12 lg:pt-20">
         <div className="lg:col-span-6">
           <Eyebrow>Membership</Eyebrow>
           <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
@@ -85,7 +86,7 @@ export default function Join() {
           </FadeUp>
         </div>
         <FadeUp delay={0.1} className="lg:col-span-5 lg:col-start-8">
-          <div className="rounded-[36px] bg-[#B9512E] p-3 sm:p-4">
+          <div className="pop rounded-[36px] border-[3px] border-[#17434C] bg-[#FFD166] p-3 sm:p-4">
             <PricingTicket cta={cta} price={active ? 49 : price} />
           </div>
         </FadeUp>

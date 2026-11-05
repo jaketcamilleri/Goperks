@@ -13,6 +13,7 @@ import { MaskLines } from "@/components/Reveal";
 import { bp, BizLink, MainLink, ap } from "@/lib/site";
 
 const SIDE_IMG = "https://images.unsplash.com/photo-1564327367919-cb377ea6a88f?auto=format&fit=crop&w=1200&q=80";
+const FAMILY_IMG = "/images/family/family-dining.jpg";
 
 export default function Auth({ mode, business = false }) {
   const [params] = useSearchParams();
@@ -65,7 +66,7 @@ export default function Auth({ mode, business = false }) {
         {business && <p className="mb-4 font-mono text-[11px] uppercase tracking-widest text-[#9A4024]" data-testid="auth-partner-eyebrow">Go Perks partners</p>}
         <MaskLines as="h1" className="font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl"
           lines={business ? (isLogin ? [<>Partner</>, <em key="b" className="font-normal italic text-[#B9512E]">log in.</em>] : [<>Become a</>, <em key="c" className="font-normal italic text-[#B9512E]">partner.</em>])
-            : isLogin ? [<>Welcome</>, <em key="b" className="font-normal italic text-[#B9512E]">back.</em>] : [<>Join the</>, <em key="c" className="font-normal italic text-[#B9512E]">little club.</em>]} />
+            : isLogin ? [<>Welcome</>, <em key="b" className="font-normal italic text-[#B9512E]">back.</em>] : [<>Join the</>, <em key="c" className="font-normal italic text-[#B9512E]">family club.</em>]} />
         {!business && (
           <p className="mt-6 rounded-2xl border border-[#C2DEDA] bg-white px-4 py-3 text-sm text-[#3D5E65]" data-testid="auth-business-redirect">
             Own a business? <BizLink to={isLogin ? "/login" : "/register"} className="font-semibold text-[#9A4024]" data-testid="auth-business-link">{isLogin ? "Partner log in →" : "Become a partner →"}</BizLink>
@@ -115,7 +116,7 @@ export default function Auth({ mode, business = false }) {
           {err && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-error">{err}</p>}
           {wrongArea === "member" && <p className="rounded-xl bg-[#FDF0EC] p-3 text-sm text-[#9A4024]" data-testid="auth-wrong-area">This login is for business partners. <MainLink to="/login" className="font-semibold underline">Members log in here →</MainLink></p>}
           <button disabled={busy} type="submit" data-testid="auth-submit-btn"
-            className="w-full rounded-full bg-[#B9512E] py-4 font-semibold text-[#EAF6F3] transition-[background-color,transform] hover:bg-[#9A4024] active:scale-[0.98] disabled:opacity-60">
+            className="pop pop-hover w-full rounded-full border-2 border-[#17434C] bg-[#B9512E] py-4 font-bold text-white hover:bg-[#9A4024] disabled:opacity-60">
             {busy ? "Please wait…" : isLogin ? "Log in" : "Create account"}
           </button>
           {!isLogin && <p className="text-center text-xs text-[#3D5E65]" data-testid="auth-legal-note">By creating an account you agree to our <Link to="/terms" className="font-semibold underline" target="_blank">Terms</Link> and <Link to="/privacy" className="font-semibold underline" target="_blank">Privacy policy</Link>.</p>}
@@ -126,9 +127,10 @@ export default function Auth({ mode, business = false }) {
         </p>
       </div>
       <motion.div initial={{ clipPath: "inset(0 0 0 100% round 32px)" }} animate={{ clipPath: "inset(0 0 0 0% round 32px)" }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative hidden min-h-[560px] overflow-hidden lg:block">
-        <img src={SIDE_IMG} alt="Coffee at a local cafe" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-x-6 bottom-6 rounded-2xl bg-[#EAF6F3]/85 p-6 backdrop-blur-xl">
+        className="pop relative hidden min-h-[560px] overflow-hidden rounded-[32px] border-[3px] border-[#17434C] lg:block">
+        <img src={business ? SIDE_IMG : FAMILY_IMG} alt={business ? "Coffee at a local cafe" : "A family sharing a meal together"} className="absolute inset-0 h-full w-full object-cover" />
+        <span className="pop-sm absolute right-6 top-6 rotate-3 rounded-full border-2 border-[#17434C] bg-[#FFD166] px-4 py-1.5 text-sm font-bold text-[#17434C]">{business ? "Reach local families" : "Deals for the whole crew"}</span>
+        <div className="absolute inset-x-6 bottom-6 rounded-2xl border-2 border-[#17434C] bg-[#FFFDF7]/90 p-6 backdrop-blur-xl">
           <p className="font-display text-2xl leading-snug">“Half price at our favourite local — it covered the membership in the first month.”</p>
           <p className="mt-3 font-mono text-xs uppercase tracking-widest text-[#9A4024]">Priya · Brunswick</p>
         </div>

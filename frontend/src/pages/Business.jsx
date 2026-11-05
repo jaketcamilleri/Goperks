@@ -87,7 +87,7 @@ export default function Business() {
       <MaskLines as="h1" className="mt-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl"
         lines={[<>Share a deal,</>, <em key="x" className="font-normal italic text-[#B9512E]">fill your tables.</em>]} />
       {awaiting ? (
-        <div className="mt-12 max-w-2xl rounded-[28px] border border-[#C2DEDA] bg-white p-8" data-testid="business-awaiting-approval">
+        <div className="pop mt-12 max-w-2xl rounded-[28px] border-2 border-[#17434C] bg-[#FFF4CE] p-8" data-testid="business-awaiting-approval">
           {user.business_status === "rejected" ? (
             <>
               <p className="font-display text-3xl font-semibold">Application not approved</p>
@@ -103,25 +103,25 @@ export default function Business() {
       ) : needsProfile ? <ProfilePrompt user={user} /> : !isPartner ? <Pitch /> : (
         <>
         <Link to={bp("/redeem")} data-testid="open-redeem-page-btn"
-          className="grain relative mt-12 flex flex-col gap-4 overflow-hidden rounded-[32px] bg-[#17434C] p-6 text-[#EAF6F3] transition-transform active:scale-[0.99] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          className="pop pop-hover relative mt-12 flex flex-col gap-4 overflow-hidden rounded-[32px] border-[3px] border-[#17434C] bg-[#17434C] p-6 text-[#EAF6F3] sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <span className="flex items-center gap-4">
-            <ScanLine className="h-10 w-10 shrink-0 text-[#EE8A63]" />
-            <span><span className="block font-mono text-xs uppercase tracking-[0.2em] text-[#EE8A63]">At the counter</span>
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#FFD166] text-[#17434C]"><ScanLine className="h-8 w-8" /></span>
+            <span><span className="block font-mono text-xs uppercase tracking-[0.2em] text-[#FFD166]">At the counter</span>
               <span className="mt-1 block font-display text-3xl font-semibold">Redeem a deal</span>
               <span className="text-sm text-[#BFD9D6]">Scan a member's card or voucher and see today's redemptions.</span></span>
           </span>
-          <span className="shrink-0 rounded-full bg-[#B9512E] px-6 py-3 text-center font-semibold">Open scanner</span>
+          <span className="shrink-0 rounded-full border-2 border-[#EAF6F3] bg-[#B9512E] px-6 py-3 text-center font-bold">Open scanner</span>
         </Link>
         {user.role === "business" && <ProfileCard user={user} />}
         <Link to={bp("/sticker")} data-testid="sticker-link"
-          className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border border-[#C2DEDA] bg-white p-5 transition-colors hover:border-[#17434C]">
+          className="mt-6 flex items-center justify-between gap-4 rounded-[24px] border-2 border-[#17434C] bg-[#F0EAFF] p-5 transition-shadow hover:shadow-[4px_4px_0_#17434C]">
           <span><span className="block font-display text-xl font-semibold">Window sticker</span><span className="text-sm text-[#3D5E65]">Print a "Go Perks members save here" sticker for your door or counter.</span></span>
-          <span className="shrink-0 rounded-full bg-[#17434C] px-5 py-2.5 text-sm font-semibold text-[#EAF6F3]">Get sticker</span>
+          <span className="shrink-0 rounded-full bg-[#7054CB] px-5 py-2.5 text-sm font-semibold text-white">Get sticker</span>
         </Link>
         <PartnerStats />
         {user.role === "business" && <PartnerReviews />}
         <div className="mt-12 grid gap-12 lg:grid-cols-12">
-          <div className="rounded-[32px] border border-[#C2DEDA] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
+          <div className="pop rounded-[32px] border-2 border-[#17434C] bg-white p-6 sm:p-8 lg:col-span-7" data-testid="business-deal-submit-form">
             <h2 className="font-display text-2xl font-semibold">Submit a new deal</h2>
             <p className="mt-1 text-sm text-[#3D5E65]">Submissions go to our team for approval before going live.</p>
             <div className="mt-6"><DealForm key={formKey} initial={{ suburb: user.suburb || "" }} lockedBusiness={user.business_name || user.name} onSubmit={submit} busy={busy} /></div>

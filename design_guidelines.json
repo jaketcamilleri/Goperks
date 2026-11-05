@@ -1,173 +1,207 @@
 {
-  "project_info": {
-    "brand_name": "Go Perks",
-    "tagline": "Exclusive Everyday Deals & Local Discounts Across Australia",
-    "membership_price": "A$49/year",
-    "logo_paths": {
-      "horizontal_logo": "/brand/go-perks-logo-horizontal.png",
-      "horizontal_light_logo": "/brand/go-perks-logo-horizontal-light.png",
-      "horizontal_dark_logo": "/brand/go-perks-logo-horizontal-dark.png",
-      "icon_mark": "/brand/go-perks-mark.png"
-    },
-    "app_type": "hybrid_fullstack",
-    "target_audience": "Everyday Australian consumers, families, foodies, cafe enthusiasts, and parents seeking local savings"
-  },
-  "design_archetype": {
-    "name": "Organic Fresh & Tactile Utility (Archetype 1 + Swiss Clarity)",
-    "description": "Clean, highly approachable, and warm light theme anchored by Deep Teal (#17434C), vibrant Coral (#B9512E) conversion accents, and refreshing Mint (#EAF6F3) surfaces. Replaces generic SaaS gradients with tactile card borders, generous whitespace, high-contrast crisp text, and micro-interactions.",
-    "theme_mode": "Light (with optional subtle dark surfaces for partner/admin dashboard context)"
-  },
-  "typography": {
-    "font_family_heading": "Fraunces / Bricolage Grotesque, serif/sans-serif",
-    "font_family_body": "Bricolage Grotesque / Inter, sans-serif",
-    "font_family_mono": "JetBrains Mono, monospace",
-    "hierarchy": {
-      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]",
-      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#17434C]",
-      "h3_card": "text-lg sm:text-xl font-semibold tracking-normal text-[#0F3138]",
-      "subtitle": "text-base sm:text-lg text-[#475569] leading-relaxed max-w-2xl",
-      "body": "text-sm sm:text-base text-[#1E293B] leading-relaxed",
-      "caption_mono": "text-xs font-mono tracking-wider uppercase text-[#52796F]"
-    }
-  },
+  "project_name": "Go Perks",
+  "theme": "Vibrant Family & Kids Orientated (Victoria, Australia Perks)",
+  "overview": "Guidelines for transforming Go Perks into a high-energy, colorful, family-friendly membership platform ($49/year Victoria local business perks) while preserving original brand anchors (#17434C teal ink and #B9512E terra orange).",
   "colors": {
-    "palette": {
-      "mint_bg": "#EAF6F3",
-      "mint_surface": "#F4FAF8",
-      "mint_border": "#D3ECE7",
-      "deep_teal": "#17434C",
-      "deep_teal_dark": "#0F3138",
-      "deep_teal_light": "#25636E",
-      "coral": "#B9512E",
-      "coral_hover": "#A04223",
-      "coral_soft": "#EE8A63",
-      "coral_light_bg": "#FDF2EF",
+    "brand_anchors": {
+      "ink": "#17434C",
+      "sand": "#EAF6F3",
+      "terra": "#B9512E",
+      "marigold": "#EE8A63",
       "sage": "#4E7A58",
-      "sage_light": "#E8F2EA",
-      "neutral_bg": "#FAFCFB",
-      "surface_card": "#FFFFFF",
-      "text_main": "#17434C",
-      "text_muted": "#52796F",
-      "border_subtle": "#E2EFEA"
+      "line": "#C2DEDA"
     },
-    "contrast_rules": {
-      "text_on_mint": "Minimum contrast ratio 4.5:1 using #17434C or #0F3138 text",
-      "cta_button": "Background #B9512E with white text #FFFFFF (Contrast > 5.5:1)",
-      "badge_contrast": "High contrast dark teal text on mint/sage pills or coral text on soft coral pills"
-    }
-  },
-  "layout_and_spacing": {
-    "spacing_scale": "p-2, p-4, p-6, p-8, p-12, p-16, p-24",
-    "grid_modes": {
-      "bento_category_grid": "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6",
-      "deals_grid": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8",
-      "dashboard_grid": "grid grid-cols-1 lg:grid-cols-12 gap-6"
+    "expanded_bright_family_palette": {
+      "sunburst_yellow": "#FFD166",
+      "sunburst_yellow_dark": "#B88400",
+      "bubblegum_pink": "#FF70A6",
+      "bubblegum_pink_dark": "#9E1C50",
+      "sky_cyan": "#4CC9F0",
+      "sky_cyan_dark": "#0A6580",
+      "electric_lime": "#70E000",
+      "electric_lime_dark": "#316600",
+      "grape_purple": "#7054CB",
+      "grape_purple_dark": "#432D8E",
+      "tangerine_orange": "#FF8531",
+      "tangerine_orange_dark": "#9E3C00"
     },
-    "container_padding": "px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-  },
-  "components_specification": {
-    "header_nav": {
-      "type": "Crystal Glass Sticky Header",
-      "styles": "bg-[#EAF6F3]/90 backdrop-blur-md border-b border-[#D3ECE7] z-50 sticky top-0 px-4 lg:px-8 py-3.5 flex items-center justify-between",
-      "elements": [
-        "Horizontal Go Perks brand logo (/brand/go-perks-logo-horizontal.png)",
-        "Nav links: Home, Explore Deals, How It Works, Pricing (A$49/yr), Partner With Us",
-        "Action CTAs: Sign In button, Get Go Perks (Coral pill CTA)",
-        "Mobile viewport: Hamburger trigger + responsive drawer + bottom navigation tab bar for logged in members"
-      ]
+    "css_variables_to_add": {
+      "--yellow": "#FFD166",
+      "--pink": "#FF70A6",
+      "--cyan": "#4CC9F0",
+      "--lime": "#70E000",
+      "--purple": "#7054CB",
+      "--tangerine": "#FF8531",
+      "--card-pop-shadow": "4px 4px 0px #17434C"
     },
-    "hero_section": {
-      "layout": "2-column dynamic hero (Left text + live stats + quick search bar; Right interactive deal preview card stack or live member digital card)",
-      "cta": "Join for A$49/Year -> Unlock Deals Immediately",
-      "trust_badges": ["Over 350+ Local Aussie Perks", "Instant Digital Card", "Cancel Anytime"]
-    },
-    "category_tiles": {
-      "type": "Visual Image & Icon Tile Grid",
-      "items": [
-        {"id": "cafes", "title": "Cafes & Coffee", "badge": "120+ Perks", "image_url": "https://images.unsplash.com/photo-1575999918061-10774a495539?crop=entropy&cs=srgb&fm=jpg&q=85"},
-        {"id": "dining", "title": "Fine & Casual Dining", "badge": "85+ Perks", "image_url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?crop=entropy&cs=srgb&fm=jpg&q=85"},
-        {"id": "kids", "title": "Kids Activities", "badge": "45+ Perks", "image_url": "https://images.unsplash.com/photo-1762291495465-2cc587c180e2?crop=entropy&cs=srgb&fm=jpg&q=85"},
-        {"id": "takeaway", "title": "Bakeries & Takeaway", "badge": "60+ Perks", "image_url": "https://images.unsplash.com/photo-1660203861072-318f2c468d94?crop=entropy&cs=srgb&fm=jpg&q=85"},
-        {"id": "family", "title": "Family Fun & Parks", "badge": "30+ Perks", "image_url": "https://images.pexels.com/photos/24205720/pexels-photo-24205720.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"},
-        {"id": "wellness", "title": "Health & Beauty", "badge": "25+ Perks", "image_url": "https://images.unsplash.com/photo-1616671285410-2a676a9a433d?crop=entropy&cs=srgb&fm=jpg&q=85"}
-      ]
-    },
-    "deal_card": {
-      "styles": "bg-white rounded-2xl border border-[#D3ECE7] shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group",
-      "image_container": "relative aspect-[16/10] overflow-hidden bg-slate-100",
-      "offer_tag": "absolute top-3 left-3 bg-[#B9512E] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm",
-      "favourite_button": "absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[#17434C] hover:text-[#B9512E]",
-      "card_body": "p-5 flex-1 flex flex-col justify-between",
-      "ratings_row": "flex items-center space-x-2 text-xs font-semibold text-[#17434C] mb-2",
-      "member_favourite_badge": "bg-[#E8F2EA] text-[#4E7A58] border border-[#4E7A58]/20 px-2 py-0.5 rounded text-[11px] font-bold"
-    },
-    "deals_rows": {
-      "new_this_week": "Horizontal scrolling row with 'NEW THIS WEEK' accent header tag",
-      "ending_soon": "Horizontal scrolling row with timer indicator and 'ENDING SOON' alert pill"
-    },
-    "live_member_card": {
-      "description": "Virtual membership pass rendered in the member dashboard and deal redemption view",
-      "styles": "bg-gradient-to-br from-[#17434C] via-[#0F3138] to-[#1E525C] text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden border border-white/10",
-      "features": [
-        "Gold sheen animation on hover/touch",
-        "Dynamic live clock timestamp strip (seconds ticking)",
-        "Rotating unique security QR code / barcode simulation for venue scanning",
-        "Member name, active status badge (ACTIVE MEMBER), expiry date, member ID format #GP-2026-XXXX",
-        "One-click 'Show In-Store Screen' high-visibility popover view"
-      ]
-    },
-    "member_reviews_module": {
-      "average_score_display": "Large star rating breakdown (e.g. 4.8 / 5.0 based on verified member redemptions)",
-      "review_card": "Verified Member avatar, name, suburb, rating stars, date, and short testimonial quote",
-      "review_form": "Modal or inline card allowing logged-in members to pick 1-5 stars, add short experience text, and submit with instant optimistic state update"
-    },
-    "mobile_bottom_tab_bar": {
-      "description": "Sticky bottom bar visible on mobile screen widths (< 768px) for active members",
-      "items": [
-        {"label": "Explore", "icon": "Compass", "path": "/deals"},
-        {"label": "Near Me", "icon": "MapPin", "path": "/deals?filter=near"},
-        {"label": "My Card", "icon": "CreditCard", "path": "/dashboard", "highlight": true},
-        {"label": "Saved", "icon": "Heart", "path": "/dashboard?tab=saved"},
-        {"label": "Account", "icon": "User", "path": "/dashboard?tab=profile"}
-      ]
-    }
-  },
-  "media_assets": {
-    "image_urls": {
-      "hero_cafe": "https://images.unsplash.com/photo-1575999918061-10774a495539?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "barista_working": "https://images.unsplash.com/photo-1787329684173-31a171a1ca27?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "restaurant_dining": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "salmon_dish": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "kids_playground": "https://images.unsplash.com/photo-1762291495465-2cc587c180e2?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "family_fun": "https://images.pexels.com/photos/24205720/pexels-photo-24205720.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-      "gourmet_dish": "https://images.unsplash.com/photo-1676471926534-d5c9771909fa?crop=entropy&cs=srgb&fm=jpg&q=85"
-    }
-  },
-  "testing_guidelines": {
-    "data_testid_rules": "All interactive components (buttons, deal cards, category tiles, review forms, search inputs, tab triggers) MUST include descriptive data-testid attributes in kebab-case format.",
-    "key_test_ids": [
-      "data-testid='header-brand-logo'",
-      "data-testid='nav-explore-deals-link'",
-      "data-testid='nav-join-button'",
-      "data-testid='hero-join-cta-button'",
-      "data-testid='category-tile-cafes'",
-      "data-testid='deal-card-item'",
-      "data-testid='deal-card-favourite-button'",
-      "data-testid='deals-search-input'",
-      "data-testid='deals-category-filter'",
-      "data-testid='deals-suburb-filter'",
-      "data-testid='deals-view-toggle-map'",
-      "data-testid='live-member-card'",
-      "data-testid='show-card-qr-button'",
-      "data-testid='review-submission-form'",
-      "data-testid='mobile-bottom-tab-bar'"
+    "contrast_safe_text_pairings": [
+      {
+        "bg": "#FFD166",
+        "text": "#17434C",
+        "badge_border": "#B88400",
+        "usage": "Kid-friendly callouts, discount pills, hero tags"
+      },
+      {
+        "bg": "#FF70A6",
+        "text": "#FFFFFF",
+        "badge_border": "#9E1C50",
+        "usage": "Days Out & Fun badges, sticky promos"
+      },
+      {
+        "bg": "#4CC9F0",
+        "text": "#0F3138",
+        "badge_border": "#0A6580",
+        "usage": "Water & Outdoor activities, map pin highlights"
+      },
+      {
+        "bg": "#70E000",
+        "text": "#0F3138",
+        "badge_border": "#316600",
+        "usage": "Special savings counters, verified partner badges"
+      },
+      {
+        "bg": "#7054CB",
+        "text": "#FFFFFF",
+        "badge_border": "#432D8E",
+        "usage": "Family Pass highlights, VIP perk badges"
+      }
     ]
   },
+  "category_color_mapping": {
+    "Cafes & Treats": {
+      "bg": "#FFEAD2",
+      "accent": "#FF8531",
+      "text": "#612D00",
+      "border": "#FFC085",
+      "icon_color": "#B9512E",
+      "badge_class": "bg-orange-100 text-amber-900 border-amber-300"
+    },
+    "Kids Activities": {
+      "bg": "#FFF4CE",
+      "accent": "#FFD166",
+      "text": "#543F00",
+      "border": "#FFE082",
+      "icon_color": "#7054CB",
+      "badge_class": "bg-yellow-100 text-yellow-900 border-yellow-300"
+    },
+    "Restaurants & Eats": {
+      "bg": "#FFE3EC",
+      "accent": "#FF70A6",
+      "text": "#750B35",
+      "border": "#FFA8C5",
+      "icon_color": "#B9512E",
+      "badge_class": "bg-pink-100 text-pink-900 border-pink-300"
+    },
+    "Days Out & Parks": {
+      "bg": "#E2F9FE",
+      "accent": "#4CC9F0",
+      "text": "#034E63",
+      "border": "#96E5FC",
+      "icon_color": "#4E7A58",
+      "badge_class": "bg-cyan-100 text-cyan-900 border-cyan-300"
+    },
+    "Playgrounds & Sports": {
+      "bg": "#EAFCDA",
+      "accent": "#70E000",
+      "text": "#224D00",
+      "border": "#B1F474",
+      "icon_color": "#316600",
+      "badge_class": "bg-lime-100 text-lime-900 border-lime-300"
+    },
+    "Entertainment & Movies": {
+      "bg": "#F0EAFF",
+      "accent": "#7054CB",
+      "text": "#311B75",
+      "border": "#C7B8FF",
+      "icon_color": "#7054CB",
+      "badge_class": "bg-purple-100 text-purple-900 border-purple-300"
+    }
+  },
+  "playful_shapes_and_motifs": {
+    "ticket_edge": "CSS mask radial gradient ticket notches on cards and membership pass visual",
+    "tactile_shadows": "Hard offset border shadows (shadow-[4px_4px_0px_#17434C]) for playful toy-like depth",
+    "sticker_badges": "Rotated badges (-2deg or 3deg) with dashed/bold stroke outlines for 'Sticker' feel",
+    "confetti_accents": "SVG floating stars, squiggles, and dots around hero images and statistics",
+    "wavy_dividers": "Soft organic SVG waves separating landing page sections"
+  },
+  "typography": {
+    "heading_font": "Fraunces, Georgia, serif",
+    "body_font": "Bricolage Grotesque, ui-sans-serif, sans-serif",
+    "mono_font": "JetBrains Mono, monospace",
+    "rules": {
+      "H1": "text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-ink tracking-tight",
+      "H2": "text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-ink",
+      "H3": "text-xl sm:text-2xl font-display font-bold",
+      "body": "text-base leading-relaxed text-ink/90 font-sans",
+      "labels": "text-xs font-mono uppercase tracking-widest text-ink-2"
+    }
+  },
+  "component_treatments": {
+    "buttons": {
+      "primary": "bg-terra hover:bg-terra-dark text-white rounded-2xl px-6 py-3 font-bold shadow-[3px_3px_0px_#17434C] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all",
+      "secondary_vibrant": "bg-[#FFD166] hover:bg-[#ffca47] text-[#17434C] rounded-2xl px-6 py-3 font-bold border-2 border-[#17434C] shadow-[3px_3px_0px_#17434C] transition-all",
+      "pill_badge": "rounded-full px-4 py-1.5 text-xs font-bold border flex items-center gap-1.5"
+    },
+    "deal_cards": {
+      "style": "bg-white rounded-3xl border-2 border-line/80 shadow-[4px_4px_0px_#C2DEDA] hover:shadow-[6px_6px_0px_#17434C] hover:border-ink transition-all overflow-hidden group",
+      "badge_placement": "Absolute top-3 right-3 floating sticker badge with price discount (-20%, 2-for-1)"
+    },
+    "business_portal": {
+      "approach": "Lighter-touch, clean professional partner workspace with playful energetic accents",
+      "sidebar": "Bg-ink text-sand with vibrant active indicator (tangerine orange #FF8531 highlight pill)",
+      "stat_cards": "Vibrant metric cards with soft category color backings (e.g. Total Redemptions in Lime #EAFCDA, Active Deals in Sunburst Yellow #FFF4CE)",
+      "tables": "Clean white cards with colorful status pills (Active = Lime, Draft = Yellow, Expired = Pink)"
+    },
+    "admin_portal": {
+      "approach": "High-clarity dashboard with bright family KPI cards and colorful status indicators",
+      "stat_grid": "4-color metric grid (Total Members: Cyan tint, Active Partners: Yellow tint, Redemptions: Lime tint, Revenue: Orange tint)",
+      "action_buttons": "Bold pill buttons with 2px ink borders"
+    }
+  },
+  "media_and_images": {
+    "family_photo_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGZhbWlseSUyMGNoaWxkcmVuJTIwcGFyayUyMG91dGRvb3IlMjBmdW4lMjBzdW5ueXxlbnwwfHx8fDE3OTM4Mzg2NTB8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Hero & Days Out",
+        "alt": "Children playing with colorful parachute outdoors in Victoria park",
+        "placement": "Landing page hero primary image container & Days Out showcase"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1580130515623-e291e99cce68?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxmYW1pbHklMjBlYXRpbmclMjBjYWZlJTIwaWNlJTIwY3JlYW0lMjBraWRzJTIwb3V0ZG9vcnN8ZW58MHx8fHwxNzkzODM4NjUwfDA&ixlib=rb-4.1.0&q=85",
+        "category": "Cafes & Treats",
+        "alt": "Little girl enjoying an ice cream cone outdoors",
+        "placement": "Cafes category row feature & deal detail banner"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1768982417021-8aeb69ba5a66?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHw0fHxhdXN0cmFsaWFuJTIwZmFtaWx5JTIwa2lkcyUyMHBsYXlncm91bmQlMjBwYXJrJTIwY2FmZSUyMGZ1bnxlbnwwfHx8fDE3OTM4Mzg2NDR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Kids Activities",
+        "alt": "Kids gathered around a colorful table doing crafts and play",
+        "placement": "Kids Activities category section & How It Works card"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1628676306092-1238ef1dc851?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGZhbWlseSUyMGNoaWxkcmVuJTIwcGFyayUyMG91dGRvb3IlMjBmdW4lMjBzdW5ueXxlbnwwfHx8fDE3OTM4Mzg2NTB8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Member Voices & Parks",
+        "alt": "Happy family enjoying a sunny day outdoors in Victoria",
+        "placement": "Member Voices testimonial section & Member Dashboard banner"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1698365416256-5b3cc9a24b99?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxhdXN0cmFsaWFuJTIwZmFtaWx5JTIwa2lkcyUyMHBsYXlncm91bmQlMjBwYXJrJTIwY2FmZSUyMGZ1bnxlbnwwfHx8fDE3OTM4Mzg2NDR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Picnics & Days Out",
+        "alt": "Family relaxing on green lawn near beach park",
+        "placement": "Gift a Membership section & Days Out category"
+      }
+    ]
+  },
+  "testing_and_accessibility": {
+    "data_testid_requirement": "All interactive elements, category buttons, deal cards, navigation links, redemption buttons, and forms MUST have kebab-case data-testid attributes (e.g. data-testid='deal-card-cafe-1', data-testid='join-perks-btn')",
+    "contrast_rules": "Always pair dark ink text (#17434C or #0F3138) over light pastel backgrounds (#FFD166, #EAFCDA, #FFF4CE) to ensure WCAG AA compliance (> 4.5:1 ratio)."
+  },
   "instructions_to_main_agent": [
-    "Use the light theme tokens (#EAF6F3 bg, #17434C text/primary, #B9512E action CTA) across public and member-facing pages.",
-    "Embed the Go Perks logos provided in /brand/go-perks-logo-horizontal.png and /brand/go-perks-mark.png in navigation and hero.",
-    "Implement the 3 requested new features: Category Tiles bento grid, 'New this week' / 'Ending soon' deal carousels, and Member reviews/ratings system.",
-    "Ensure all deal cards display distance chips, open badges, and 1-5 star member ratings.",
-    "Keep mobile views ultra-responsive with a clean bottom tab bar for active members."
+    "1. Update /app/frontend/src/index.css with expanded bright family CSS variables and playful utility classes (.ticket-edge, .sticker-badge, .pop-shadow).",
+    "2. Enhance main Landing Page components (Hero, CategoryTiles, DealCard, LaunchBanner, Pricing ticket) to incorporate bright family photos and vibrant color accents.",
+    "3. Apply category color mapping across DealCards and Category Filter buttons so each deal type has a distinct playful color identity.",
+    "4. Add playful sticker-style badges (-2deg tilt, hard 2px offset border) to highlight AUD $49/year pricing and member savings.",
+    "5. Update Member Dashboard, Business Portal (/business), and Admin Portal (/admin) with colorful stat cards and clear high-contrast status badges.",
+    "6. Ensure all interactive components include data-testid attributes."
   ]
 }

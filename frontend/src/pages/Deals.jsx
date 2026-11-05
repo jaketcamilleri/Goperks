@@ -7,6 +7,7 @@ import { DealRow } from "@/components/DealRow";
 import { DealsMap } from "@/components/DealsMap";
 import { useMyLocation, sortNearby } from "@/lib/nearby";
 import { isNew, endsSoon, sortDeals, SORTS } from "@/lib/deals";
+import { Underline } from "@/components/Fun";
 
 const LOC_MSG = { denied: "Location is blocked. Allow it in your browser settings to see deals near you.", error: "Couldn't find your location. Please try again.", unsupported: "Your browser can't share location." };
 const chip = (on) => `inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${on ? "border-[#17434C] bg-[#17434C] text-[#EAF6F3]" : "border-[#C2DEDA] bg-white hover:border-[#17434C]"}`;
@@ -84,22 +85,27 @@ export default function Deals() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-8 sm:px-8 lg:pt-12" data-testid="deals-directory">
-      <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Explore deals</h1>
+      <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Explore <Underline color="#4CC9F0">family deals</Underline></h1>
       <p className="mt-2 text-[#3D5E65]" data-testid="deals-count">{all ? `${list.length} deal${list.length === 1 ? "" : "s"}${category !== "all" ? " in this category" : ""}` : "Loading deals…"}</p>
 
       <label className="relative mt-6 block w-full max-w-xl">
         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3D5E65]" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search deals, places or suburbs" data-testid="deals-search-input"
-          className="h-12 w-full rounded-full border border-[#C2DEDA] bg-white pl-12 pr-10 text-[15px] outline-none focus:border-[#17434C]" />
+          className="h-12 w-full rounded-full border-2 border-[#17434C] bg-white pl-12 pr-10 text-[15px] shadow-[3px_3px_0_#17434C] outline-none focus:border-[#B9512E]" />
         {q && <button onClick={() => setQ("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#3D5E65] hover:bg-[#EAF6F3]" data-testid="deals-search-clear"><X className="h-4 w-4" /></button>}
       </label>
 
       <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-wrap lg:px-0 [&::-webkit-scrollbar]:hidden" data-lenis-prevent data-testid="category-chips">
-        {[{ key: "all", label: "All" }, ...CATEGORIES].map((c) => (
-          <button key={c.key} onClick={() => update({ category: c.key })} className={chip(category === c.key)} data-testid={`filter-${c.key}`}>
-            {c.label} <span className={`font-mono text-xs ${category === c.key ? "text-[#C2DEDA]" : "text-[#3D5E65]"}`}>{all ? count(c.key) : ""}</span>
-          </button>
-        ))}
+        {[{ key: "all", label: "All", tone: { bg: "#FFFFFF", fg: "#17434C", solid: "#17434C", on: "#EAF6F3" } }, ...CATEGORIES].map((c) => {
+          const on = category === c.key;
+          return (
+            <button key={c.key} onClick={() => update({ category: c.key })} data-testid={`filter-${c.key}`} aria-pressed={on}
+              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border-2 px-4 py-2 text-sm font-bold transition-[transform,box-shadow] ${on ? "border-[#17434C] shadow-[3px_3px_0_#17434C]" : "border-transparent hover:-translate-y-0.5"}`}
+              style={{ background: on ? c.tone.solid : c.tone.bg, color: on ? c.tone.on : c.tone.fg }}>
+              {c.label} <span className="font-mono text-xs opacity-80">{all ? count(c.key) : ""}</span>
+            </button>
+          );
+        })}
       </div>
 
       <Toolbar p={{ suburb, suburbs, update, locState, locate, clear, openOnly, setOpenOnly, sort, view, setView }} />
@@ -111,10 +117,10 @@ export default function Deals() {
       ) : view === "map" ? (
         <div className="mt-8"><DealsMap deals={list} /></div>
       ) : list.length === 0 ? (
-        <div className="mt-12 rounded-2xl border border-dashed border-[#C2DEDA] bg-white p-10 text-center" data-testid="deals-empty">
+        <div className="pop mt-12 rounded-3xl border-2 border-[#17434C] bg-[#FFF4CE] p-10 text-center" data-testid="deals-empty">
           <p className="font-display text-2xl font-semibold">No deals match that</p>
           <p className="mt-2 text-[#3D5E65]">Try another search or category.</p>
-          <button onClick={reset} className="mt-5 rounded-full bg-[#17434C] px-6 py-3 text-sm font-semibold text-[#EAF6F3]" data-testid="deals-reset-btn">Show all deals</button>
+          <button onClick={reset} className="pop-sm pop-hover mt-5 rounded-full border-2 border-[#17434C] bg-[#4CC9F0] px-6 py-3 text-sm font-bold text-[#0F3138]" data-testid="deals-reset-btn">Show all deals</button>
         </div>
       ) : (
         <>

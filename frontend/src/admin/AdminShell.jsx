@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ap, MainLink } from "@/lib/site";
 import { Logo } from "@/components/Logo";
+import { RainbowBar } from "@/components/Fun";
 import AdminLogin from "@/admin/AdminLogin";
 
 const NAV = [
@@ -37,10 +38,10 @@ function SideNav({ counts, onNavigate, prefix = "admin-nav", role }) {
     <nav className="flex flex-col gap-1" data-testid="admin-sidenav">
       {NAV.filter((n) => !n.ownerOnly || role === "admin").map(({ to, label, icon: Icon, end, badge, id }) => (
         <NavLink key={label} to={ap(to)} end={end} onClick={onNavigate} data-testid={`${prefix}-${id || label.toLowerCase()}`}
-          className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive ? "bg-[#EAF6F3] text-[#0F3138]" : "text-[#C2DEDA] hover:bg-white/10 hover:text-white"}`}>
+          className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive ? "bg-[#FFD166] text-[#0F3138]" : "text-[#C2DEDA] hover:bg-white/10 hover:text-white"}`}>
           <Icon className="h-4 w-4" />
           <span className="flex-1">{label}</span>
-          {badge && counts?.[badge] > 0 && <span className="rounded-md bg-[#EE8A63] px-1.5 py-0.5 font-mono text-[11px] font-bold text-[#0F3138]" data-testid={`${prefix}-badge-${badge}`}>{counts[badge]}</span>}
+          {badge && counts?.[badge] > 0 && <span className="rounded-md bg-[#FF70A6] px-1.5 py-0.5 font-mono text-[11px] font-bold text-[#0F3138]" data-testid={`${prefix}-badge-${badge}`}>{counts[badge]}</span>}
         </NavLink>
       ))}
     </nav>
@@ -80,15 +81,16 @@ export default function AdminShell() {
 
   const doLogout = async () => { await logout(); nav(ap("")); };
   return (
-    <div className="min-h-screen bg-[#F3F8F7] text-[#17434C]" data-testid="admin-shell">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between bg-[#0F3138] p-4 lg:flex">
+    <div className="min-h-screen bg-[#FBFAF4] text-[#17434C]" data-testid="admin-shell">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between bg-[#0F3138] p-4 pt-5 lg:flex">
+        <RainbowBar className="absolute inset-x-0 top-0 h-1.5" />
         <div>
           <div className="mb-6 flex items-center gap-2 px-2"><Logo light /><span className="rounded bg-[#EE8A63] px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-[#0F3138]">Admin</span></div>
           <SideNav counts={counts} role={user.role} />
         </div>
         <SideFooter user={user} onLogout={doLogout} />
       </aside>
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-[#0F3138] px-4 lg:hidden" data-testid="admin-mobile-bar">
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b-4 border-[#FFD166] bg-[#0F3138] px-4 lg:hidden" data-testid="admin-mobile-bar">
         <div className="flex items-center gap-2"><Logo light /><span className="rounded bg-[#EE8A63] px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-[#0F3138]">Admin</span></div>
         <button onClick={() => setOpen(!open)} aria-label="Menu" className="text-white" data-testid="admin-mobile-toggle">{open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
       </header>

@@ -13,6 +13,12 @@
     --marigold: #EE8A63;
     --sage: #4E7A58;
     --line: #C2DEDA;
+    --sun: #FFD166;
+    --pink: #FF70A6;
+    --sky: #4CC9F0;
+    --lime: #70E000;
+    --grape: #7054CB;
+    --tangerine: #FF8531;
 }
 
 html.lenis, html.lenis body { height: auto; }
@@ -21,7 +27,7 @@ html.lenis, html.lenis body { height: auto; }
 
 body {
     margin: 0;
-    background: var(--sand);
+    background: #FFF8E7;
     color: var(--ink);
     font-family: "Bricolage Grotesque", ui-sans-serif, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -50,6 +56,24 @@ body {
                   radial-gradient(circle 10px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
 }
 
+/* Playful, toy-like depth for family-friendly cards and buttons */
+.pop { box-shadow: 4px 4px 0 var(--ink); }
+.pop-sm { box-shadow: 3px 3px 0 var(--ink); }
+.pop-hover { transition: transform .18s ease, box-shadow .18s ease; }
+.pop-hover:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+.pop-hover:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
+.confetti-dots {
+    background-image:
+        radial-gradient(circle at 12% 18%, var(--sun) 0 6px, transparent 7px),
+        radial-gradient(circle at 82% 12%, var(--pink) 0 5px, transparent 6px),
+        radial-gradient(circle at 92% 72%, var(--sky) 0 7px, transparent 8px),
+        radial-gradient(circle at 6% 82%, var(--lime) 0 5px, transparent 6px),
+        radial-gradient(circle at 48% 92%, var(--grape) 0 4px, transparent 5px);
+}
+.rainbow-bar { background: linear-gradient(90deg, var(--terra) 0 16.6%, var(--sun) 16.6% 33.3%, var(--lime) 33.3% 50%, var(--sky) 50% 66.6%, var(--grape) 66.6% 83.3%, var(--pink) 83.3% 100%); }
+@keyframes float-y { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-8px) rotate(var(--r, 0deg)); } }
+.float-y { animation: float-y 5s ease-in-out infinite; }
+
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .marquee-track { animation: marquee 60s linear infinite; }
 
@@ -68,7 +92,7 @@ body {
 
 
 @media (prefers-reduced-motion: reduce) {
-    .marquee-track, .spin-slow { animation: none; }
+    .marquee-track, .spin-slow, .float-y { animation: none; }
 }
 
 @media print {

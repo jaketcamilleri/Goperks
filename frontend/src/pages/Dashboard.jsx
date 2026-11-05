@@ -50,12 +50,16 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-28 pt-8 sm:px-8 lg:pt-12" data-testid="member-dashboard">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">{active ? "My Go Perks" : "My account"}</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
+      <div className="pop confetti-dots relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[28px] border-[3px] border-[#17434C] bg-[#FFF4CE] p-5 sm:p-7" data-testid="dashboard-hello">
+        <div className="flex items-center gap-4">
+          <img src="/images/family/family-picnic.jpg" alt="" className="h-16 w-16 shrink-0 rounded-full border-[3px] border-[#17434C] object-cover sm:h-20 sm:w-20" />
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#9A4024]">{active ? "My Go Perks" : "My account"}</p>
+            <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Hi, {user?.name?.split(" ")[0]}.</h1>
+            {active && <p className="mt-1 text-sm font-semibold text-[#3D5E65]">Where's the family off to today?</p>}
+          </div>
         </div>
-        <Link to="/account" className="inline-flex items-center gap-2 rounded-full border border-[#17434C] px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#17434C] hover:text-[#EAF6F3]" data-testid="dashboard-manage-account-btn">
+        <Link to="/account" className="inline-flex items-center gap-2 rounded-full border-2 border-[#17434C] bg-white px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#4CC9F0]" data-testid="dashboard-manage-account-btn">
           <UserCog className="h-4 w-4" /> Manage account
         </Link>
       </div>
@@ -68,10 +72,10 @@ export default function Dashboard() {
             <WalletButtons />
             </>
           ) : (
-            <div className="mt-6 rounded-[24px] bg-[#FDF0EC] p-6" data-testid="membership-inactive-note">
+            <div className="pop mt-6 rounded-[24px] border-2 border-[#17434C] bg-[#FFE3EC] p-6" data-testid="membership-inactive-note">
               <p className="font-display text-2xl font-semibold">Your card isn't active yet.</p>
-              <p className="mt-2 text-[#3D5E65]">Join for $49/year to unlock every deal in the club.</p>
-              <Link to="/join" data-testid="dashboard-join-btn" className="mt-5 inline-flex rounded-full bg-[#B9512E] px-6 py-3 font-semibold text-[#EAF6F3]">Activate membership</Link>
+              <p className="mt-2 text-[#3D5E65]">Join for $49/year to unlock every deal in the club for the whole family.</p>
+              <Link to="/join" data-testid="dashboard-join-btn" className="pop-sm pop-hover mt-5 inline-flex rounded-full border-2 border-[#17434C] bg-[#B9512E] px-6 py-3 font-bold text-white">Activate membership</Link>
             </div>
           )}
           <BonusMonthsNote user={user} />
@@ -84,7 +88,7 @@ export default function Dashboard() {
             <Link to="/deals" className="text-sm font-semibold text-[#9A4024]" data-testid="dashboard-browse-link">Find more deals →</Link>
           </div>
           {vouchers.length === 0 ? (
-            <p className="mt-6 rounded-[24px] border border-dashed border-[#C2DEDA] p-8 text-[#3D5E65]" data-testid="vouchers-empty">No vouchers yet. Open any deal and tap “Get my voucher code”.</p>
+            <p className="mt-6 rounded-[24px] border-2 border-dashed border-[#4CC9F0] bg-[#E2F9FE] p-8 text-[#034E63]" data-testid="vouchers-empty">No vouchers yet. Open any deal and tap “Get my voucher code”.</p>
           ) : (
             <ul className="mt-6 space-y-4" data-testid="vouchers-list">
               {vouchers.map((v) => <VoucherRow key={v.id} v={v} onRedeem={redeem} />)}
